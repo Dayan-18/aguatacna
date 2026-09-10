@@ -36,20 +36,28 @@ Todo el código compartido vive en `shared/src/commonMain/kotlin/pe/edu/upt/agua
 ```
 core/       infraestructura compartida: base de datos, cliente HTTP,
             inyección de dependencias, design system, navegación.
-            Custodio: @USUARIO-A — todo PR que la toque requiere su revisión.
+            Custodio: Cristhian Mamani — todo PR que la toque requiere su revisión.
 
 domain/     SOLO lo transversal (Usuario, PerfilHogar). Sin frameworks.
 data/       SOLO implementaciones transversales.
 
 feature/    cada integrante vive aquí dentro y no sale.
-├── reserva/    → @USUARIO-A    nivel, proyección de agotamiento, déficit
-├── sector/     → @Dayan-18     mapas, cronogramas, puntos de cisterna
-├── recibo/     → @USUARIO-C    OCR de boletas, consumo atípico
-└── retos/      → @USUARIO-D    gamificación, rachas, reportes
+├── reserva/    nivel, proyección de agotamiento, déficit
+├── sector/     mapas, cronogramas, puntos de cisterna
+├── recibo/     OCR de boletas, consumo atípico
+└── retos/      gamificación, rachas, reportes
 ```
+
+| | Integrante | Zona |
+|---|---|---|
+| **A** | Cristhian Carlos Mamani Cori | `core/` (custodio) + `feature/reserva/` |
+| **B** | Dayan Elvis Jahuira Pilco | `feature/sector/` |
+| **C** | Iker Alberto Sierra Ruiz | `feature/recibo/` |
+| **D** | Jimmy Llica Mamani | `feature/retos/` |
 
 Cada `feature/` contiene sus tres capas: `domain/`, `data/`, `presentation/`.
 La presentación sigue **MVVM** con un único estado inmutable por pantalla.
+La capa de dominio aplica patrones tácticos de DDD sobre arquitectura limpia.
 
 ## Reglas
 
@@ -67,5 +75,5 @@ Se verifican en cada revisión de PR. Las cuatro que más se incumplen:
 
 ## Dudas
 
-Sobre `core/`, Gradle o el arranque → @USUARIO-A.
+Sobre `core/`, Gradle o el arranque → Cristhian Mamani (custodio).
 Sobre una feature → su dueño en la tabla de arriba.

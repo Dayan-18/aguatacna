@@ -11,12 +11,12 @@ Esto es la mecánica del día a día.
 en la zona de otro, se lo pides; no lo haces tú. Esta sola regla elimina
 la mayoría de los conflictos.
 
-| Integrante | Zona | Ruta bajo `shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/` |
-|---|---|---|
-| **A** | Core + Reserva | `core/**` y `feature/reserva/**` |
-| **B** | Sector y mapas | `feature/sector/**` |
-| **C** | Recibo e IA | `feature/recibo/**` |
-| **D** | Retos y reportes | `feature/retos/**` |
+| | Integrante | Zona | Ruta bajo `shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/` |
+|---|---|---|---|
+| **A** | Cristhian Carlos Mamani Cori | Core + Reserva | `core/**` y `feature/reserva/**` |
+| **B** | Dayan Elvis Jahuira Pilco | Sector y mapas | `feature/sector/**` |
+| **C** | Iker Alberto Sierra Ruiz | Recibo e IA | `feature/recibo/**` |
+| **D** | Jimmy Llica Mamani | Retos y reportes | `feature/retos/**` |
 
 Dentro de tu zona tienes tus tres capas y haces lo que quieras:
 
@@ -29,8 +29,9 @@ feature/<tuya>/
 
 ### Zona compartida
 
-`core/**`, los archivos de Gradle y `domain/` + `data/` de la raíz son de **A**,
-que es el custodio. Cualquiera puede proponer cambios ahí, pero **A los revisa**.
+`core/**`, los archivos de Gradle y `domain/` + `data/` de la raíz son de
+**Cristhian**, que es el custodio. Cualquiera puede proponer cambios ahí,
+pero él los revisa.
 GitHub lo asigna solo por el `CODEOWNERS`.
 
 En `domain/` y `data/` de la raíz va **únicamente lo transversal**: `Usuario`,

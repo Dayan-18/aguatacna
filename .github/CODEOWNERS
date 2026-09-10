@@ -1,23 +1,31 @@
 # GitHub asigna el revisor automaticamente segun la carpeta tocada.
-# IMPORTANTE: los usuarios deben ser colaboradores del repositorio.
-# Si un usuario no existe o no tiene acceso, GitHub ignora la linea en silencio.
+#
+# OJO: aqui van USUARIOS DE GITHUB, no nombres reales, y deben ser
+# colaboradores del repositorio. Si un usuario no existe o no tiene
+# acceso, GitHub ignora la linea en silencio y no asigna a nadie.
+#
+#   A = Cristhian Carlos Mamani Cori  -> reemplazar @GH-CRISTHIAN
+#   B = Dayan Elvis Jahuira Pilco     -> @Dayan-18  (listo)
+#   C = Iker Alberto Sierra Ruiz      -> reemplazar @GH-IKER
+#   D = Jimmy Llica Mamani            -> reemplazar @GH-JIMMY
 
-# Por defecto, revisa el custodio del core
-*                           @USUARIO-A
+# Por defecto revisa el custodio del core (Cristhian)
+*                           @GH-CRISTHIAN
 
-# Infraestructura: solo el custodio. Cambiar versiones rompe el build de los cuatro.
-/gradle/libs.versions.toml  @USUARIO-A
-/settings.gradle.kts        @USUARIO-A
-/build.gradle.kts           @USUARIO-A
-/shared/build.gradle.kts    @USUARIO-A
-/androidApp/                @USUARIO-A
-/docs/constitution.md       @USUARIO-A
+# Infraestructura: solo el custodio.
+# Cambiar versiones aqui rompe el build de los cuatro.
+/gradle/libs.versions.toml  @GH-CRISTHIAN
+/settings.gradle.kts        @GH-CRISTHIAN
+/build.gradle.kts           @GH-CRISTHIAN
+/shared/build.gradle.kts    @GH-CRISTHIAN
+/androidApp/                @GH-CRISTHIAN
+/docs/constitution.md       @GH-CRISTHIAN
 
-# Core compartido: custodio A
-/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/core/             @USUARIO-A
+# Core compartido: custodio Cristhian
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/core/             @GH-CRISTHIAN
 
 # Cada feature responde a su dueno
-/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/reserva/  @USUARIO-A
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/reserva/  @GH-CRISTHIAN
 /shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/sector/   @Dayan-18
-/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/recibo/   @USUARIO-C
-/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/retos/    @USUARIO-D
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/recibo/   @GH-IKER
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/retos/    @GH-JIMMY
