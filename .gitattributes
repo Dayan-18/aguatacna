@@ -1,0 +1,17 @@
+# Normaliza finales de linea entre Windows y macOS.
+# Sin esto, gradlew se sube con CRLF y no arranca en la Mac.
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+gradlew text eol=lf
+
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.pdf binary
+*.docx binary
+*.jks binary
+*.keystore binary

@@ -1,0 +1,23 @@
+# GitHub asigna el revisor automaticamente segun la carpeta tocada.
+# IMPORTANTE: los usuarios deben ser colaboradores del repositorio.
+# Si un usuario no existe o no tiene acceso, GitHub ignora la linea en silencio.
+
+# Por defecto, revisa el custodio del core
+*                           @USUARIO-A
+
+# Infraestructura: solo el custodio. Cambiar versiones rompe el build de los cuatro.
+/gradle/libs.versions.toml  @USUARIO-A
+/settings.gradle.kts        @USUARIO-A
+/build.gradle.kts           @USUARIO-A
+/shared/build.gradle.kts    @USUARIO-A
+/androidApp/                @USUARIO-A
+/docs/constitution.md       @USUARIO-A
+
+# Core compartido: custodio A
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/core/             @USUARIO-A
+
+# Cada feature responde a su dueno
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/reserva/  @USUARIO-A
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/sector/   @Dayan-18
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/recibo/   @USUARIO-C
+/shared/src/commonMain/kotlin/pe/edu/upt/aguatacna/feature/retos/    @USUARIO-D
