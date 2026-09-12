@@ -116,6 +116,27 @@ Si el rebase da conflicto, es tuyo y lo resuelves tú, no el revisor.
 vive una semana en tu máquina es un conflicto garantizado. Y si tu laptop
 muere, se pierde la semana.
 
+### Por qué no usamos GitFlow
+
+Nuestro flujo es **GitHub Flow**: `main` protegida, una rama por funcionalidad,
+PR con revisión. Nada más.
+
+GitFlow (`develop`, `release/*`, `hotfix/*`) existe para mantener varias
+versiones en producción a la vez. Nosotros tenemos una sola versión viva y dos
+entregas. `develop` solo agregaría un merge extra por feature y un segundo lugar
+donde resolver los mismos conflictos.
+
+Lo único que tomamos de GitFlow son los **tags de versión**, que marcan el commit
+exacto que se presentó:
+
+```bash
+git tag -a v0.1.0 -m "Entrega Unidad II - semana 13"
+git push origin v0.1.0
+```
+
+- `v0.1.0` → entrega de la Unidad II (semana 13)
+- `v1.0.0` → sustentación final (semana 18)
+
 ---
 
 ## 5. Antes de pedir revisión, verifica

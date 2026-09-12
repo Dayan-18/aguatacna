@@ -48,12 +48,12 @@ feature/    cada integrante vive aquí dentro y no sale.
 └── retos/      gamificación, rachas, reportes
 ```
 
-| | Integrante | Zona |
-|---|---|---|
-| **A** | Cristhian Carlos Mamani Cori | `core/` (custodio) + `feature/reserva/` |
-| **B** | Dayan Elvis Jahuira Pilco | `feature/sector/` |
-| **C** | Iker Alberto Sierra Ruiz | `feature/recibo/` |
-| **D** | Jimmy Llica Mamani | `feature/retos/` |
+| | Integrante | Zona | Rol transversal |
+|---|---|---|---|
+| **A** | Cristhian Carlos Mamani Cori | `core/` + `feature/reserva/` | Custodio del core |
+| **B** | Dayan Elvis Jahuira Pilco | `feature/sector/` | Gestión de información base (EPS / Sunass) |
+| **C** | Iker Alberto Sierra Ruiz | `feature/recibo/` | Líder de pruebas |
+| **D** | Jimmy Llica Mamani | `feature/retos/` | Despliegue y piloto de campo |
 
 Cada `feature/` contiene sus tres capas: `domain/`, `data/`, `presentation/`.
 La presentación sigue **MVVM** con un único estado inmutable por pantalla.
@@ -61,9 +61,10 @@ La capa de dominio aplica patrones tácticos de DDD sobre arquitectura limpia.
 
 ## Reglas
 
-Las reglas de fondo están en **[`docs/constitution.md`](docs/constitution.md)**
-y la mecánica diaria —quién toca qué, flujo de ramas y PRs— en
-**[`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md)**.
+Las reglas de fondo están en **[`docs/constitution.md`](docs/constitution.md)**,
+la mecánica diaria en **[`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md)**
+y el detalle de qué construye cada uno en
+**[`docs/reparto-de-trabajo.md`](docs/reparto-de-trabajo.md)**.
 Se verifican en cada revisión de PR. Las cuatro que más se incumplen:
 
 1. `domain/` no importa Room, Ktor, Koin, Android ni iOS. Solo Kotlin.
