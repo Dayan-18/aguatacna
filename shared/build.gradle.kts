@@ -53,6 +53,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.maplibre.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
