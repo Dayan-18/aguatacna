@@ -42,7 +42,7 @@ mientras tanto se trabaja contra el fake.
 
 ```kotlin
 interface ReservaRepository {
-    fun observarReserva(): Flow<Reserva>
+    fun observarReserva(): Flow<Reserva?>   // null sin llenados ni abastecimientos
     suspend fun litrosPorHabitanteDia(): LitrosPorHabitanteDia?   // null sin datos
     suspend fun registrarLlenado(momento: LocalDateTime, tipo: TipoLlenado): Result<Unit>
     suspend fun registrarSinLlegada(momento: LocalDateTime): Result<Unit>
@@ -201,6 +201,7 @@ Con 275 L seleccionados y 82 L/h: ganas 3 h 20 min. Con déficit de
 | Pantallas faltantes en el Figma | "Me quedé sin agua", sector sin cronograma, estimación no confirmada. | Semana 11 |
 | 5 intervalos, doble de la mediana y tope de 30 % | Valores iniciales. Se ajustan con el piloto. | Semana 16 |
 | Coeficientes de recomendaciones | Los del Figma son de partida; falta una fuente (Sunass o el docente). | Semana 14 |
+| Persistir el consumo vigente | El tope del 30 % (CA-20) depende de la estimación anterior. Si el repositorio real recalcula todo desde los intervalos, el tope se pierde en el siguiente llenado y el intervalo observado pesa completo. Hay que guardar el consumo estimado en `perfil_hogar`. | Semana 11 |
 | Indicador "días con registro" (14 de 14) | Aparece en la pantalla 04 y no está definido. | Semana 12 |
 
 ## Fuera de esta entrega
