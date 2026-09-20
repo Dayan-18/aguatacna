@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.mp.KoinPlatform
 import pe.edu.upt.aguatacna.feature.reserva.data.EstimadorPorHabitosProvisional
 import pe.edu.upt.aguatacna.feature.reserva.data.ReservaDePrueba
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.EstimadorPorHabitos
@@ -52,5 +53,10 @@ class ConfiguracionViewModel(
     companion object {
         // Temporal: se reemplaza cuando el core conecte la inyección de dependencias (T028).
         fun conDatosDePrueba() = ConfiguracionViewModel(ReservaDePrueba.repositorio, EstimadorPorHabitosProvisional())
+
+        fun desdeInyeccion(): ConfiguracionViewModel {
+            val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
+            return ConfiguracionViewModel(koin.get(), koin.get())
+        }
     }
 }

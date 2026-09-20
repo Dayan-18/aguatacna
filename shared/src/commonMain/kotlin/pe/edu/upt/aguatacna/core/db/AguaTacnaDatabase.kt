@@ -4,6 +4,7 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
+import pe.edu.upt.aguatacna.data.local.UsuarioDao
 import pe.edu.upt.aguatacna.data.local.UsuarioEntity
 import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.EventoLlenadoEntity
@@ -30,6 +31,7 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
 )
 @ConstructedBy(AguaTacnaDatabaseConstructor::class)
 abstract class AguaTacnaDatabase : RoomDatabase() {
+    abstract fun usuarioDao(): UsuarioDao
     abstract fun reservaDao(): ReservaDao
 }
 

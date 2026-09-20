@@ -54,7 +54,7 @@ máximo 400 líneas.
 - [x] T026 `ReservaScreen` (Figma 03) con hora de agotamiento, déficit, L/h y L/hab·día
 - [x] T026b Pantalla "Registrar llenado" (Figma 04): completo, a la mitad, no llegó
 - [x] T027 Configuración inicial del hogar (Figma 02): tipo (Tanque elevado, Cisterna, Bidones), capacidad, habitantes, hábitos. El estimador por hábitos es provisional hasta el de recibo (Iker)
-- [ ] T028 Integrar el déficit y cambiar el fake de cronograma por el real cuando exista
+- [x] T028 Conectado con Koin, la base Room real, el UUID local del usuario y el cronograma de sector (`FakeSectorRepository` hasta que Dayan tenga el real). iOS sigue con datos de prueba
 
 **H4 (semana 13): MVP con perfil del hogar, reserva con proyección y operación sin conexión.**
 

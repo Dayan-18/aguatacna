@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
+import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.util.Reloj
 import pe.edu.upt.aguatacna.feature.reserva.data.ReservaDePrueba
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.AbastecimientosDelSector
@@ -75,5 +77,11 @@ class ReservaViewModel(
     companion object {
         // Temporal: se reemplaza cuando el core conecte la inyección de dependencias (T028).
         fun conDatosDePrueba() = ReservaViewModel(ReservaDePrueba.repositorio, ReservaDePrueba.sector, ReservaDePrueba.reloj)
+
+        /** Con la inyección iniciada usa la base real; sin ella (iOS aún) recurre a los datos de prueba. */
+        fun desdeInyeccion(): ReservaViewModel {
+            val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
+            return ReservaViewModel(koin.get(), koin.get(), koin.get<Reloj>()::ahora)
+        }
     }
 }

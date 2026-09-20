@@ -10,8 +10,8 @@ import kotlin.test.assertNotNull
 class ModulosAppTest {
 
     @Test
-    fun cadaFeatureTieneSuModuloDeInyeccion() {
-        assertEquals(4, modulosApp.size)
+    fun elCoreYCadaFeatureTienenSuModuloDeInyeccion() {
+        assertEquals(5, modulosApp.size)
     }
 
     @Test

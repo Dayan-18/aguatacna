@@ -34,7 +34,7 @@ import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 
 @Composable
 fun ReservaScreen(
-    viewModel: ReservaViewModel = viewModel { ReservaViewModel.conDatosDePrueba() }
+    viewModel: ReservaViewModel = viewModel { ReservaViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var registrando by rememberSaveable { mutableStateOf(false) }
