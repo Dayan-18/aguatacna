@@ -36,8 +36,8 @@ máximo 400 líneas.
 - [x] T014 `CalcularDeficit` con próximo abastecimiento `LocalDateTime?` · CA-10, CA-11, CA-12
 - [x] T015 `DeclararSinAgua`: vacía la reserva y agrega intervalo observado (con llenado asumido solo vacía la reserva) · CA-18, CA-19
 - [x] T016 Tope de cambio del 30 % por declaración · CA-20
-- [ ] T017 Core: `AguaTacnaDatabase` con las 4 features y `core/di` con módulos Koin vacíos (aviso previo al equipo)
-- [ ] T018 Migración 1 y esquema exportado (Artículo VI)
+- [x] T017 Core: `AguaTacnaDatabase` con las 4 features y `core/di` con módulos Koin vacíos (aviso previo al equipo)
+- [x] T018 Esquema versión 1 exportado en `shared/schemas` (Artículo VI); las migraciones empiezan con la versión 2
 
 ## Semana 11 · Persistencia
 
