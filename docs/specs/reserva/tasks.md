@@ -48,8 +48,8 @@ máximo 400 líneas.
 
 ## Semana 12 · Interfaz
 
-- [ ] T023 `ReservaUiState` y `ReservaEvent`, un estado inmutable por pantalla
-- [ ] T024 `ReservaViewModel` con el flujo del nivel
+- [x] T023 `ReservaUiState` y `ReservaEvent`, un estado inmutable por pantalla
+- [x] T024 `ReservaViewModel` con el flujo del nivel; el formato de textos y la vista se arman en `ConstruirVistaReserva`, no en el ViewModel
 - [ ] T025 `IndicadorNivelReservorio` (composable máximo 60 líneas)
 - [ ] T026 `ReservaScreen` (Figma 03) con hora de agotamiento, déficit, L/h y L/hab·día
 - [ ] T026b Pantalla "Registrar llenado" (Figma 04): completo, a la mitad, no llegó
@@ -62,7 +62,7 @@ máximo 400 líneas.
 
 - [ ] T029 `Recomendacion` y `SugerirRecortes`, por impacto en litros y según hábitos · CA-21, CA-22, CA-32
 - [ ] T029b `SimularRecortes`: ahorro seleccionado, horas ganadas y horas que aún faltan · CA-29, CA-30, CA-31
-- [ ] T029c Estado de la proyección (`COMODA`, `AJUSTADA`, `NO_ALCANZA`) con umbral configurable · CA-33
+- [x] T029c Estado de la proyección (`COMODA`, `AJUSTADA`, `NO_ALCANZA`) con umbral configurable · CA-33
 - [ ] T030 Pantalla "Qué recortar" (Figma 05) con casillas y resumen de ahorro
 
 ## Semana 15 · Plataforma
