@@ -5,7 +5,7 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class Litros(val valor: Double) : Comparable<Litros> {
     init {
-        require(valor.isFinite() && valor >= 0.0) { "Los litros no pueden ser negativos: $valor" }
+        require(valor.isFinite() && valor >= 0.0) { "Los litros deben ser un número finito y no negativo: $valor" }
     }
 
     operator fun plus(otro: Litros): Litros = Litros(valor + otro.valor)
