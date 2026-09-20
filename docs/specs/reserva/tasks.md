@@ -41,8 +41,8 @@ máximo 400 líneas.
 
 ## Semana 11 · Persistencia
 
-- [ ] T019 `PerfilHogar` en el dominio raíz (avisar a Iker) y `PerfilHogarEntity`
-- [ ] T020 `EventoLlenadoEntity` y `ReservaDao` con `Flow` del nivel actual
+- [x] T019 `PerfilHogar` y `PerfilHogarEntity`. Vive en `feature/reserva/domain/model` y no en el dominio raíz, porque usa los objetos de valor de reserva; Iker lo consume desde ahí
+- [x] T020 `EventoLlenadoEntity` y `ReservaDao` con `Flow` de perfil y llenados. Los reportes de "no llegó" y las declaraciones de sin agua aún no tienen tabla: se resuelve en T021
 - [ ] T021 Mappers y `ReservaRepositoryImpl` leyendo solo de Room
 - [ ] T022 Tablas en la nube (`perfil_hogar`, `evento_llenado`) con acceso por usuario (hito H3)
 

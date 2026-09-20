@@ -7,6 +7,8 @@ import androidx.room.RoomDatabaseConstructor
 import pe.edu.upt.aguatacna.data.local.UsuarioEntity
 import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.EventoLlenadoEntity
+import pe.edu.upt.aguatacna.feature.reserva.data.local.PerfilHogarEntity
+import pe.edu.upt.aguatacna.feature.reserva.data.local.ReservaDao
 import pe.edu.upt.aguatacna.feature.retos.data.local.RetoEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.SectorEntity
 
@@ -15,6 +17,7 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
 @Database(
     entities = [
         UsuarioEntity::class,
+        PerfilHogarEntity::class,
         EventoLlenadoEntity::class,
         SectorEntity::class,
         ReciboEntity::class,
@@ -24,7 +27,9 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
     exportSchema = true
 )
 @ConstructedBy(AguaTacnaDatabaseConstructor::class)
-abstract class AguaTacnaDatabase : RoomDatabase()
+abstract class AguaTacnaDatabase : RoomDatabase() {
+    abstract fun reservaDao(): ReservaDao
+}
 
 // Room genera el `actual` de cada plataforma.
 @Suppress("KotlinNoActualForExpect")
