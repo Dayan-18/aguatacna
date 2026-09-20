@@ -33,9 +33,9 @@ máximo 400 líneas.
 
 ## Semana 10 · Déficit y core
 
-- [ ] T014 `CalcularDeficit` con próximo abastecimiento `LocalDateTime?` · CA-10, CA-11, CA-12
-- [ ] T015 `DeclararSinAgua`: vacía la reserva y agrega intervalo observado · CA-18, CA-19
-- [ ] T016 Tope de cambio del 30 % por declaración · CA-20
+- [x] T014 `CalcularDeficit` con próximo abastecimiento `LocalDateTime?` · CA-10, CA-11, CA-12
+- [x] T015 `DeclararSinAgua`: vacía la reserva y agrega intervalo observado (con llenado asumido solo vacía la reserva) · CA-18, CA-19
+- [x] T016 Tope de cambio del 30 % por declaración · CA-20
 - [ ] T017 Core: `AguaTacnaDatabase` con las 4 features y `core/di` con módulos Koin vacíos (aviso previo al equipo)
 - [ ] T018 Migración 1 y esquema exportado (Artículo VI)
 
