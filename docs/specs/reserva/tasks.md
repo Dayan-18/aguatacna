@@ -29,7 +29,7 @@ máximo 400 líneas.
 - [ ] T011 Resolver la decisión abierta de la unidad (litros o m³) y corregir el anteproyecto §7
 - [ ] T012 Pedir revisión cruzada de la spec (hito H1). Incluir a Dayan: consulta del inicio del último abastecimiento del sector
 - [ ] T012b Pedir al Figma las pantallas faltantes: "me quedé sin agua", sector sin cronograma, estimación no confirmada
-- [ ] T013 `ReservaRepository` y `FakeReservaRepository` con datos de prueba (hito H1)
+- [x] T013 `ReservaRepository` y `FakeReservaRepository` con datos de prueba (hito H1)
 
 ## Semana 10 · Déficit y core
 
