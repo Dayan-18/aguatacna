@@ -97,4 +97,21 @@ class FakeReservaRepositoryTest {
         val indicador = assertNotNull(ejecutar { repositorio.litrosPorHabitanteDia() })
         assertEquals(62.5, indicador.valor, absoluteTolerance = 0.001)
     }
+
+    @Test
+    fun previsualizarNoCambiaNadaPeroDiceLoQueCambiaria() {
+        val repositorio = repositorio(listOf(llenadoReal(0)), ahora = 16)
+        val previa = assertNotNull(ejecutar { repositorio.previsualizarSinAgua(enHora(16)) }.getOrNull())
+        assertEquals(enHora(20), previa.agotamientoProyectado)
+        assertEquals(4.0, previa.horasAntesDeLoPrevisto, absoluteTolerance = 0.001)
+        assertEquals(50.0, previa.consumoActual.litrosPorHora, absoluteTolerance = 0.001)
+        assertEquals(62.5, previa.consumoNuevo.litrosPorHora, absoluteTolerance = 0.001)
+        assertEquals(enHora(20), reservaDe(repositorio).agotamientoProyectado())
+    }
+
+    @Test
+    fun noSePuedePrevisualizarUnMomentoFuturo() {
+        val repositorio = repositorio(listOf(llenadoReal(0)), ahora = 16)
+        assertTrue(ejecutar { repositorio.previsualizarSinAgua(enHora(20)) }.isFailure)
+    }
 }

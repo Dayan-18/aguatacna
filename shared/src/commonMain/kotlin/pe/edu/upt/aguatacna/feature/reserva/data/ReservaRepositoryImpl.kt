@@ -18,6 +18,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.DatosDelHogar
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EventoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.LitrosPorHabitanteDia
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.PerfilHogar
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.PrevisualizacionSinAgua
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.AbastecimientosDelSector
@@ -26,6 +27,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.ArmarReserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.CalcularLitrosPorHabitanteDia
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.DeclararSinAgua
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.HistorialReserva
+import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.ResultadoSinAgua
 
 /** Lee y escribe solo en Room: la base local es la fuente de verdad (constitución, artículo II). */
 class ReservaRepositoryImpl(
@@ -81,13 +83,32 @@ class ReservaRepositoryImpl(
 
     override suspend fun declararSinAgua(momento: LocalDateTime): Result<Unit> =
         runCatching {
-            require(momento <= ahora()) { "No se puede declarar en el futuro" }
-            val estado = requireNotNull(cargarEstado()) { SIN_PERFIL }
-            val reserva = checkNotNull(armar(estado)) { "Aún no hay una reserva que declarar sin agua" }
-            val resultado = DeclararSinAgua()(reserva, estado.historial.intervalos(estado.hogar), momento)
+            val simulacion = simularSinAgua(momento)
+            val resultado = simulacion.resultado
             dao.guardarNovedad(resultado.intervaloObservado.comoNovedad(nuevoId(), usuarioId, momento))
-            dao.guardarPerfil(estado.perfil.copy(consumoVigente = resultado.reserva.consumo).aEntidad())
+            dao.guardarPerfil(simulacion.estado.perfil.copy(consumoVigente = resultado.reserva.consumo).aEntidad())
         }
+
+    override suspend fun previsualizarSinAgua(momento: LocalDateTime): Result<PrevisualizacionSinAgua> =
+        runCatching {
+            val simulacion = simularSinAgua(momento)
+            PrevisualizacionSinAgua(
+                agotamientoProyectado = simulacion.reserva.agotamientoProyectado(),
+                momento = momento,
+                consumoActual = simulacion.reserva.consumo,
+                consumoNuevo = simulacion.resultado.reserva.consumo
+            )
+        }
+
+    private class Simulacion(val estado: Estado, val reserva: Reserva, val resultado: ResultadoSinAgua)
+
+    private suspend fun simularSinAgua(momento: LocalDateTime): Simulacion {
+        require(momento <= ahora()) { "No se puede declarar en el futuro" }
+        val estado = requireNotNull(cargarEstado()) { SIN_PERFIL }
+        val reserva = checkNotNull(armar(estado)) { "Aún no hay una reserva que declarar sin agua" }
+        val resultado = DeclararSinAgua()(reserva, estado.historial.intervalos(estado.hogar), momento)
+        return Simulacion(estado, reserva, resultado)
+    }
 
     private suspend fun cargarEstado(): Estado? {
         val perfil = dao.observarPerfil(usuarioId).first()?.aDominio() ?: return null

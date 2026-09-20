@@ -15,6 +15,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.HabitosDelHogar
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.IntervaloConsumo
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.LitrosPorHabitanteDia
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.PerfilHogar
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.PrevisualizacionSinAgua
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoReservorio
@@ -23,6 +24,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.ArmarReserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.CalcularLitrosPorHabitanteDia
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.DeclararSinAgua
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.HistorialReserva
+import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.ResultadoSinAgua
 
 // Implementación temporal para que feature/retos y la interfaz avancen
 // sin esperar a Room ni al servicio de datos (constitución, artículo VII).
@@ -82,15 +84,25 @@ class FakeReservaRepository(
 
     override suspend fun declararSinAgua(momento: LocalDateTime): Result<Unit> =
         runCatching {
-            val hogar = checkNotNull(perfil.value?.aDatosDelHogar()) { "Configura tu hogar primero" }
-            val reserva = checkNotNull(estado.value) { "Aún no hay una reserva que declarar sin agua" }
-            require(momento <= ahora()) { "No se puede declarar en el futuro" }
-            val resultado = DeclararSinAgua()(reserva, historial().intervalos(hogar), momento)
+            val resultado = simularSinAgua(momento).second
             resultado.intervaloObservado?.let { observados += it }
             agotadaEn = momento
             consumoVigente = resultado.reserva.consumo
             publicar()
         }
+
+    override suspend fun previsualizarSinAgua(momento: LocalDateTime): Result<PrevisualizacionSinAgua> =
+        runCatching {
+            val (reserva, resultado) = simularSinAgua(momento)
+            PrevisualizacionSinAgua(reserva.agotamientoProyectado(), momento, reserva.consumo, resultado.reserva.consumo)
+        }
+
+    private fun simularSinAgua(momento: LocalDateTime): Pair<Reserva, ResultadoSinAgua> {
+        val hogar = checkNotNull(perfil.value?.aDatosDelHogar()) { "Configura tu hogar primero" }
+        val reserva = checkNotNull(estado.value) { "Aún no hay una reserva que declarar sin agua" }
+        require(momento <= ahora()) { "No se puede declarar en el futuro" }
+        return reserva to DeclararSinAgua()(reserva, historial().intervalos(hogar), momento)
+    }
 
     private fun historial() = HistorialReserva(
         llenados = eventos.toList(),

@@ -43,8 +43,11 @@ fun ReservaScreen(
     var registrando by rememberSaveable { mutableStateOf(false) }
     var editandoHogar by rememberSaveable { mutableStateOf(false) }
     var recortando by rememberSaveable { mutableStateOf(false) }
+    var sinAgua by rememberSaveable { mutableStateOf(false) }
 
-    if (recortando) {
+    if (sinAgua) {
+        SinAguaScreen(onVolver = { sinAgua = false })
+    } else if (recortando) {
         QueRecortarScreen(onVolver = { recortando = false }, onVerCisternas = { recortando = false; onVerCisternas() })
     } else if (!uiState.cargando && (!uiState.hogarConfigurado || editandoHogar)) {
         ConfiguracionScreen(
@@ -61,7 +64,7 @@ fun ReservaScreen(
             onVolver = { registrando = false }
         )
     } else {
-        ReservaContenido(uiState, viewModel::alEvento, { registrando = true }, { editandoHogar = true }, { recortando = true })
+        ReservaContenido(uiState, viewModel::alEvento, { registrando = true }, { editandoHogar = true }, { recortando = true }, { sinAgua = true })
     }
 }
 
@@ -71,7 +74,8 @@ fun ReservaContenido(
     onEvento: (ReservaEvent) -> Unit,
     onRegistrarLlenado: () -> Unit,
     onEditarHogar: () -> Unit,
-    onQueRecortar: () -> Unit
+    onQueRecortar: () -> Unit,
+    onSinAgua: () -> Unit
 ) {
     if (uiState.cargando) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -102,7 +106,7 @@ fun ReservaContenido(
         }
         BotonPrincipal("Registrar llenado", onRegistrarLlenado, MARGEN)
         if (vista != null) {
-            TextButton({ onEvento(ReservaEvent.MeQuedeSinAgua) }, Modifier.align(Alignment.CenterHorizontally)) {
+            TextButton(onSinAgua, Modifier.align(Alignment.CenterHorizontally)) {
                 Text("Me quedé sin agua antes de lo previsto", fontFamily = FuenteTexto, fontSize = 13.sp, color = AguaMedia, fontWeight = FontWeight.SemiBold)
             }
         }

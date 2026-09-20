@@ -31,14 +31,21 @@ private val SOMBRA_DEL_BOTON = Color(0x5912A1AD)
 
 /** El botón del Figma: degradado horizontal de azul profundo a agua, 16 de radio y sombra turquesa. */
 @Composable
-fun BotonPrincipal(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, alto: Int = 54) {
+fun BotonPrincipal(
+    texto: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    alto: Int = 54,
+    degradado: List<Color> = listOf(AguaMedia, Agua),
+    sombra: Color = SOMBRA_DEL_BOTON
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(alto.dp)
-            .shadow(8.dp, FORMA, ambientColor = SOMBRA_DEL_BOTON, spotColor = SOMBRA_DEL_BOTON)
+            .shadow(8.dp, FORMA, ambientColor = sombra, spotColor = sombra)
             .clip(FORMA)
-            .background(Brush.horizontalGradient(listOf(AguaMedia, Agua)))
+            .background(Brush.horizontalGradient(degradado))
             .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
