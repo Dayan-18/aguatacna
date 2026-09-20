@@ -28,7 +28,7 @@ máximo 400 líneas.
 ### Cierre de la semana
 - [ ] T011 La unidad quedó resuelta en litros en el código y el Figma; falta corregir el texto del anteproyecto §7 (documento fuera del repositorio)
 - [ ] T012 Pedir revisión cruzada de la spec (hito H1). Incluir a Dayan: consulta del inicio del último abastecimiento del sector
-- [ ] T012b Pedir al Figma las pantallas faltantes: "me quedé sin agua", sector sin cronograma, estimación no confirmada
+- [x] T012b Pantallas faltantes en el Figma (19, 20 y 21): el Figma las trae y la app implementa la 19 y la 21; la 20 es de sector
 - [x] T013 `ReservaRepository` y `FakeReservaRepository` con datos de prueba (hito H1)
 
 ## Semana 10 · Déficit y core
@@ -87,8 +87,10 @@ máximo 400 líneas.
 
 - **T011** corregir el anteproyecto §7 (litros, no m³).
 - **T012** que otro integrante revise la spec (hito H1) y que Jimmy conozca el contrato `ReservaRepository`.
-- **T012b** pedir al Figma las pantallas faltantes.
 - **T022** tablas en la nube: necesita la decisión de backend y autenticación (hito H2).
 - **T034** probar en un teléfono físico: interfaz, base de datos, tarea horaria y avisos (hito H5).
 - **T036** ajustar los coeficientes con los datos del piloto (semana 16 en adelante).
 - Avisar al equipo del cambio de catálogo (Room, KSP, Koin, WorkManager) y acordar la regla de migraciones.
+- [x] T038 Pantalla 19 "Te quedaste sin agua" con "Se acabó ahora" y "Se acabó antes", previsualizando el cambio de consumo (CA-18, CA-19, CA-20)
+- [x] T039 Pantalla 21: tarjeta "No registraste el llenado" con "Sí, se llenó" y "Corregir hora" (CA-13, CA-27)
+- [x] T040 Fuentes del Figma (Plus Jakarta Sans e IBM Plex Mono) y acercar "Mi reserva" al diseño

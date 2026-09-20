@@ -42,3 +42,9 @@ fun describirMomento(momento: LocalDateTime, ahora: LocalDateTime): String {
 /** 1100 se muestra "1 100", como el Figma. */
 fun formatearMiles(valor: Int): String =
     valor.toString().reversed().chunked(3).joinToString(" ").reversed()
+
+/** Solo la hora ("3:20 p.m."), redondeada al minuto; si cae en otro día, dice cuál respecto de `referencia`. */
+fun describirHora(momento: LocalDateTime, referencia: LocalDateTime): String {
+    val redondeado = momento.masHoras(SEGUNDOS_DE_REDONDEO / 3600)
+    return if (redondeado.date == referencia.date) formatearHora(redondeado.time) else describirMomento(momento, referencia)
+}

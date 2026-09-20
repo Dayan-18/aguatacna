@@ -20,10 +20,12 @@ agotamiento proyectado y el siguiente abastecimiento del sector.
 | 03 Mi reserva | `5:2` | Nivel en litros y %, estado de la proyección, agotamiento, déficit, consumo en L/h, L/hab·día |
 | 04 Registrar llenado | `8:2` | Llenado completo, a la mitad, "no llegó" |
 | 05 Qué recortar | `8:51` | Recomendaciones seleccionables, ahorro, horas ganadas, horas que aún faltan |
+| 19 Te quedaste sin agua | `53:2` | Previsualizar qué cambia al declarar que se acabó el agua, ahora o a una hora anterior |
+| 20 Sector sin cronograma | `53:55` | Sin horario no hay déficit ni proyección (es una pantalla de sector) |
+| 21 Estimación no confirmada | `54:2` | Llenado asumido con opción de confirmarlo o corregir la hora |
 
-**Sin pantalla en el Figma** (hay que pedirlas o resolverlas): "Me quedé sin
-agua" (CA-18), sector sin cronograma (CA-12) y la marca de estimación no
-confirmada en la pantalla principal (CA-13).
+Las pantallas 19, 20 y 21 resolvieron lo que antes no tenía diseño: "me quedé sin agua" (CA-18),
+sector sin cronograma (CA-12) y la estimación no confirmada (CA-13).
 
 ## Contrato con otras verticales
 
@@ -197,7 +199,7 @@ Con 275 L seleccionados y 82 L/h: ganas 3 h 20 min. Con déficit de
 | Unidad de la capacidad | **Resuelta en el código:** todo el dominio y el Figma usan litros. Falta corregir el texto del anteproyecto §7, que multiplica por 1000 y supone m³ (ese documento no está en el repositorio). |
 | Consulta de Dayan: inicio del último abastecimiento | **Resuelta:** `UltimoAbastecimiento` (PR de sector #6) y `AbastecimientosDeSector` la conectan. |
 | Persistir el consumo vigente | **Resuelta:** `perfil_hogar.consumoVigenteLitrosHora`. |
-| Pantallas faltantes en el Figma | **Abierta:** "me quedé sin agua", sector sin cronograma y la marca de estimación no confirmada se resolvieron en la app sin pantalla propia. Hay que pedirlas al Figma o aceptarlas. |
+| Pantallas faltantes en el Figma | **Resuelta:** el Figma trae las pantallas 19, 20 y 21 y la app las implementa (20 es de sector). |
 | Umbral de `AJUSTADA` frente a `COMODA` | **Abierta:** 2 horas de margen, valor propio a validar. |
 | "Llenó a la mitad" como 50 % fijo | **Abierta:** validar con hogares reales. |
 | 5 intervalos, doble de la mediana y tope de 30 % | **Abierta:** valores iniciales, se ajustan con el piloto (T036). |

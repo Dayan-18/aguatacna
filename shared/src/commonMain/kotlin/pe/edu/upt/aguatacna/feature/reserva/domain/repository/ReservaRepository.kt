@@ -6,6 +6,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConfiguracionHogar
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConsumoHorario
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.LitrosPorHabitanteDia
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.PerfilHogar
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.PrevisualizacionSinAgua
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
 
@@ -29,4 +30,7 @@ interface ReservaRepository {
     suspend fun registrarSinLlegada(momento: LocalDateTime): Result<Unit>
 
     suspend fun declararSinAgua(momento: LocalDateTime): Result<Unit>
+
+    /** Lo que cambiaría al declarar que se quedó sin agua en `momento`, sin guardar nada. */
+    suspend fun previsualizarSinAgua(momento: LocalDateTime): Result<PrevisualizacionSinAgua>
 }

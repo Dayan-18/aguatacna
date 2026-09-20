@@ -126,6 +126,17 @@ class ReservaRepositoryImplTest {
     }
 
     @Test
+    fun previsualizarNoGuardaNadaEnLaBase() = bloque {
+        horaActual = 16
+        val repositorio = repositorio()
+        repositorio.registrarLlenado(enHora(0), TipoLlenado.COMPLETO)
+        val previa = assertNotNull(repositorio.previsualizarSinAgua(enHora(16)).getOrNull())
+        assertEquals(62.5, previa.consumoNuevo.litrosPorHora, absoluteTolerance = 0.001)
+        assertTrue(dao.novedades.value.isEmpty())
+        assertNull(assertNotNull(dao.perfil.value).consumoVigenteLitrosHora)
+    }
+
+    @Test
     fun deUnLlenadoAsumidoNoSeGuardaIntervaloObservado() = bloque {
         horaActual = 30
         inicios = listOf(enHora(24))
