@@ -20,4 +20,9 @@ class AbastecimientosDeSector(
         val sectorId = sectorDelUsuario() ?: return null
         return ProximoAbastecimiento().calcular(sectores.obtenerCronogramas(sectorId), ahora)?.inicio
     }
+
+    override suspend fun nombreDelSector(): String? {
+        val sectorId = sectorDelUsuario() ?: return null
+        return sectores.obtenerSectores().firstOrNull { it.id == sectorId }?.distrito
+    }
 }

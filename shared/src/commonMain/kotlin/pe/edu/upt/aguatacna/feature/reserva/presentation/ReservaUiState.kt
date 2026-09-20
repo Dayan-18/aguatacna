@@ -1,5 +1,6 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
+import kotlinx.datetime.LocalTime
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConfirmacionEstimacion
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EstadoProyeccion
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
@@ -13,12 +14,16 @@ data class ReservaUiState(
 
 /** Todo lo que la pantalla "Mi reserva" muestra, ya listo para pintar. */
 data class ReservaVista(
+    val saludo: String,
+    val subtituloHogar: String,
     val nivelLitros: Int,
     val capacidadLitros: Int,
     val porcentaje: Int,
     val estado: EstadoProyeccion?,
     val confirmacion: ConfirmacionEstimacion,
-    val textoUltimoLlenado: String,
+    val textoLlenado: String,
+    /** La hora del llenado asumido, para pedir que se confirme; `null` si el llenado es real. */
+    val horaLlenadoAsumido: String?,
     val textoAgotamiento: String,
     val textoVuelveElAgua: String?,
     val textoDeficit: String?,
@@ -28,6 +33,8 @@ data class ReservaVista(
 
 sealed interface ReservaEvent {
     data class RegistrarLlenado(val tipo: TipoLlenado) : ReservaEvent
+    data object ConfirmarLlenadoAsumido : ReservaEvent
+    data class CorregirHoraDelLlenado(val hora: LocalTime) : ReservaEvent
     data object AguaNoLlego : ReservaEvent
     data object MeQuedeSinAgua : ReservaEvent
     data object DescartarError : ReservaEvent

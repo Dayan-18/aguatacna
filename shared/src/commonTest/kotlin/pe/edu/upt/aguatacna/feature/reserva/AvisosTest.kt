@@ -76,6 +76,7 @@ class AvisosTest {
     private class SectorFijo(private val proximo: LocalDateTime?) : AbastecimientosDelSector {
         override suspend fun iniciosHasta(ahora: LocalDateTime) = emptyList<LocalDateTime>()
         override suspend fun proximoDesde(ahora: LocalDateTime) = proximo
+        override suspend fun nombreDelSector(): String? = null
     }
 
     private fun tarea(registro: RegistroEnMemoria, notificador: NotificadorGrabador, proximo: LocalDateTime?): RecalcularYAvisar {

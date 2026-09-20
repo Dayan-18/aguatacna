@@ -1,22 +1,16 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,13 +22,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.datetime.LocalTime
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
-import pe.edu.upt.aguatacna.core.ui.theme.Blanco
-import pe.edu.upt.aguatacna.core.ui.theme.Coral
+import pe.edu.upt.aguatacna.core.ui.theme.FuenteTexto
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConfirmacionEstimacion
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EstadoProyeccion
+
+private val MARGEN = Modifier.padding(horizontal = 24.dp)
 
 @Composable
 fun ReservaScreen(
@@ -80,59 +78,52 @@ fun ReservaContenido(
         return
     }
     val vista = uiState.vista
+    var corrigiendoHora by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (vista == null) SinDatosDeReserva() else EncabezadoReserva(vista)
-        val margen = Modifier.padding(horizontal = 20.dp)
-        uiState.error?.let { AvisoDeError(it, { onEvento(ReservaEvent.DescartarError) }, margen) }
-        if (vista != null) {
-            TarjetaProyeccion(vista, margen)
-            TarjetasDeConsumo(vista, margen)
+        if (vista == null) SinDatosDeReserva() else EncabezadoReserva(vista, onEditarHogar)
+        uiState.error?.let { AvisoDeError(it, { onEvento(ReservaEvent.DescartarError) }, MARGEN) }
+        if (vista?.horaLlenadoAsumido != null) {
+            TarjetaConfirmarLlenado(
+                vista.horaLlenadoAsumido,
+                onConfirmar = { onEvento(ReservaEvent.ConfirmarLlenadoAsumido) },
+                onCorregirHora = { corrigiendoHora = true },
+                modifier = MARGEN
+            )
         }
-        if (vista?.estado == EstadoProyeccion.NO_ALCANZA) BotonSecundario("¿Qué puedo recortar?", onQueRecortar, margen)
-        BotonPrincipal("Registrar llenado", onRegistrarLlenado, margen)
+        if (vista != null) {
+            TarjetaProyeccion(vista, MARGEN)
+            TarjetasDeConsumo(vista, MARGEN)
+        }
+        if (vista?.estado == EstadoProyeccion.NO_ALCANZA && vista.confirmacion == ConfirmacionEstimacion.CONFIRMADA) {
+            BotonSecundario("¿Qué puedo recortar?", onQueRecortar, MARGEN)
+        }
+        BotonPrincipal("Registrar llenado", onRegistrarLlenado, MARGEN)
         if (vista != null) {
             TextButton({ onEvento(ReservaEvent.MeQuedeSinAgua) }, Modifier.align(Alignment.CenterHorizontally)) {
-                Text("Me quedé sin agua antes de lo previsto", color = AguaMedia, fontWeight = FontWeight.SemiBold)
+                Text("Me quedé sin agua antes de lo previsto", fontFamily = FuenteTexto, fontSize = 13.sp, color = AguaMedia, fontWeight = FontWeight.SemiBold)
             }
         }
-        TextButton(onEditarHogar, Modifier.align(Alignment.CenterHorizontally)) {
-            Text("Editar mi hogar", color = TintaSuave)
-        }
     }
-}
-
-@Composable
-fun BotonPrincipal(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth().height(54.dp),
-        shape = RoundedCornerShape(27.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = AguaMedia, contentColor = Blanco)
-    ) {
-        Text(texto, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-fun BotonSecundario(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth().height(54.dp),
-        shape = RoundedCornerShape(27.dp),
-        border = BorderStroke(2.dp, Coral),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Coral)
-    ) {
-        Text(texto, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    if (corrigiendoHora) {
+        DialogoDeHora(
+            titulo = "¿A qué hora llegó el agua?",
+            horaInicial = LocalTime(5, 0),
+            onConfirmar = { hora ->
+                corrigiendoHora = false
+                onEvento(ReservaEvent.CorregirHoraDelLlenado(hora))
+            },
+            onCancelar = { corrigiendoHora = false }
+        )
     }
 }
 
 @Composable
 private fun SinDatosDeReserva() {
     Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Mi reserva", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
-        Text("Aún no tenemos datos de tu reservorio. Registra tu primer llenado para ver cuánto te queda.", color = TintaSuave)
+        Text("Mi reserva", fontFamily = FuenteTexto, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
+        Text("Aún no tenemos datos de tu reservorio. Registra tu primer llenado para ver cuánto te queda.", fontFamily = FuenteTexto, color = TintaSuave)
     }
 }

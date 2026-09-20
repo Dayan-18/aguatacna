@@ -11,39 +11,47 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.unit.dp
+import pe.edu.upt.aguatacna.core.ui.theme.Agua
 import pe.edu.upt.aguatacna.core.ui.theme.AguaClara
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 
 private const val DURACION_ANIMACION_MS = 900
-private val MARCAS = listOf(0.25f, 0.5f, 0.75f)
 
-/** El tanque con el agua bajando; con línea punteada cuando el nivel es solo una estimación. */
+// Alturas de las marcas medidas desde arriba en el Figma (47, 96 y 145 de 196).
+private val MARCAS = listOf(47f / 196, 96f / 196, 145f / 196)
+
+/** El tanque del Figma (106 × 196) con el agua bajando. */
 @Composable
-fun IndicadorNivelReservorio(
-    fraccion: Float,
-    modifier: Modifier = Modifier,
-    estimado: Boolean = false
-) {
+fun IndicadorNivelReservorio(fraccion: Float, modifier: Modifier = Modifier) {
     val nivel by animateFloatAsState(fraccion.coerceIn(0f, 1f), tween(DURACION_ANIMACION_MS))
-    Canvas(modifier.size(width = 96.dp, height = 176.dp)) {
-        val forma = Path().apply {
-            addRoundRect(RoundRect(0f, 0f, size.width, size.height, CornerRadius(size.width * 0.28f)))
-        }
-        drawPath(forma, Blanco.copy(alpha = 0.14f))
+    Canvas(modifier.size(width = 106.dp, height = 196.dp)) {
+        val grosorBorde = 2.dp.toPx()
+        val forma = formaDelTanque(size, inset = 0f)
+        drawPath(forma, Blanco.copy(alpha = 0.12f))
         clipPath(forma) {
             val alto = size.height * nivel
-            drawRect(AguaClara, Offset(0f, size.height - alto), Size(size.width, alto))
+            val superficie = size.height - alto
+            if (alto > 0f) {
+                drawRect(Brush.verticalGradient(listOf(AguaClara, Agua), startY = superficie, endY = size.height), Offset(0f, superficie), Size(size.width, alto))
+                drawRect(Blanco.copy(alpha = 0.55f), Offset(0f, superficie), Size(size.width, 4.dp.toPx()))
+            }
             MARCAS.forEach { marca ->
-                val y = size.height * (1 - marca)
-                drawLine(Blanco.copy(alpha = 0.45f), Offset(0f, y), Offset(size.width * 0.18f, y), strokeWidth = 2.dp.toPx())
+                drawRect(Blanco.copy(alpha = 0.4f), Offset(0f, size.height * marca), Size(11.dp.toPx(), 1.5.dp.toPx()))
             }
         }
-        val punteado = if (estimado) PathEffect.dashPathEffect(floatArrayOf(14f, 10f)) else null
-        drawPath(forma, Blanco.copy(alpha = 0.7f), style = Stroke(3.dp.toPx(), pathEffect = punteado))
+        drawPath(formaDelTanque(size, inset = grosorBorde / 2), Blanco.copy(alpha = 0.35f), style = Stroke(grosorBorde))
     }
 }
+
+private fun DrawScope.formaDelTanque(tamano: Size, inset: Float): Path =
+    Path().apply {
+        addRoundRect(
+            RoundRect(inset, inset, tamano.width - inset, tamano.height - inset, CornerRadius(20.dp.toPx() - inset))
+        )
+    }

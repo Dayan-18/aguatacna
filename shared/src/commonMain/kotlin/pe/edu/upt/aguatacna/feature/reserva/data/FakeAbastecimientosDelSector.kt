@@ -20,4 +20,6 @@ class FakeAbastecimientosDelSector(private val horaInicio: LocalTime = LocalTime
         listOf(ahora.date, ahora.date.plus(1, DateTimeUnit.DAY))
             .map { it.atTime(horaInicio) }
             .firstOrNull { it > ahora }
+
+    override suspend fun nombreDelSector(): String = "Ciudad Nueva"
 }
