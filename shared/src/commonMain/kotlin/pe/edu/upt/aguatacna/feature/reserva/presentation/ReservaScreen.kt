@@ -1,5 +1,7 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
+import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,6 +84,7 @@ fun ReservaContenido(
         return
     }
     val vista = uiState.vista
+    IconosClarosEnBarraDeEstado(claros = vista != null)
     var corrigiendoHora by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()),
@@ -126,7 +129,7 @@ fun ReservaContenido(
 
 @Composable
 private fun SinDatosDeReserva() {
-    Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth().statusBarsPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Mi reserva", fontFamily = FuenteTexto, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
         Text("Aún no tenemos datos de tu reservorio. Registra tu primer llenado para ver cuánto te queda.", fontFamily = FuenteTexto, color = TintaSuave)
     }

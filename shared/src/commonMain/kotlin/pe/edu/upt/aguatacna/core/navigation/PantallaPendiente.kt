@@ -1,5 +1,7 @@
 package pe.edu.upt.aguatacna.core.navigation
 
+import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,8 +14,9 @@ import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun PantallaPendiente(destino: Destino) {
+    IconosClarosEnBarraDeEstado(claros = false)
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().statusBarsPadding(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

@@ -1,5 +1,6 @@
 package pe.edu.upt.aguatacna.feature.sector.presentation
 
+import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,6 +56,7 @@ fun SectorContenido(
         }
         return
     }
+    IconosClarosEnBarraDeEstado(claros = true)
     val margen = Modifier.padding(horizontal = 20.dp)
 
     // Column con scroll y no LazyColumn: una lista perezosa destruye el mapa al salir

@@ -1,5 +1,7 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
+import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +43,7 @@ fun RegistrarLlenadoScreen(
     onEvento: (ReservaEvent) -> Unit,
     onVolver: () -> Unit
 ) {
+    IconosClarosEnBarraDeEstado(claros = false)
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -60,7 +63,7 @@ fun RegistrarLlenadoScreen(
 @Composable
 private fun BarraSuperior(titulo: String, subtitulo: String, onVolver: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().background(Blanco).padding(horizontal = 12.dp, vertical = 14.dp),
+        modifier = Modifier.fillMaxWidth().background(Blanco).statusBarsPadding().padding(horizontal = 12.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextButton(onClick = onVolver) { Text("‹", style = MaterialTheme.typography.headlineMedium, color = Tinta) }

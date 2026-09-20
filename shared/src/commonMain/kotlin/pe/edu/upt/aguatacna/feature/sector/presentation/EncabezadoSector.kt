@@ -1,5 +1,6 @@
 package pe.edu.upt.aguatacna.feature.sector.presentation
 
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ fun EncabezadoSector(
             .fillMaxWidth()
             .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
             .background(Brush.linearGradient(listOf(AguaProfunda, AguaMedia)))
+            .statusBarsPadding()
             .padding(horizontal = 24.dp, vertical = 22.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {

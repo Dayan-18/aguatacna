@@ -1,5 +1,6 @@
 package pe.edu.upt.aguatacna.core.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +43,7 @@ fun AppNavegacion() {
     var destinoActual by rememberSaveable { mutableStateOf(Destino.RESERVA) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             BarraInferior(destinoActual, onSeleccionar = { destinoActual = it })
         }

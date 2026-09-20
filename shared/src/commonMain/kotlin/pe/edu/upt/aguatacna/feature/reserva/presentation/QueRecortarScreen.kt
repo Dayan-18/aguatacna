@@ -1,5 +1,7 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
+import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +42,7 @@ fun QueRecortarScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val vista = uiState.vista
+    IconosClarosEnBarraDeEstado(claros = vista != null)
     when {
         uiState.cargando -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         vista == null -> SinNadaQueRecortar(onVolver)
@@ -74,6 +77,7 @@ private fun EncabezadoNoAlcanza(vista: QueRecortarVista, onVolver: () -> Unit) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
             .background(Brush.linearGradient(listOf(CORAL_OSCURO, Coral)))
+            .statusBarsPadding()
             .padding(horizontal = 12.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
@@ -91,7 +95,7 @@ private fun EncabezadoNoAlcanza(vista: QueRecortarVista, onVolver: () -> Unit) {
 
 @Composable
 private fun SinNadaQueRecortar(onVolver: () -> Unit) {
-    Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(Modifier.fillMaxSize().statusBarsPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         TextButton(onClick = onVolver) { Text("‹ Volver") }
         Text("Por ahora no necesitas recortar", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("Tu reserva alcanza hasta que vuelva el agua, o tu sector aún no tiene horario cargado.")
