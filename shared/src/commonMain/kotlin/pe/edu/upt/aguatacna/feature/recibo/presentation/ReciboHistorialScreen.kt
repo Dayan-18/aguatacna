@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
@@ -107,51 +110,72 @@ private fun EncabezadoHistorial(onVolver: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // Botón volver
-            IconButton(
-                onClick = onVolver,
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Botón volver cuadrado / redondeado como en la imagen
+            Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Blanco)
-                    .border(1.dp, Divisor.copy(alpha = 0.5f), CircleShape)
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFFF1F6F8))
+                    .clickable(onClick = onVolver),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
+                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     contentDescription = "Volver",
-                    modifier = Modifier.size(20.dp),
-                    tint = TintaSuave
+                    modifier = Modifier.size(28.dp),
+                    tint = Color(0xFF0F172A)
                 )
             }
-            Column {
+            Column(modifier = Modifier.weight(1f, fill = false)) {
                 Text(
-                    "Tu histórico",
+                    text = "Tu histórico",
                     fontFamily = FuenteTexto,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Tinta
+                    color = Color(0xFF0F172A),
+                    lineHeight = 24.sp,
+                    maxLines = 1
                 )
                 Text(
-                    "Consumo facturado, últimos 6 meses",
+                    text = "Consumo facturado, últimos 6 meses",
                     fontFamily = FuenteTexto,
-                    fontSize = 12.sp,
-                    color = TintaTenue
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Color(0xFF8899A6),
+                    maxLines = 1
                 )
             }
         }
-        // Badge atípico
+        Spacer(Modifier.width(10.dp))
+        // Badge atípico horizontal, compacto y sin apiñarse
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .background(OcreFondo)
-                .border(1.dp, OcreBorde, RoundedCornerShape(50))
-                .padding(horizontal = 12.dp, vertical = 4.dp),
+                .background(Color(0xFFFEF2E6))
+                .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Ocre))
-            Text("Atípico", fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Ocre)
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE18228))
+            )
+            Text(
+                text = "Atípico",
+                fontFamily = FuenteTexto,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFE18228),
+                softWrap = false,
+                maxLines = 1
+            )
         }
     }
 }
@@ -160,92 +184,173 @@ private fun EncabezadoHistorial(onVolver: () -> Unit) {
 // Gráfico de barras de 6 meses
 // ──────────────────────────────────────────────────────────────────────
 
+private data class DatoMesHistorial(
+    val mes: String,
+    val m3: Float,
+    val color: Color,
+    val esAtipico: Boolean,
+    val textoValor: String? = null
+)
+
 @Composable
 private fun GraficoBarras() {
+    val chartHeight = 136.dp
+    val maxM3 = 33f
+    val promedioM3 = 16f
+
+    val datos = listOf(
+        DatoMesHistorial("Mar", 14.2f, Color(0xFF10939C), false),
+        DatoMesHistorial("Abr", 12.5f, Color(0xFF10939C), false),
+        DatoMesHistorial("May", 15.5f, Color(0xFF10939C), false),
+        DatoMesHistorial("Jun", 16.8f, Color(0xFF10939C), false),
+        DatoMesHistorial("Jul", 17.5f, Color(0xFF10939C), false),
+        DatoMesHistorial("Ago", 33.0f, Color(0xFFE18228), true, "33")
+    )
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .padding(top = 16.dp)
             .sombraSuave(24.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(28.dp))
             .background(Blanco)
-            .border(1.dp, Divisor.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
-            .padding(20.dp)
+            .border(1.dp, Color(0xFFE8F0F2), RoundedCornerShape(28.dp))
+            .padding(horizontal = 20.dp, vertical = 20.dp)
     ) {
-        // Encabezado gráfico
+        // Encabezado gráfico de la tarjeta
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("metros cúbicos facturados", fontFamily = FuenteTexto, fontSize = 11.sp, color = TintaTenue)
-            Row {
-                Text("promedio ", fontFamily = FuenteTexto, fontSize = 11.sp, color = TintaSuave)
-                Text("16 m³", fontFamily = FuenteNumeros, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Tinta)
+            Text(
+                text = "metros cúbicos facturados",
+                fontFamily = FuenteTexto,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color(0xFF8899A6)
+            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = "promedio ",
+                    fontFamily = FuenteTexto,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF334155)
+                )
+                Text(
+                    text = "16",
+                    fontFamily = FuenteNumeros,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0F172A)
+                )
+                Spacer(Modifier.width(2.dp))
+                Text(
+                    text = "m³",
+                    fontFamily = FuenteTexto,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF475569)
+                )
             }
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Divisor)
-
-        Spacer(Modifier.height(8.dp))
-
-        // Barras con Canvas simplificado (representación visual)
-        val datos = listOf(
-            "Mar" to 0.48f,
-            "Abr" to 0.40f,
-            "May" to 0.52f,
-            "Jun" to 0.54f,
-            "Jul" to 0.57f,
-            "Ago" to 1.00f
+        // Línea divisoria superior
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 12.dp, bottom = 14.dp),
+            color = Color(0xFFE8F0F2),
+            thickness = 1.dp
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth().height(130.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.Bottom
+        // Contenedor del gráfico (Línea discontinua en el medio + 6 barras redondeadas)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(chartHeight)
         ) {
-            datos.forEachIndexed { index, (mes, porcentaje) ->
-                val esAtipico = index == datos.lastIndex
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    // Valor sobre la barra (solo para agosto)
-                    if (esAtipico) {
-                        Text("33", fontFamily = FuenteNumeros, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Blanco)
-                    }
-                    // Barra
+            // Línea discontinua del promedio en el medio + línea base horizontal
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val lineYDashed = size.height * (1f - (promedioM3 / maxM3))
+                val dashEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f)
+
+                // Línea discontinua del medio (promedio 16 m³)
+                drawLine(
+                    color = Color(0xFF94A3B8),
+                    start = Offset(0f, lineYDashed),
+                    end = Offset(size.width, lineYDashed),
+                    strokeWidth = 1.8.dp.toPx(),
+                    pathEffect = dashEffect
+                )
+
+                // Línea base horizontal inferior
+                drawLine(
+                    color = Color(0xFFE8F0F2),
+                    start = Offset(0f, size.height),
+                    end = Offset(size.width, size.height),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+
+            // Las 6 barras estructuradas con bordes redondeados y anchos proporcionales
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(chartHeight),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                datos.forEach { item ->
+                    val barHeight = chartHeight * (item.m3 / maxM3)
                     Box(
                         modifier = Modifier
-                            .width(28.dp)
-                            .height((110 * porcentaje).dp)
-                            .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                            .background(if (esAtipico) Ocre else AguaMedia),
-                        contentAlignment = Alignment.TopCenter
+                            .weight(1f)
+                            .height(chartHeight),
+                        contentAlignment = Alignment.BottomCenter
                     ) {
-                        if (esAtipico) {
-                            Text(
-                                "33",
-                                fontFamily = FuenteNumeros,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Blanco,
-                                modifier = Modifier.padding(top = 6.dp)
-                            )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.72f)
+                                .height(barHeight)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(item.color),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            if (item.textoValor != null) {
+                                Text(
+                                    text = item.textoValor,
+                                    fontFamily = FuenteNumeros,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Blanco,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
                         }
                     }
-                    Spacer(Modifier.height(8.dp))
-                    // Etiqueta del mes
-                    Text(
-                        mes,
-                        fontFamily = FuenteTexto,
-                        fontSize = 10.sp,
-                        fontWeight = if (esAtipico) FontWeight.Bold else FontWeight.Medium,
-                        color = if (esAtipico) Ocre else TintaTenue
-                    )
                 }
+            }
+        }
+
+        // Fila de meses debajo de las barras
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            datos.forEach { item ->
+                Text(
+                    text = item.mes,
+                    fontFamily = FuenteTexto,
+                    fontSize = 12.sp,
+                    fontWeight = if (item.esAtipico) FontWeight.Bold else FontWeight.Medium,
+                    color = if (item.esAtipico) Color(0xFFE18228) else Color(0xFF8899A6),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
@@ -335,7 +440,13 @@ private fun DetallePeriodo() {
 }
 
 @Composable
-private fun FilaDetalle(etiqueta: String, valor: String, unidad: String?, colorValor: Color) {
+private fun FilaDetalle(
+    etiqueta: String,
+    valor: String,
+    unidad: String?,
+    colorValor: Color,
+    colorUnidad: Color = colorValor
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -346,7 +457,7 @@ private fun FilaDetalle(etiqueta: String, valor: String, unidad: String?, colorV
             Text(valor, fontFamily = FuenteNumeros, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorValor)
             if (unidad != null) {
                 Spacer(Modifier.width(3.dp))
-                Text(unidad, fontFamily = FuenteTexto, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TintaSuave)
+                Text(unidad, fontFamily = FuenteTexto, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = colorUnidad)
             }
         }
     }
