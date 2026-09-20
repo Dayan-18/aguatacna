@@ -19,9 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import pe.edu.upt.aguatacna.core.ui.theme.FuenteNumeros
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Tenue
@@ -64,7 +64,7 @@ fun SelectorDeTipo(seleccionado: TipoReservorio, onElegir: (TipoReservorio) -> U
 @Composable
 fun ControlDeCapacidad(litros: Int, onCambiar: (Int) -> Unit) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Blanco).padding(16.dp)) {
-        Text("${formatearMiles(litros)} L", style = MaterialTheme.typography.headlineMedium, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.ExtraBold, color = AguaMedia)
+        Text("${formatearMiles(litros)} L", style = MaterialTheme.typography.headlineMedium, fontFamily = FuenteNumeros, fontWeight = FontWeight.ExtraBold, color = AguaMedia)
         val pasos = (CAPACIDAD_MAXIMA_LITROS - CAPACIDAD_MINIMA_LITROS) / PASO_CAPACIDAD_LITROS - 1
         Slider(
             value = litros.toFloat(),

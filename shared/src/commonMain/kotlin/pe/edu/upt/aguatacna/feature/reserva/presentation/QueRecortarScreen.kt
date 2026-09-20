@@ -22,11 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pe.edu.upt.aguatacna.core.ui.theme.FuenteNumeros
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Coral
 
@@ -83,7 +83,7 @@ private fun EncabezadoNoAlcanza(vista: QueRecortarVista, onVolver: () -> Unit) {
             Text("Tu reserva se agota antes del próximo abastecimiento", style = MaterialTheme.typography.bodyMedium, color = Blanco.copy(alpha = 0.85f))
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Faltan", color = Blanco.copy(alpha = 0.85f))
-                Text(vista.textoDeficit, style = MaterialTheme.typography.headlineMedium, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Blanco)
+                Text(vista.textoDeficit, style = MaterialTheme.typography.headlineMedium, fontFamily = FuenteNumeros, fontWeight = FontWeight.Bold, color = Blanco)
             }
         }
     }
