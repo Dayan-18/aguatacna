@@ -54,7 +54,7 @@ fun TarjetaConfirmarLlenado(
         }
         Text(
             "Asumimos que tu tanque se llenó hoy a las $horaAsumida, el horario de tu sector. Si fue a otra hora, la proyección se corre.",
-            fontFamily = FuenteTexto, fontSize = 12.5.sp, color = TEXTO_AVISO
+            fontFamily = FuenteTexto, fontSize = 12.5.sp, lineHeight = 18.sp, color = TEXTO_AVISO
         )
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             BotonPrincipal("Sí, se llenó", onConfirmar, Modifier.weight(1f), alto = 46)
