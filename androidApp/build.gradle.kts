@@ -10,6 +10,17 @@ kotlin {
         jvmTarget = JvmTarget.JVM_11
     }
 }
+// El mapa de sector (MapLibre) viene con el renderizador Vulkan por defecto, y en emuladores y celulares sin
+// Vulkan la app se cierra al abrir "Sector" (vk::createInstanceUnique: ErrorInitializationFailed).
+// Se usa la variante OpenGL ES de la misma versión, que trae las mismas clases y funciona en todos.
+configurations.configureEach {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("org.maplibre.gl:android-sdk"))
+            .using(module("org.maplibre.gl:android-sdk-opengl:13.0.2"))
+            .because("Vulkan no está disponible en todos los dispositivos")
+    }
+}
+
 dependencies {
     implementation(project(":shared"))
 
