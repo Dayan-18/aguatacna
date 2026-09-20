@@ -22,9 +22,10 @@ class ResolverLlenadoVigente {
             .filter { it.origen == OrigenLlenado.REAL && it.momento <= ahora }
             .maxByOrNull { it.momento }
         val ventanas = iniciosDeAbastecimiento.filter { it <= ahora }.sorted()
+        val reportesHastaAhora = sinLlegada.filter { it <= ahora }
         val sinConfirmar = ventanas
             .filter { ultimoReal == null || it > ultimoReal.momento }
-            .filterNot { llegoSinAgua(it, ventanas, sinLlegada) }
+            .filterNot { llegoSinAgua(it, ventanas, reportesHastaAhora) }
         val asumida = sinConfirmar.lastOrNull() ?: return ultimoReal
         return EventoLlenado(asumida, TipoLlenado.COMPLETO, OrigenLlenado.ASUMIDO)
     }

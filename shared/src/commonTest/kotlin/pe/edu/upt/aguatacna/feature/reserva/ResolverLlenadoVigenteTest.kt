@@ -57,6 +57,12 @@ class ResolverLlenadoVigenteTest {
         assertEquals(asumido(24), vigente)
     }
 
+    @Test // CA-25
+    fun unReporteDeSinLlegadaFuturoNoDescartaElLlenadoAsumido() {
+        val vigente = resolver(listOf(real(0)), listOf(enHora(24)), listOf(enHora(40)), enHora(30))
+        assertEquals(asumido(24), vigente)
+    }
+
     @Test // CA-34
     fun sinCronogramaNoSeAsumeNada() {
         assertEquals(real(0), resolver(listOf(real(0)), emptyList(), emptyList(), enHora(100)))
