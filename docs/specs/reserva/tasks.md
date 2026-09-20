@@ -67,9 +67,9 @@ máximo 400 líneas.
 
 ## Semana 15 · Plataforma
 
-- [ ] T031 Tarea periódica horaria de recálculo en `androidMain`
-- [ ] T032 Aviso local si la proyección se agota antes del siguiente abastecimiento
-- [ ] T033 Notificación de confirmación cuando no se registró el llenado
+- [x] T031 Tarea periódica horaria de recálculo en `androidMain` (WorkManager; sin verificar en dispositivo, ver T034)
+- [x] T032 Aviso local si la proyección se agota antes del siguiente abastecimiento
+- [x] T033 Notificación de confirmación cuando no se registró el llenado
 - [ ] T034 Verificar en dispositivo físico (hito H5)
 
 ## Semanas 16 y 17 · Cierre
