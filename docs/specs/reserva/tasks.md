@@ -20,10 +20,10 @@ máximo 400 líneas.
 - [x] T007b Los intervalos `OBSERVADO` prevalecen sobre los `POR_LLENADO` · CA-28
 
 ### PR 3 · Proyección
-- [ ] T008 `Reserva.nivelEn(momento)`, lineal y con mínimo 0 · CA-07
-- [ ] T009 `ProyectarAgotamiento` · CA-09
-- [ ] T010 Llenado asumido al inicio de la ventana del sector, marcado `NO_CONFIRMADA` · CA-13, CA-34
-- [ ] T010b Confirmar reemplaza al asumido y "no llegó" lo descarta · CA-25, CA-27
+- [x] T008 `Reserva.nivelEn(momento)`, lineal y con mínimo 0 · CA-07
+- [x] T009 `Reserva.agotamientoProyectado` (vive en la entidad, sin caso de uso aparte) · CA-09
+- [x] T010 Llenado asumido al inicio de la ventana del sector, marcado `NO_CONFIRMADA` · CA-13, CA-34
+- [x] T010b Confirmar reemplaza al asumido y "no llegó" lo descarta · CA-25, CA-27
 
 ### Cierre de la semana
 - [ ] T011 Resolver la decisión abierta de la unidad (litros o m³) y corregir el anteproyecto §7

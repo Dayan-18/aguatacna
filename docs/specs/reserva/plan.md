@@ -43,8 +43,8 @@ feature/reserva/
 │   │                 EventoLlenado · IntervaloConsumo · Reserva
 │   │                 TipoLlenado · EstadoProyeccion · Deficit · Recomendacion
 │   ├── repository/   ReservaRepository
-│   └── usecase/      EstimarConsumo · ProyectarAgotamiento · CalcularDeficit
-│                     SugerirRecortes · SimularRecortes · RegistrarLlenado · DeclararSinAgua
+│   └── usecase/      EstimarConsumo · CalcularDeficit
+│                     ResolverLlenadoVigente · SugerirRecortes · SimularRecortes · DeclararSinAgua
 ├── data/
 │   ├── local/        EventoLlenadoEntity · ReservaDao
 │   ├── mapper/       conversiones entidad ↔ dominio

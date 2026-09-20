@@ -15,6 +15,11 @@ class LitrosTest {
     }
 
     @Test // CA-01
+    fun rechazaUnaCapacidadNegativa() {
+        assertFailsWith<IllegalArgumentException> { CapacidadLitros.deLitros(-500.0) }
+    }
+
+    @Test // CA-01
     fun aceptaUnaCapacidadPositiva() {
         assertEquals(Litros(1000.0), CapacidadLitros.deLitros(1000.0).litros)
     }
