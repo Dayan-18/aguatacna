@@ -5,6 +5,7 @@ internal object ParametrosConsumo {
     const val MAX_INTERVALOS = 5
     const val FACTOR_INTERVALO_LARGO = 2.0
     const val HORAS_ESTIMACION_INICIAL = 48.0
+    const val TOPE_CAMBIO_POR_DECLARACION = 0.30
 }
 
 internal fun List<Double>.mediana(): Double {
