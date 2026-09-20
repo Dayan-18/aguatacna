@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.painterResource
+import pe.edu.upt.aguatacna.feature.reserva.presentation.ReservaScreen
 import pe.edu.upt.aguatacna.feature.sector.presentation.SectorScreen
 
 // Navegación provisional por pestañas, sin librería de navegación.
@@ -30,6 +31,7 @@ fun AppNavegacion() {
     ) { espacio ->
         Box(Modifier.fillMaxSize().padding(espacio)) {
             when (destinoActual) {
+                Destino.RESERVA -> ReservaScreen()
                 Destino.SECTOR -> SectorScreen()
                 else -> PantallaPendiente(destinoActual)
             }

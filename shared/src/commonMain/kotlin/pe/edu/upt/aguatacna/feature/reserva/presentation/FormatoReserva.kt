@@ -38,3 +38,7 @@ fun describirMomento(momento: LocalDateTime, ahora: LocalDateTime): String {
     }
     return "$dia ${formatearHora(redondeado.time)}"
 }
+
+/** 1100 se muestra "1 100", como el Figma. */
+fun formatearMiles(valor: Int): String =
+    valor.toString().reversed().chunked(3).joinToString(" ").reversed()

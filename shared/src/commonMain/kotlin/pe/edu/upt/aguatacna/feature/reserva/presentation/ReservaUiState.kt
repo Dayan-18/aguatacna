@@ -17,6 +17,7 @@ data class ReservaVista(
     val porcentaje: Int,
     val estado: EstadoProyeccion?,
     val confirmacion: ConfirmacionEstimacion,
+    val textoUltimoLlenado: String,
     val textoAgotamiento: String,
     val textoVuelveElAgua: String?,
     val textoDeficit: String?,

@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalTime
 import pe.edu.upt.aguatacna.feature.reserva.presentation.describirMomento
 import pe.edu.upt.aguatacna.feature.reserva.presentation.formatearDuracion
 import pe.edu.upt.aguatacna.feature.reserva.presentation.formatearHora
+import pe.edu.upt.aguatacna.feature.reserva.presentation.formatearMiles
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -46,5 +47,12 @@ class FormatoReservaTest {
     @Test
     fun elRedondeoPuedeCambiarDeDia() {
         assertEquals("mañana 12:00 a.m.", describirMomento(LocalDateTime(2026, 9, 19, 23, 59, 40), ahora))
+    }
+
+    @Test
+    fun separaLosMilesConEspacio() {
+        assertEquals("1 100", formatearMiles(1100))
+        assertEquals("680", formatearMiles(680))
+        assertEquals("12 345", formatearMiles(12345))
     }
 }
