@@ -42,18 +42,28 @@ import pe.edu.upt.aguatacna.feature.sector.presentation.SectorScreen
 @Composable
 fun AppNavegacion() {
     var destinoActual by rememberSaveable { mutableStateOf(Destino.RESERVA) }
+    var resetReciboTrigger by rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            BarraInferior(destinoActual, onSeleccionar = { destinoActual = it })
+            BarraInferior(
+                actual = destinoActual,
+                onSeleccionar = { destino ->
+                    if (destino == Destino.RECIBO && destinoActual == Destino.RECIBO) {
+                        resetReciboTrigger++
+                    } else {
+                        destinoActual = destino
+                    }
+                }
+            )
         }
     ) { espacio ->
         Box(Modifier.fillMaxSize().padding(espacio)) {
             when (destinoActual) {
                 Destino.RESERVA -> ReservaScreen(onVerCisternas = { destinoActual = Destino.SECTOR })
                 Destino.SECTOR -> SectorScreen()
-                Destino.RECIBO -> ReciboScreen()
+                Destino.RECIBO -> ReciboScreen(resetTrigger = resetReciboTrigger)
                 else -> PantallaPendiente(destinoActual)
             }
         }

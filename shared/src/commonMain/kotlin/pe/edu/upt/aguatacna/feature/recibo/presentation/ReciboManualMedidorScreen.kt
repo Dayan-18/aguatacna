@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -166,8 +168,12 @@ private fun CalloutInformativo() {
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Ícono info
-        Text("ℹ", fontSize = 14.sp, color = InfoIcono)
+        Icon(
+            Icons.Outlined.Info,
+            contentDescription = null,
+            tint = InfoIcono,
+            modifier = Modifier.size(16.dp)
+        )
         Text(
             "En Tacna el medidor está bajo la vereda. Úsala solo si sospechas una fuga: no hace falta para que la app funcione.",
             fontFamily = FuenteTexto,
@@ -313,13 +319,22 @@ private fun TecladoNumerico() {
                         ),
                         border = null
                     ) {
-                        Text(
-                            tecla,
-                            fontFamily = if (tecla == "←") FuenteTexto else FuenteNumeros,
-                            fontSize = 19.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DigitoTexto
-                        )
+                        if (tecla == "←") {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Backspace,
+                                contentDescription = "Borrar",
+                                tint = DigitoTexto,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        } else {
+                            Text(
+                                tecla,
+                                fontFamily = FuenteNumeros,
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DigitoTexto
+                            )
+                        }
                     }
                 }
             }

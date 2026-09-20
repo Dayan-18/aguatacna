@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Keyboard
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -303,9 +305,15 @@ private fun TipInformativo() {
             .background(TipFondo)
             .border(1.dp, TipBorde, RoundedCornerShape(12.dp))
             .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top
     ) {
-        Text("⌨", fontSize = 16.sp)
+        Icon(
+            Icons.Outlined.Keyboard,
+            contentDescription = null,
+            tint = AguaMedia,
+            modifier = Modifier.size(18.dp)
+        )
         Text(
             "Si algún dato salió mal, corrígelo aquí mismo. También puedes escribirlo a mano sin usar la cámara.",
             fontFamily = FuenteTexto,
@@ -343,7 +351,12 @@ private fun ZonaRetomarFoto() {
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("📷", fontSize = 28.sp)
+        Icon(
+            Icons.Outlined.PhotoCamera,
+            contentDescription = null,
+            tint = Color(0xFF8CA3A6),
+            modifier = Modifier.size(32.dp)
+        )
         Spacer(Modifier.height(6.dp))
         Text(
             "Volver a tomar la foto",

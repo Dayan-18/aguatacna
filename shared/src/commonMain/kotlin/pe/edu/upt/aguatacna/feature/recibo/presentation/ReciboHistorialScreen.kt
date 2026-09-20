@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -267,7 +268,12 @@ private fun AlertaAtipico() {
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("⚠", fontSize = 14.sp)
+            Icon(
+                Icons.Default.Warning,
+                contentDescription = null,
+                tint = OcreTexto,
+                modifier = Modifier.size(16.dp)
+            )
             Text(
                 "Consumo atípico",
                 fontFamily = FuenteTexto,
