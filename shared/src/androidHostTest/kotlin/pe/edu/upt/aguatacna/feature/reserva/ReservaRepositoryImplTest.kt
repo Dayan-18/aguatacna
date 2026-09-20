@@ -43,6 +43,7 @@ class ReservaRepositoryImplTest {
         abastecimientos = object : AbastecimientosDelSector {
             override suspend fun iniciosHasta(ahora: LocalDateTime) = inicios
             override suspend fun proximoDesde(ahora: LocalDateTime): LocalDateTime? = null
+            override suspend fun nombreDelSector(): String? = null
         },
         ahora = { enHora(horaActual) },
         nuevoId = { "id-${contador++}" }

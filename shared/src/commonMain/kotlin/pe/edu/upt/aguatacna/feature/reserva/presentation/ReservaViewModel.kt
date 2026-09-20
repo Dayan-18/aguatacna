@@ -12,10 +12,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import org.koin.mp.KoinPlatform
 import pe.edu.upt.aguatacna.core.util.Reloj
 import pe.edu.upt.aguatacna.feature.reserva.data.ReservaDePrueba
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.PerfilHogar
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.AbastecimientosDelSector
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.ReservaRepository
 
@@ -41,12 +44,13 @@ class ReservaViewModel(
     val uiState: StateFlow<ReservaUiState> = _uiState.asStateFlow()
 
     private val construirVista = ConstruirVistaReserva()
+    private var reservaActual: Reserva? = null
 
     init {
         viewModelScope.launch {
             combine(repositorio.observarPerfil(), repositorio.observarReserva(), reloj) { perfil, reserva, _ ->
-                (perfil != null) to reserva
-            }.collect { (configurado, reserva) -> publicar(configurado, reserva) }
+                perfil to reserva
+            }.collect { (perfil, reserva) -> publicar(perfil, reserva) }
         }
     }
 
@@ -55,6 +59,8 @@ class ReservaViewModel(
             val momento = ahora()
             val resultado = when (evento) {
                 is ReservaEvent.RegistrarLlenado -> repositorio.registrarLlenado(momento, evento.tipo)
+                ReservaEvent.ConfirmarLlenadoAsumido -> confirmarLlenadoAsumido()
+                is ReservaEvent.CorregirHoraDelLlenado -> corregirHoraDelLlenado(evento.hora)
                 ReservaEvent.AguaNoLlego -> repositorio.registrarSinLlegada(momento)
                 ReservaEvent.MeQuedeSinAgua -> repositorio.declararSinAgua(momento)
                 ReservaEvent.DescartarError -> {
@@ -66,15 +72,33 @@ class ReservaViewModel(
         }
     }
 
-    private suspend fun publicar(hogarConfigurado: Boolean, reserva: Reserva?) {
+    // "Sí, se llenó": lo asumido pasa a ser un llenado real en la misma hora.
+    private suspend fun confirmarLlenadoAsumido(): Result<Unit> {
+        val llenado = reservaActual?.llenado ?: return Result.failure(IllegalStateException(SIN_RESERVA))
+        return repositorio.registrarLlenado(llenado.momento, TipoLlenado.COMPLETO)
+    }
+
+    // "Corregir hora": el agua llegó el mismo día que se asumió, pero a otra hora.
+    private suspend fun corregirHoraDelLlenado(hora: LocalTime): Result<Unit> {
+        val llenado = reservaActual?.llenado ?: return Result.failure(IllegalStateException(SIN_RESERVA))
+        return repositorio.registrarLlenado(LocalDateTime(llenado.momento.date, hora), TipoLlenado.COMPLETO)
+    }
+
+    private suspend fun publicar(perfil: PerfilHogar?, reserva: Reserva?) {
+        reservaActual = reserva
         val momento = ahora()
-        val vista = reserva?.let {
-            construirVista(it, sector.proximoDesde(momento), repositorio.litrosPorHabitanteDia(), momento)
+        val vista = if (perfil == null || reserva == null) {
+            null
+        } else {
+            val hogar = ContextoDelHogar(perfil.tipoReservorio, perfil.habitantes.cantidad, sector.nombreDelSector())
+            construirVista(reserva, hogar, sector.proximoDesde(momento), repositorio.litrosPorHabitanteDia(), momento)
         }
-        _uiState.update { it.copy(cargando = false, hogarConfigurado = hogarConfigurado, vista = vista) }
+        _uiState.update { it.copy(cargando = false, hogarConfigurado = perfil != null, vista = vista) }
     }
 
     companion object {
+        private const val SIN_RESERVA = "Aún no hay una reserva"
+
         // Temporal: se reemplaza cuando el core conecte la inyección de dependencias (T028).
         fun conDatosDePrueba() = ReservaViewModel(ReservaDePrueba.repositorio, ReservaDePrueba.sector, ReservaDePrueba.reloj)
 
