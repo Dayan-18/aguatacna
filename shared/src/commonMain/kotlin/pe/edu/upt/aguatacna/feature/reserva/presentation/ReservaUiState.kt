@@ -6,6 +6,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
 
 data class ReservaUiState(
     val cargando: Boolean = true,
+    val hogarConfigurado: Boolean = false,
     val vista: ReservaVista? = null,
     val error: String? = null
 )

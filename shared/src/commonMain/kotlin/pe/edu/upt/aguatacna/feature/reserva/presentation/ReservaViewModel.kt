@@ -12,15 +12,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import pe.edu.upt.aguatacna.feature.reserva.data.FakeAbastecimientosDelSector
-import pe.edu.upt.aguatacna.feature.reserva.data.FakeReservaRepository
+import pe.edu.upt.aguatacna.feature.reserva.data.ReservaDePrueba
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.AbastecimientosDelSector
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.ReservaRepository
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 private const val MILIS_POR_MINUTO = 60_000L
 
@@ -47,8 +42,9 @@ class ReservaViewModel(
 
     init {
         viewModelScope.launch {
-            combine(repositorio.observarReserva(), reloj) { reserva, _ -> reserva }
-                .collect { publicar(it) }
+            combine(repositorio.observarPerfil(), repositorio.observarReserva(), reloj) { perfil, reserva, _ ->
+                (perfil != null) to reserva
+            }.collect { (configurado, reserva) -> publicar(configurado, reserva) }
         }
     }
 
@@ -68,24 +64,16 @@ class ReservaViewModel(
         }
     }
 
-    private suspend fun publicar(reserva: Reserva?) {
+    private suspend fun publicar(hogarConfigurado: Boolean, reserva: Reserva?) {
         val momento = ahora()
         val vista = reserva?.let {
             construirVista(it, sector.proximoDesde(momento), repositorio.litrosPorHabitanteDia(), momento)
         }
-        _uiState.update { it.copy(cargando = false, vista = vista) }
+        _uiState.update { it.copy(cargando = false, hogarConfigurado = hogarConfigurado, vista = vista) }
     }
 
     companion object {
         // Temporal: se reemplaza cuando el core conecte la inyección de dependencias (T028).
-        @OptIn(ExperimentalTime::class)
-        fun conDatosDePrueba(): ReservaViewModel {
-            val reloj = { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
-            return ReservaViewModel(
-                FakeReservaRepository.conDatosDeEjemplo(reloj),
-                FakeAbastecimientosDelSector(),
-                reloj
-            )
-        }
+        fun conDatosDePrueba() = ReservaViewModel(ReservaDePrueba.repositorio, ReservaDePrueba.sector, ReservaDePrueba.reloj)
     }
 }
