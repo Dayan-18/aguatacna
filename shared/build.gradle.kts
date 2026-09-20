@@ -37,6 +37,7 @@ kotlin {
        }
        withHostTest {
            isIncludeAndroidResources = true
+           enableCoverage = true
        }
        withDeviceTestBuilder {
            sourceSetTreeName = "test"

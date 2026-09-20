@@ -74,9 +74,9 @@ máximo 400 líneas.
 
 ## Semanas 16 y 17 · Cierre
 
-- [ ] T035 Cobertura de `domain/` de reserva ≥ 70 % (hito H6)
+- [x] T035 Cobertura de `domain/` de reserva: 96,6 % de líneas, medida el 2026-09-21 (hito H6). Ver `docs/cobertura.md`
 - [ ] T036 Ajustar coeficientes con datos del piloto
-- [ ] T037 Refactor y revisión de límites de tamaño
+- [x] T037 Límites de tamaño revisados en `feature/reserva`: ningún archivo pasa de 95 líneas ni función de 40 (composables de 60)
 
 ## Recurrente (custodio del core)
 
