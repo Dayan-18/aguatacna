@@ -41,10 +41,10 @@ feature/reserva/
 ├── domain/
 │   ├── model/        Litros · CapacidadLitros · Habitantes · NivelReserva
 │   │                 EventoLlenado · IntervaloConsumo · Reserva
-│   │                 EstadoReserva · Deficit · Recomendacion
+│   │                 TipoLlenado · EstadoProyeccion · Deficit · Recomendacion
 │   ├── repository/   ReservaRepository
 │   └── usecase/      EstimarConsumo · ProyectarAgotamiento · CalcularDeficit
-│                     SugerirRecortes · RegistrarLlenado · DeclararSinAgua
+│                     SugerirRecortes · SimularRecortes · RegistrarLlenado · DeclararSinAgua
 ├── data/
 │   ├── local/        EventoLlenadoEntity · ReservaDao
 │   ├── mapper/       conversiones entidad ↔ dominio

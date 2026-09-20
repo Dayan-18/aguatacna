@@ -11,21 +11,24 @@ máximo 400 líneas.
 - [x] T001 `Litros`, `CapacidadLitros`, `Habitantes` con pruebas · CA-01, CA-02, CA-03, CA-08
 
 ### PR 2 · Nivel y estimación del consumo
-- [ ] T002 `NivelReserva` y `EstadoReserva` (`AL_DIA`, `SIN_CONFIRMAR`) · CA-06
-- [ ] T003 `EventoLlenado` e `IntervaloConsumo` (duración en horas)
+- [ ] T002 `NivelReserva`, `TipoLlenado` (`COMPLETO`, `MITAD`) y confirmación de la estimación (`CONFIRMADA`, `NO_CONFIRMADA`) · CA-06, CA-24
+- [ ] T003 `EventoLlenado` (origen `REAL` o `ASUMIDO`) e `IntervaloConsumo` (`OBSERVADO`, `POR_LLENADO`, duración en horas) · CA-26
 - [ ] T004 `EstimarConsumo`: mediana de los últimos 5 intervalos · CA-04, CA-15
 - [ ] T005 Descartar intervalos mayores al doble de la mediana · CA-14
 - [ ] T006 Fallback: hábitos declarados y valor inicial · CA-16, CA-17
 - [ ] T007 Litros por habitante y día · CA-05, CA-23
+- [ ] T007b Los intervalos `OBSERVADO` prevalecen sobre los `POR_LLENADO` · CA-28
 
 ### PR 3 · Proyección
 - [ ] T008 `Reserva.nivelEn(momento)`, lineal y con mínimo 0 · CA-07
 - [ ] T009 `ProyectarAgotamiento` · CA-09
-- [ ] T010 Estado `SIN_CONFIRMAR` cuando el sector abasteció sin llenado registrado · CA-13
+- [ ] T010 Llenado asumido al inicio de la ventana del sector, marcado `NO_CONFIRMADA` · CA-13, CA-34
+- [ ] T010b Confirmar reemplaza al asumido y "no llegó" lo descarta · CA-25, CA-27
 
 ### Cierre de la semana
 - [ ] T011 Resolver la decisión abierta de la unidad (litros o m³) y corregir el anteproyecto §7
-- [ ] T012 Pedir revisión cruzada de la spec (hito H1)
+- [ ] T012 Pedir revisión cruzada de la spec (hito H1). Incluir a Dayan: consulta del inicio del último abastecimiento del sector
+- [ ] T012b Pedir al Figma las pantallas faltantes: "me quedé sin agua", sector sin cronograma, estimación no confirmada
 - [ ] T013 `ReservaRepository` y `FakeReservaRepository` con datos de prueba (hito H1)
 
 ## Semana 10 · Déficit y core
@@ -48,16 +51,19 @@ máximo 400 líneas.
 - [ ] T023 `ReservaUiState` y `ReservaEvent`, un estado inmutable por pantalla
 - [ ] T024 `ReservaViewModel` con el flujo del nivel
 - [ ] T025 `IndicadorNivelReservorio` (composable máximo 60 líneas)
-- [ ] T026 `ReservaScreen` con hora de agotamiento y registro de llenado en un toque
-- [ ] T027 Configuración inicial del hogar: capacidad, tipo de reservorio, habitantes, hábitos
+- [ ] T026 `ReservaScreen` (Figma 03) con hora de agotamiento, déficit, L/h y L/hab·día
+- [ ] T026b Pantalla "Registrar llenado" (Figma 04): completo, a la mitad, no llegó
+- [ ] T027 Configuración inicial del hogar (Figma 02): tipo (Tanque elevado, Cisterna, Bidones), capacidad, habitantes, hábitos
 - [ ] T028 Integrar el déficit y cambiar el fake de cronograma por el real cuando exista
 
 **H4 (semana 13): MVP con perfil del hogar, reserva con proyección y operación sin conexión.**
 
 ## Semana 14 · Recomendaciones
 
-- [ ] T029 `Recomendacion` y `SugerirRecortes`, por impacto en litros · CA-21, CA-22
-- [ ] T030 Panel de recomendaciones en la pantalla cuando hay déficit
+- [ ] T029 `Recomendacion` y `SugerirRecortes`, por impacto en litros y según hábitos · CA-21, CA-22, CA-32
+- [ ] T029b `SimularRecortes`: ahorro seleccionado, horas ganadas y horas que aún faltan · CA-29, CA-30, CA-31
+- [ ] T029c Estado de la proyección (`COMODA`, `AJUSTADA`, `NO_ALCANZA`) con umbral configurable · CA-33
+- [ ] T030 Pantalla "Qué recortar" (Figma 05) con casillas y resumen de ahorro
 
 ## Semana 15 · Plataforma
 
