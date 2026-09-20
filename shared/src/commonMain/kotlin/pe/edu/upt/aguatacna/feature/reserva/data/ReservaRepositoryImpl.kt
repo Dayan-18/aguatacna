@@ -3,6 +3,7 @@ package pe.edu.upt.aguatacna.feature.reserva.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import pe.edu.upt.aguatacna.feature.reserva.data.local.NovedadReservaEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.ReservaDao
@@ -11,6 +12,8 @@ import pe.edu.upt.aguatacna.feature.reserva.data.mapper.aDominio
 import pe.edu.upt.aguatacna.feature.reserva.data.mapper.aEntidad
 import pe.edu.upt.aguatacna.feature.reserva.data.mapper.aHistorial
 import pe.edu.upt.aguatacna.feature.reserva.data.mapper.comoNovedad
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConfiguracionHogar
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConsumoHorario
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.DatosDelHogar
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EventoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.LitrosPorHabitanteDia
@@ -36,6 +39,17 @@ class ReservaRepositoryImpl(
     private class Estado(val perfil: PerfilHogar, val historial: HistorialReserva) {
         val hogar: DatosDelHogar get() = perfil.aDatosDelHogar()
     }
+
+    override fun observarPerfil(): Flow<PerfilHogar?> = dao.observarPerfil(usuarioId).map { it?.aDominio() }
+
+    override suspend fun guardarPerfil(configuracion: ConfiguracionHogar, consumoPorHabitos: ConsumoHorario?): Result<Unit> =
+        runCatching {
+            val perfil = PerfilHogar(
+                usuarioId, configuracion.tipoReservorio, configuracion.capacidad,
+                configuracion.habitantes, configuracion.habitos, consumoPorHabitos
+            )
+            dao.guardarPerfil(perfil.aEntidad())
+        }
 
     override fun observarReserva(): Flow<Reserva?> =
         combine(
