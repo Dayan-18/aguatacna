@@ -78,6 +78,12 @@ máximo 400 líneas.
 - [ ] T036 Ajustar coeficientes con datos del piloto
 - [x] T037 Límites de tamaño revisados en `feature/reserva`: ningún archivo pasa de 95 líneas ni función de 40 (composables de 60)
 
+## Diseño final del Figma (pantallas 19 y 21, fuentes)
+
+- [x] T038 Pantalla 19 "Te quedaste sin agua" con "Se acabó ahora" y "Se acabó antes", previsualizando el cambio de consumo (CA-18, CA-19, CA-20)
+- [x] T039 Pantalla 21: tarjeta "No registraste el llenado" con "Sí, se llenó" y "Corregir hora" (CA-13, CA-27)
+- [x] T040 Fuentes del Figma (Plus Jakarta Sans e IBM Plex Mono) y acercar "Mi reserva" al diseño
+
 ## Recurrente (custodio del core)
 
 - [ ] Revisar todo PR que toque `core/`, `domain/` raíz o el catálogo de versiones
@@ -91,6 +97,3 @@ máximo 400 líneas.
 - **T034** probar en un teléfono físico: interfaz, base de datos, tarea horaria y avisos (hito H5).
 - **T036** ajustar los coeficientes con los datos del piloto (semana 16 en adelante).
 - Avisar al equipo del cambio de catálogo (Room, KSP, Koin, WorkManager) y acordar la regla de migraciones.
-- [x] T038 Pantalla 19 "Te quedaste sin agua" con "Se acabó ahora" y "Se acabó antes", previsualizando el cambio de consumo (CA-18, CA-19, CA-20)
-- [x] T039 Pantalla 21: tarjeta "No registraste el llenado" con "Sí, se llenó" y "Corregir hora" (CA-13, CA-27)
-- [x] T040 Fuentes del Figma (Plus Jakarta Sans e IBM Plex Mono) y acercar "Mi reserva" al diseño

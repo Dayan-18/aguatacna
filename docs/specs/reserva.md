@@ -44,11 +44,14 @@ mientras tanto se trabaja contra el fake.
 
 ```kotlin
 interface ReservaRepository {
+    fun observarPerfil(): Flow<PerfilHogar?>
+    suspend fun guardarPerfil(configuracion: ConfiguracionHogar, consumoPorHabitos: ConsumoHorario?): Result<Unit>
     fun observarReserva(): Flow<Reserva?>   // null sin llenados ni abastecimientos
     suspend fun litrosPorHabitanteDia(): LitrosPorHabitanteDia?   // null sin datos
     suspend fun registrarLlenado(momento: LocalDateTime, tipo: TipoLlenado): Result<Unit>
     suspend fun registrarSinLlegada(momento: LocalDateTime): Result<Unit>
     suspend fun declararSinAgua(momento: LocalDateTime): Result<Unit>
+    suspend fun previsualizarSinAgua(momento: LocalDateTime): Result<PrevisualizacionSinAgua>
 }
 enum class TipoLlenado { COMPLETO, MITAD }
 ```
