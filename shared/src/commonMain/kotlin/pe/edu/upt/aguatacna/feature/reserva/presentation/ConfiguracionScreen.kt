@@ -20,11 +20,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pe.edu.upt.aguatacna.core.ui.theme.FuenteNumeros
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Tenue
@@ -98,7 +98,7 @@ private fun TarjetaDeHabitos(uiState: ConfiguracionUiState, onEvento: (Configura
             Text("Consumo estimado", style = MaterialTheme.typography.bodyLarge, color = TintaSuave)
             Text(
                 uiState.consumoEstimadoLitrosPorHora?.let { "$it L/h" } ?: "—",
-                fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = AguaMedia
+                fontFamily = FuenteNumeros, fontWeight = FontWeight.Bold, color = AguaMedia
             )
         }
     }

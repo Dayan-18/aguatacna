@@ -17,9 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import pe.edu.upt.aguatacna.core.ui.theme.FuenteNumeros
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Coral
@@ -60,7 +60,7 @@ private fun FilaDeRecorte(opcion: OpcionDeRecorte, onAlternar: () -> Unit) {
             colors = CheckboxDefaults.colors(checkedColor = AguaMedia)
         )
         Text(opcion.recomendacion.descripcion, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = Tinta)
-        Text("${opcion.litros} L", Modifier.padding(end = 8.dp), fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = AguaMedia)
+        Text("${opcion.litros} L", Modifier.padding(end = 8.dp), fontFamily = FuenteNumeros, fontWeight = FontWeight.Bold, color = AguaMedia)
     }
 }
 
@@ -81,6 +81,6 @@ fun ResumenDeAhorro(vista: QueRecortarVista, modifier: Modifier = Modifier) {
 private fun FilaDeValor(etiqueta: String, valor: String, colorValor: Color) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(etiqueta, style = MaterialTheme.typography.bodyLarge, color = TintaSuave)
-        Text(valor, style = MaterialTheme.typography.bodyLarge, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = colorValor)
+        Text(valor, style = MaterialTheme.typography.bodyLarge, fontFamily = FuenteNumeros, fontWeight = FontWeight.Bold, color = colorValor)
     }
 }
