@@ -35,7 +35,7 @@ import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 fun ConfiguracionScreen(
     onListo: () -> Unit,
     onVolver: (() -> Unit)? = null,
-    viewModel: ConfiguracionViewModel = viewModel { ConfiguracionViewModel.conDatosDePrueba() }
+    viewModel: ConfiguracionViewModel = viewModel { ConfiguracionViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.cargar() }
