@@ -21,4 +21,7 @@ data class PerfilHogar(
     val habitos: HabitosDelHogar,
     val consumoPorHabitos: ConsumoHorario? = null,
     val consumoVigente: ConsumoHorario? = null
-)
+) {
+    val configuracion: ConfiguracionHogar
+        get() = ConfiguracionHogar(tipoReservorio, capacidad, habitantes, habitos)
+}

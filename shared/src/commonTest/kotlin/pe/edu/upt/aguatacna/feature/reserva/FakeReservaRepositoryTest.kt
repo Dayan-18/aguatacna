@@ -5,10 +5,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import pe.edu.upt.aguatacna.feature.reserva.data.FakeReservaRepository
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConfirmacionEstimacion
-import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConsumoHorario
-import pe.edu.upt.aguatacna.feature.reserva.domain.model.DatosDelHogar
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EventoLlenado
-import pe.edu.upt.aguatacna.feature.reserva.domain.model.Habitantes
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Litros
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
@@ -20,13 +17,13 @@ import kotlin.test.assertTrue
 
 class FakeReservaRepositoryTest {
 
-    private val hogar = DatosDelHogar(CAPACIDAD_1000, Habitantes(4), ConsumoHorario(50.0))
+    private val perfil = perfilDePrueba()
 
     private fun repositorio(
         eventos: List<EventoLlenado> = emptyList(),
         ventanas: List<LocalDateTime> = emptyList(),
         ahora: Int = 30
-    ) = FakeReservaRepository(hogar, eventos, ventanas) { enHora(ahora) }
+    ) = FakeReservaRepository(perfil, eventos, ventanas) { enHora(ahora) }
 
     private fun reservaDe(repositorio: FakeReservaRepository): Reserva =
         assertNotNull(ejecutar { repositorio.observarReserva().first() })

@@ -51,6 +51,18 @@ class ReservaRepositoryImplTest {
     private fun <T> bloque(cuerpo: suspend () -> T): T = runBlocking { cuerpo() }
 
     @Test
+    fun guardarLaConfiguracionPersisteElPerfilConSuConsumoPorHabitos() = bloque {
+        val repositorio = repositorio(nuevo = false)
+        assertNull(repositorio.observarPerfil().first())
+        val resultado = repositorio.guardarPerfil(perfil.configuracion, ConsumoHorario(58.0))
+        assertTrue(resultado.isSuccess)
+        val guardado = assertNotNull(repositorio.observarPerfil().first())
+        assertEquals(perfil.configuracion, guardado.configuracion)
+        assertEquals(ConsumoHorario(58.0), guardado.consumoPorHabitos)
+        assertNull(guardado.consumoVigente)
+    }
+
+    @Test
     fun sinPerfilNoHayReservaNiSePuedeRegistrar() = bloque {
         val repositorio = repositorio(nuevo = false)
         assertNull(repositorio.observarReserva().first())
