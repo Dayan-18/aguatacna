@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c1dcf2bf90adf69a13dce59bb718fd5e",
+    "identityHash": "fce3119e177eefa69f76b0e790fb6b11",
     "entities": [
       {
         "tableName": "usuario",
@@ -138,6 +138,52 @@
         }
       },
       {
+        "tableName": "novedad_reserva",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `tipo` TEXT NOT NULL, `inicioObservado` TEXT, `litrosObservados` REAL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "momento",
+            "columnName": "momento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inicioObservado",
+            "columnName": "inicioObservado",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "litrosObservados",
+            "columnName": "litrosObservados",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
         "tableName": "sector",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
@@ -194,7 +240,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c1dcf2bf90adf69a13dce59bb718fd5e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fce3119e177eefa69f76b0e790fb6b11')"
     ]
   }
 }
