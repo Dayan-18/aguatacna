@@ -9,6 +9,7 @@ import org.koin.dsl.module
 import org.koin.mp.KoinPlatform
 import pe.edu.upt.aguatacna.core.util.Reloj
 import pe.edu.upt.aguatacna.core.util.RelojDelSistema
+import pe.edu.upt.aguatacna.feature.asistente.di.moduloAsistente
 import pe.edu.upt.aguatacna.feature.recibo.di.moduloRecibo
 import pe.edu.upt.aguatacna.feature.reserva.di.moduloReserva
 import pe.edu.upt.aguatacna.feature.retos.di.moduloRetos
@@ -21,7 +22,7 @@ val moduloCore = module {
     single<Reloj> { RelojDelSistema() }
 }
 
-val modulosApp: List<Module> = listOf(moduloCore, moduloReserva, moduloSector, moduloRecibo, moduloRetos)
+val modulosApp: List<Module> = listOf(moduloCore, moduloReserva, moduloSector, moduloRecibo, moduloRetos, moduloAsistente)
 
 fun koinIniciado(): Boolean = KoinPlatform.getKoinOrNull() != null
 

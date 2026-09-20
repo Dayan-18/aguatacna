@@ -33,6 +33,7 @@ import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Divisor
 import pe.edu.upt.aguatacna.core.ui.theme.FuenteTexto
 import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
+import pe.edu.upt.aguatacna.feature.asistente.presentation.AsistenteScreen
 import pe.edu.upt.aguatacna.feature.recibo.presentation.ReciboScreen
 import pe.edu.upt.aguatacna.feature.reserva.presentation.ReservaScreen
 import pe.edu.upt.aguatacna.feature.sector.presentation.SectorScreen
@@ -64,6 +65,7 @@ fun AppNavegacion() {
                 Destino.RESERVA -> ReservaScreen(onVerCisternas = { destinoActual = Destino.SECTOR })
                 Destino.SECTOR -> SectorScreen()
                 Destino.RECIBO -> ReciboScreen(resetTrigger = resetReciboTrigger)
+                Destino.ASISTENTE -> AsistenteScreen()
                 else -> PantallaPendiente(destinoActual)
             }
         }
