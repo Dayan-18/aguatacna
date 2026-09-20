@@ -16,6 +16,9 @@ usa para calcular el déficit.
 ```kotlin
 val proximo = ProximoAbastecimiento().calcular(cronogramas, ahora)
 val vuelveElAgua = proximo?.inicio   // LocalDateTime, o null si no hay horario
+
+val ultimo = UltimoAbastecimiento().calcular(cronogramas, ahora)
+val llegoElAgua = ultimo?.inicio     // desde cuándo asumir el llenado
 ```
 
 `null` significa que el sector no tiene cronograma futuro cargado. Reserva
@@ -33,6 +36,11 @@ la hora de fin. El inicio cuenta como abastecido; el fin ya no.
 de ahora. Si el agua está llegando en este momento, el próximo es el siguiente
 día: el tanque se está llenando, y lo que interesa para el déficit es cuándo
 vuelve después del corte.
+
+**Último abastecimiento.** Es el cronograma ya empezado con el inicio más
+reciente. Si el agua está llegando en este momento, es el de ahora. `feature/reserva`
+lo usa para asumir el llenado cuando el usuario no lo registra, y marcar esa
+estimación como no confirmada.
 
 **Sector del domicilio.** Se asigna el sector cuyo centro está más cerca de la
 ubicación del usuario. En el servidor se guarda el sector, nunca la coordenada
@@ -69,6 +77,10 @@ equivoca y marca las 3 p.m., la mediana casi no se mueve y el promedio sí.
 | CA-16 | Si la llegada estimada no es anterior al corte, no se estima horario. |
 | CA-17 | Un grado de latitud equivale a unos 111,19 km. |
 | CA-18 | Una coordenada fuera de rango se rechaza. |
+| CA-19 | El último abastecimiento es el más reciente que ya empezó. |
+| CA-20 | Si el agua está llegando ahora, el último es el de ahora. |
+| CA-21 | Antes del horario de hoy, el último es el de ayer. |
+| CA-22 | Sin abastecimientos previos, el último es `null`. |
 
 ## Decisiones abiertas
 

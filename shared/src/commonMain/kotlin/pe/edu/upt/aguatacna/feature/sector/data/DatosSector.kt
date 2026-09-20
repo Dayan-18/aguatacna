@@ -31,9 +31,11 @@ private val horarioPorSector = mapOf(
     "PO-01" to (LocalTime(5, 0) to LocalTime(13, 0))
 )
 
-fun cronogramasDeLaSemana(desde: LocalDate): List<Cronograma> =
-    (0 until 7).flatMap { dia ->
-        val fecha = desde.plus(dia, DateTimeUnit.DAY)
+// Incluye días pasados: feature/reserva necesita el último abastecimiento ya
+// ocurrido para asumir el llenado cuando el usuario no lo registra.
+fun cronogramasCercanos(hoy: LocalDate): List<Cronograma> =
+    (-DIAS_PASADOS until DIAS_FUTUROS).flatMap { dia ->
+        val fecha = hoy.plus(dia, DateTimeUnit.DAY)
         horarioPorSector.map { (sectorId, horario) ->
             Cronograma(
                 id = "$sectorId-$fecha",
@@ -46,6 +48,9 @@ fun cronogramasDeLaSemana(desde: LocalDate): List<Cronograma> =
             )
         }
     }
+
+private const val DIAS_PASADOS = 3
+private const val DIAS_FUTUROS = 7
 
 val listaPuntosCisterna = listOf(
     PuntoCisterna(
