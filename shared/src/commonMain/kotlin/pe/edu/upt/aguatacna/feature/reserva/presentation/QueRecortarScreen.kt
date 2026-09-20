@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,11 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import aguatacna.shared.generated.resources.Res
+import aguatacna.shared.generated.resources.ic_sector
 import pe.edu.upt.aguatacna.core.ui.theme.FuenteNumeros
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Coral
+import pe.edu.upt.aguatacna.core.ui.theme.CoralOscuro
 
-private val CORAL_OSCURO = Color(0xFF7A2410)
 
 @Composable
 fun QueRecortarScreen(
@@ -66,7 +67,10 @@ fun QueRecortarContenido(
         TarjetaDeHorarios(vista, margen)
         ListaDeRecortes(vista.opciones, onEvento, margen)
         ResumenDeAhorro(vista, margen)
-        BotonPrincipal("Ver puntos de cisterna cercanos", onVerCisternas, margen.padding(bottom = 24.dp))
+        BotonPrincipal(
+            "Ver puntos de cisterna cercanos", onVerCisternas, margen.padding(bottom = 24.dp),
+            degradado = listOf(CoralOscuro, Coral), sombra = Color(0x4DE3572E), icono = Res.drawable.ic_sector
+        )
     }
 }
 
@@ -76,12 +80,12 @@ private fun EncabezadoNoAlcanza(vista: QueRecortarVista, onVolver: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-            .background(Brush.linearGradient(listOf(CORAL_OSCURO, Coral)))
+            .background(Brush.linearGradient(listOf(CoralOscuro, Coral)))
             .statusBarsPadding()
             .padding(horizontal = 12.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        TextButton(onClick = onVolver) { Text("‹ Volver", color = Blanco) }
+        BotonAtras(onVolver, Modifier.padding(start = 8.dp), sobreColor = true)
         Column(Modifier.padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("No te alcanza", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.ExtraBold, color = Blanco)
             Text("Tu reserva se agota antes del próximo abastecimiento", style = MaterialTheme.typography.bodyMedium, color = Blanco.copy(alpha = 0.85f))
@@ -96,7 +100,7 @@ private fun EncabezadoNoAlcanza(vista: QueRecortarVista, onVolver: () -> Unit) {
 @Composable
 private fun SinNadaQueRecortar(onVolver: () -> Unit) {
     Column(Modifier.fillMaxSize().statusBarsPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        TextButton(onClick = onVolver) { Text("‹ Volver") }
+        BotonAtras(onVolver)
         Text("Por ahora no necesitas recortar", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("Tu reserva alcanza hasta que vuelva el agua, o tu sector aún no tiene horario cargado.")
     }

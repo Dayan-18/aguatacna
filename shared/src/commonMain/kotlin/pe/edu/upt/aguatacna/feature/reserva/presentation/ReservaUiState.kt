@@ -27,6 +27,8 @@ data class ReservaVista(
     val textoAgotamiento: String,
     val textoVuelveElAgua: String?,
     val textoDeficit: String?,
+    /** Hasta cuándo alcanzaría el agua si se registrara un llenado completo ahora. */
+    val textoAlcanzaHastaSiLlena: String,
     val consumoLitrosPorHora: Int,
     val litrosPorHabitanteDia: Int?
 )

@@ -5,6 +5,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.LitrosPorHabitanteDia
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.OrigenLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoReservorio
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.masHoras
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.CalcularDeficit
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.EvaluarProyeccion
 import kotlin.math.roundToInt
@@ -39,9 +40,15 @@ class ConstruirVistaReserva(
             textoAgotamiento = describirMomento(reserva.agotamientoProyectado(), ahora),
             textoVuelveElAgua = proximoAbastecimiento?.let { describirMomento(it, ahora) },
             textoDeficit = deficit?.let { formatearDuracion(it.horas) },
+            textoAlcanzaHastaSiLlena = alcanzaHastaSiLlena(reserva, ahora),
             consumoLitrosPorHora = reserva.consumo.litrosPorHora.roundToInt(),
             litrosPorHabitanteDia = litrosPorHabitanteDia?.valor?.roundToInt()
         )
+    }
+
+    private fun alcanzaHastaSiLlena(reserva: Reserva, ahora: LocalDateTime): String {
+        val horasQueDuraria = reserva.capacidad.litros.valor / reserva.consumo.litrosPorHora
+        return describirMomento(ahora.masHoras(horasQueDuraria), ahora)
     }
 
     private fun subtituloDe(hogar: ContextoDelHogar): String {

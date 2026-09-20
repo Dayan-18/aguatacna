@@ -188,8 +188,8 @@ private fun ComparacionDeLoOcurrido(vista: SinAguaVista, modifier: Modifier) {
 @Composable
 private fun FilaDeComparacion(etiqueta: String, valor: String, colorValor: Color) {
     Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(etiqueta, fontFamily = FuenteTexto, fontSize = 12.5.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
-        Text(valor, fontFamily = FuenteNumeros, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colorValor)
+        Text(etiqueta, Modifier.weight(1f, fill = false).padding(end = 12.dp), fontFamily = FuenteTexto, fontSize = 12.5.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
+        Text(valor, fontFamily = FuenteNumeros, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colorValor, softWrap = false)
     }
 }
 

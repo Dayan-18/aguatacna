@@ -89,4 +89,11 @@ class ConstruirVistaReservaTest {
         assertEquals("1 persona", vista.subtituloHogar)
         assertEquals("Cisterna · último llenado hoy 5:15 a.m.", vista.textoLlenado)
     }
+
+    @Test
+    fun diceHastaCuandoAlcanzariaSiSeLlenaAhora() {
+        // 1100 L a 82 L/h duran 13 h 24 min 53 s desde las 15:00: hasta las 4:25 del día siguiente.
+        val vista = construir(reserva, hogar, manana5, null, ahora)
+        assertEquals("mañana 4:25 a.m.", vista.textoAlcanzaHastaSiLlena)
+    }
 }
