@@ -9,6 +9,7 @@ import pe.edu.upt.aguatacna.feature.sector.domain.model.FuenteCronograma
 import pe.edu.upt.aguatacna.feature.sector.domain.model.TipoConfirmacion
 import pe.edu.upt.aguatacna.feature.sector.domain.model.TipoCronograma
 
+val AYER = LocalDate(2026, 9, 17)
 val HOY = LocalDate(2026, 9, 18)
 val MANANA = LocalDate(2026, 9, 19)
 val PASADO = LocalDate(2026, 9, 20)

@@ -16,7 +16,7 @@ class FakeSectorRepository(private val hoy: LocalDate) : SectorRepository {
     override suspend fun obtenerSectores(): List<Sector> = listaSectores
 
     override suspend fun obtenerCronogramas(sectorId: String): List<Cronograma> =
-        cronogramasDeLaSemana(hoy).filter { it.sectorId == sectorId }
+        cronogramasCercanos(hoy).filter { it.sectorId == sectorId }
 
     override suspend fun obtenerPuntosCisterna(sectorId: String): List<PuntoCisterna> =
         listaPuntosCisterna.filter { it.sectorId == sectorId }
