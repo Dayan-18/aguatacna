@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "877668479d59817130e32dcd021496dd",
+    "identityHash": "c1dcf2bf90adf69a13dce59bb718fd5e",
     "entities": [
       {
         "tableName": "usuario",
@@ -38,12 +38,94 @@
         }
       },
       {
+        "tableName": "perfil_hogar",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`usuarioId` TEXT NOT NULL, `tipoReservorio` TEXT NOT NULL, `capacidadLitros` REAL NOT NULL, `habitantes` INTEGER NOT NULL, `duchasPorDia` INTEGER NOT NULL, `usaLavadora` INTEGER NOT NULL, `riegaJardin` INTEGER NOT NULL, `consumoPorHabitosLitrosHora` REAL, `consumoVigenteLitrosHora` REAL, PRIMARY KEY(`usuarioId`))",
+        "fields": [
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipoReservorio",
+            "columnName": "tipoReservorio",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capacidadLitros",
+            "columnName": "capacidadLitros",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "habitantes",
+            "columnName": "habitantes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duchasPorDia",
+            "columnName": "duchasPorDia",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usaLavadora",
+            "columnName": "usaLavadora",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "riegaJardin",
+            "columnName": "riegaJardin",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "consumoPorHabitosLitrosHora",
+            "columnName": "consumoPorHabitosLitrosHora",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "consumoVigenteLitrosHora",
+            "columnName": "consumoVigenteLitrosHora",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "usuarioId"
+          ]
+        }
+      },
+      {
         "tableName": "evento_llenado",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `tipo` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "momento",
+            "columnName": "momento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -112,7 +194,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '877668479d59817130e32dcd021496dd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c1dcf2bf90adf69a13dce59bb718fd5e')"
     ]
   }
 }
