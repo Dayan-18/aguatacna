@@ -15,11 +15,10 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.LitrosPorHabitanteDia
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.ReservaRepository
+import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.ArmarReserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.CalcularLitrosPorHabitanteDia
-import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.ConstruirIntervalos
 import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.DeclararSinAgua
-import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.EstimarConsumo
-import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.ResolverLlenadoVigente
+import pe.edu.upt.aguatacna.feature.reserva.domain.usecase.HistorialReserva
 
 // Implementación temporal para que feature/retos y la interfaz avancen
 // sin esperar a Room ni al servicio de datos (constitución, artículo VII).
@@ -71,20 +70,22 @@ class FakeReservaRepository(
             publicar()
         }
 
-    private fun intervalos(): List<IntervaloConsumo> =
-        ConstruirIntervalos()(eventos, hogar.capacidad) + observados
+    private fun historial() = HistorialReserva(
+        llenados = eventos.toList(),
+        sinLlegada = sinLlegada.toList(),
+        observados = observados.toList(),
+        agotadaEn = agotadaEn,
+        consumoVigente = consumoVigente
+    )
+
+    private fun intervalos(): List<IntervaloConsumo> = historial().intervalos(hogar)
 
     private fun publicar() {
         estado.value = construirReserva()
     }
 
-    private fun construirReserva(): Reserva? {
-        val llenado = ResolverLlenadoVigente()(eventos, iniciosDeAbastecimiento, sinLlegada, ahora()) ?: return null
-        val consumo = consumoVigente
-            ?: EstimarConsumo()(intervalos(), hogar.capacidad, hogar.consumoPorHabitos).consumo
-        val vaciadaDespues = agotadaEn?.takeIf { it > llenado.momento }
-        return Reserva(hogar.capacidad, consumo, llenado, vaciadaDespues)
-    }
+    private fun construirReserva(): Reserva? =
+        ArmarReserva()(hogar, historial(), iniciosDeAbastecimiento, ahora())
 
     companion object {
         /** El hogar del Figma: 1 100 L, 4 personas, 82 L/h y llenado a las 5:15 de hoy. */

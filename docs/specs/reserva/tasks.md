@@ -43,7 +43,7 @@ máximo 400 líneas.
 
 - [x] T019 `PerfilHogar` y `PerfilHogarEntity`. Vive en `feature/reserva/domain/model` y no en el dominio raíz, porque usa los objetos de valor de reserva; Iker lo consume desde ahí
 - [x] T020 `EventoLlenadoEntity` y `ReservaDao` con `Flow` de perfil y llenados. Los reportes de "no llegó" y las declaraciones de sin agua aún no tienen tabla: se resuelve en T021
-- [ ] T021 Mappers y `ReservaRepositoryImpl` leyendo solo de Room
+- [x] T021 `ReservaRepositoryImpl` leyendo y escribiendo solo en Room, con la tabla `novedad_reserva` para "no llegó" y "sin agua". Armar la reserva se extrajo a `ArmarReserva`, compartido con el fake
 - [ ] T022 Tablas en la nube (`perfil_hogar`, `evento_llenado`) con acceso por usuario (hito H3)
 
 ## Semana 12 · Interfaz
