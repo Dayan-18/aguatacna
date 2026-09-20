@@ -69,6 +69,7 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.moko.permissions)
             implementation(libs.moko.permissions.compose)
+            implementation(libs.moko.permissions.camera)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
