@@ -182,7 +182,7 @@ Con 275 L seleccionados y 82 L/h: ganas 3 h 20 min. Con déficit de
 | CA-25 | "No llegó" descarta el llenado asumido de esa ventana; el nivel sigue bajando. |
 | CA-26 | Un llenado asumido no entra al cálculo del consumo. |
 | CA-27 | Confirmar un llenado reemplaza al asumido de esa ventana. |
-| CA-28 | Si hay intervalos `OBSERVADO` entre los últimos 5, el consumo usa solo esos. |
+| CA-28 | Si hay intervalos `OBSERVADO` entre los últimos 5, el consumo usa solo esos; con uno basta. |
 | CA-29 | Ahorro seleccionado = suma de los litros de las recomendaciones marcadas. |
 | CA-30 | Ganas = ahorro seleccionado / consumo horario (275 L a 82 L/h = 3 h 20 min). |
 | CA-31 | Aún faltan = déficit − ganas, con mínimo 0. |

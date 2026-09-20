@@ -11,13 +11,13 @@ máximo 400 líneas.
 - [x] T001 `Litros`, `CapacidadLitros`, `Habitantes` con pruebas · CA-01, CA-02, CA-03, CA-08
 
 ### PR 2 · Nivel y estimación del consumo
-- [ ] T002 `NivelReserva`, `TipoLlenado` (`COMPLETO`, `MITAD`) y confirmación de la estimación (`CONFIRMADA`, `NO_CONFIRMADA`) · CA-06, CA-24
-- [ ] T003 `EventoLlenado` (origen `REAL` o `ASUMIDO`) e `IntervaloConsumo` (`OBSERVADO`, `POR_LLENADO`, duración en horas) · CA-26
-- [ ] T004 `EstimarConsumo`: mediana de los últimos 5 intervalos · CA-04, CA-15
-- [ ] T005 Descartar intervalos mayores al doble de la mediana · CA-14
-- [ ] T006 Fallback: hábitos declarados y valor inicial · CA-16, CA-17
-- [ ] T007 Litros por habitante y día · CA-05, CA-23
-- [ ] T007b Los intervalos `OBSERVADO` prevalecen sobre los `POR_LLENADO` · CA-28
+- [x] T002 `NivelReserva`, `TipoLlenado` (`COMPLETO`, `MITAD`) y confirmación de la estimación (`CONFIRMADA`, `NO_CONFIRMADA`) · CA-06, CA-24
+- [x] T003 `EventoLlenado` (origen `REAL` o `ASUMIDO`) e `IntervaloConsumo` (`OBSERVADO`, `POR_LLENADO`, duración en horas) · CA-26
+- [x] T004 `EstimarConsumo`: mediana de los últimos 5 intervalos · CA-04, CA-15
+- [x] T005 Descartar intervalos mayores al doble de la mediana · CA-14
+- [x] T006 Fallback: hábitos declarados y valor inicial · CA-16, CA-17
+- [x] T007 Litros por habitante y día · CA-05, CA-23
+- [x] T007b Los intervalos `OBSERVADO` prevalecen sobre los `POR_LLENADO` · CA-28
 
 ### PR 3 · Proyección
 - [ ] T008 `Reserva.nivelEn(momento)`, lineal y con mínimo 0 · CA-07
