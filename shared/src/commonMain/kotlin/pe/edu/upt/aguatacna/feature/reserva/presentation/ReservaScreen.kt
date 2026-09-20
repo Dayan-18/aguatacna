@@ -58,7 +58,7 @@ fun ReservaScreen(
         )
     } else if (registrando) {
         RegistrarLlenadoScreen(
-            capacidadLitros = uiState.vista?.capacidadLitros,
+            vista = uiState.vista,
             onEvento = { evento ->
                 viewModel.alEvento(evento)
                 registrando = false
