@@ -31,7 +31,7 @@ fun AppNavegacion() {
     ) { espacio ->
         Box(Modifier.fillMaxSize().padding(espacio)) {
             when (destinoActual) {
-                Destino.RESERVA -> ReservaScreen()
+                Destino.RESERVA -> ReservaScreen(onVerCisternas = { destinoActual = Destino.SECTOR })
                 Destino.SECTOR -> SectorScreen()
                 else -> PantallaPendiente(destinoActual)
             }
