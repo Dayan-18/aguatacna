@@ -1,5 +1,6 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +52,7 @@ fun EncabezadoReserva(vista: ReservaVista, onAjustes: () -> Unit) {
             .background(Brush.linearGradient(listOf(AguaProfunda, AguaMedia, Agua)))
     ) {
         CirculoDecorativo(Modifier.align(Alignment.TopStart))
-        Column(Modifier.padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 40.dp)) {
+        Column(Modifier.statusBarsPadding().padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 40.dp)) {
             FilaSuperior(vista, onAjustes)
             Spacer(Modifier.height(30.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalAlignment = Alignment.CenterVertically) {

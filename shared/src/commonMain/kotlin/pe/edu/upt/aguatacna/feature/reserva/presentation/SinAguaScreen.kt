@@ -1,5 +1,7 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
+import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -79,6 +81,7 @@ fun SinAguaScreen(
 
 @Composable
 fun SinAguaContenido(uiState: SinAguaUiState, onEvento: (SinAguaEvent) -> Unit, onVolver: () -> Unit) {
+    IconosClarosEnBarraDeEstado(claros = true)
     var eligiendoHora by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()),
@@ -120,7 +123,7 @@ private fun EncabezadoSinAgua(onVolver: () -> Unit) {
             Modifier.align(Alignment.TopStart).offset(x = 190.dp, y = (-120).dp).size(300.dp).clip(CircleShape)
                 .background(Brush.horizontalGradient(listOf(Color(0xFFFF9A6B).copy(alpha = 0.4f), Color(0xFFFF9A6B).copy(alpha = 0f))))
         )
-        Column(Modifier.padding(start = 20.dp, end = 24.dp, top = 6.dp, bottom = 30.dp)) {
+        Column(Modifier.statusBarsPadding().padding(start = 20.dp, end = 24.dp, top = 6.dp, bottom = 30.dp)) {
             Box(
                 Modifier.size(40.dp).clip(RoundedCornerShape(13.dp)).background(Blanco.copy(alpha = 0.2f)).clickable(role = Role.Button, onClick = onVolver),
                 contentAlignment = Alignment.Center

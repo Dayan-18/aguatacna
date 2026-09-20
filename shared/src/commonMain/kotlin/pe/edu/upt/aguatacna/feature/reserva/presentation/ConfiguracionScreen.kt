@@ -1,5 +1,7 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
+import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,6 +51,7 @@ fun ConfiguracionContenido(
     onEvento: (ConfiguracionEvent) -> Unit,
     onVolver: (() -> Unit)?
 ) {
+    IconosClarosEnBarraDeEstado(claros = false)
     val margen = Modifier.padding(horizontal = 20.dp)
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()),
@@ -75,7 +78,7 @@ fun ConfiguracionContenido(
 
 @Composable
 private fun EncabezadoConfiguracion(onVolver: (() -> Unit)?) {
-    Row(Modifier.fillMaxWidth().background(Blanco).padding(horizontal = 12.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().background(Blanco).statusBarsPadding().padding(horizontal = 12.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
         if (onVolver != null) TextButton(onClick = onVolver) { Text("‹", style = MaterialTheme.typography.headlineMedium, color = Tinta) }
         Column(Modifier.padding(start = if (onVolver == null) 8.dp else 0.dp)) {
             Text("Configura tu reserva", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold, color = Tinta)
