@@ -67,10 +67,10 @@ máximo 400 líneas.
 
 ## Semana 15 · Plataforma
 
-- [x] T031 Tarea periódica horaria de recálculo en `androidMain` (WorkManager; sin verificar en dispositivo, ver T034)
+- [x] T031 Tarea periódica horaria de recálculo en `androidMain` (WorkManager; verificada en el emulador, falta un teléfono físico, ver T034). También se recalcula al abrir la app
 - [x] T032 Aviso local si la proyección se agota antes del siguiente abastecimiento
 - [x] T033 Notificación de confirmación cuando no se registró el llenado
-- [ ] T034 Verificar en dispositivo físico (hito H5)
+- [ ] T034 Verificar en dispositivo físico (hito H5). En el emulador ya se comprobaron la interfaz, la base de datos, la tarea de WorkManager y la notificación
 
 ## Semanas 16 y 17 · Cierre
 
@@ -83,6 +83,8 @@ máximo 400 líneas.
 - [x] T038 Pantalla 19 "Te quedaste sin agua" con "Se acabó ahora" y "Se acabó antes", previsualizando el cambio de consumo (CA-18, CA-19, CA-20)
 - [x] T039 Pantalla 21: tarjeta "No registraste el llenado" con "Sí, se llenó" y "Corregir hora" (CA-13, CA-27)
 - [x] T040 Fuentes del Figma (Plus Jakarta Sans e IBM Plex Mono) y acercar "Mi reserva" al diseño
+
+- [x] T041 Pantalla 13 "Avisos": historial de avisos de la reserva (agotamiento y confirmar llenado) guardado en Room, con la campana de "Mi reserva" como acceso. Los avisos de sector del Figma (cortes, cisternas, cronograma) quedan para cuando sector los publique
 
 ## Recurrente (custodio del core)
 

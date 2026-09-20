@@ -3,8 +3,10 @@ package pe.edu.upt.aguatacna.feature.reserva.presentation
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.minus
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.horasEntre
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.masHoras
 import kotlin.math.roundToInt
 
@@ -47,4 +49,19 @@ fun formatearMiles(valor: Int): String =
 fun describirHora(momento: LocalDateTime, referencia: LocalDateTime): String {
     val redondeado = momento.masHoras(SEGUNDOS_DE_REDONDEO / 3600)
     return if (redondeado.date == referencia.date) formatearHora(redondeado.time) else describirMomento(momento, referencia)
+}
+
+private fun hora24(hora: LocalTime) = "${hora.hour}:${hora.minute.toString().padStart(2, '0')}"
+
+/** Cuándo pasó algo, como en la lista de avisos: "hace 12 min", "hoy 14:05", "ayer 19:40". */
+fun describirCuando(momento: LocalDateTime, ahora: LocalDateTime): String {
+    val minutos = (horasEntre(momento, ahora) * 60).toInt()
+    if (minutos < 1) return "ahora"
+    if (minutos < 60) return "hace $minutos min"
+    val dia = when (momento.date) {
+        ahora.date -> "hoy"
+        ahora.date.minus(1, DateTimeUnit.DAY) -> "ayer"
+        else -> "${momento.date.day}/${momento.date.month.number}"
+    }
+    return "$dia ${hora24(momento.time)}"
 }
