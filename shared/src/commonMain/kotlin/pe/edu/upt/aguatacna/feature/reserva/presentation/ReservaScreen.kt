@@ -1,5 +1,6 @@
 package pe.edu.upt.aguatacna.feature.reserva.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,17 +32,23 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
+import pe.edu.upt.aguatacna.core.ui.theme.Coral
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.EstadoProyeccion
 
 @Composable
 fun ReservaScreen(
+    onVerCisternas: () -> Unit = {},
     viewModel: ReservaViewModel = viewModel { ReservaViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var registrando by rememberSaveable { mutableStateOf(false) }
     var editandoHogar by rememberSaveable { mutableStateOf(false) }
+    var recortando by rememberSaveable { mutableStateOf(false) }
 
-    if (!uiState.cargando && (!uiState.hogarConfigurado || editandoHogar)) {
+    if (recortando) {
+        QueRecortarScreen(onVolver = { recortando = false }, onVerCisternas = { recortando = false; onVerCisternas() })
+    } else if (!uiState.cargando && (!uiState.hogarConfigurado || editandoHogar)) {
         ConfiguracionScreen(
             onListo = { editandoHogar = false },
             onVolver = if (uiState.hogarConfigurado) ({ editandoHogar = false }) else null
@@ -55,7 +63,7 @@ fun ReservaScreen(
             onVolver = { registrando = false }
         )
     } else {
-        ReservaContenido(uiState, viewModel::alEvento, { registrando = true }, { editandoHogar = true })
+        ReservaContenido(uiState, viewModel::alEvento, { registrando = true }, { editandoHogar = true }, { recortando = true })
     }
 }
 
@@ -64,7 +72,8 @@ fun ReservaContenido(
     uiState: ReservaUiState,
     onEvento: (ReservaEvent) -> Unit,
     onRegistrarLlenado: () -> Unit,
-    onEditarHogar: () -> Unit
+    onEditarHogar: () -> Unit,
+    onQueRecortar: () -> Unit
 ) {
     if (uiState.cargando) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -82,6 +91,7 @@ fun ReservaContenido(
             TarjetaProyeccion(vista, margen)
             TarjetasDeConsumo(vista, margen)
         }
+        if (vista?.estado == EstadoProyeccion.NO_ALCANZA) BotonSecundario("¿Qué puedo recortar?", onQueRecortar, margen)
         BotonPrincipal("Registrar llenado", onRegistrarLlenado, margen)
         if (vista != null) {
             TextButton({ onEvento(ReservaEvent.MeQuedeSinAgua) }, Modifier.align(Alignment.CenterHorizontally)) {
@@ -101,6 +111,19 @@ fun BotonPrincipal(texto: String, onClick: () -> Unit, modifier: Modifier = Modi
         modifier = modifier.fillMaxWidth().height(54.dp),
         shape = RoundedCornerShape(27.dp),
         colors = ButtonDefaults.buttonColors(containerColor = AguaMedia, contentColor = Blanco)
+    ) {
+        Text(texto, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun BotonSecundario(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth().height(54.dp),
+        shape = RoundedCornerShape(27.dp),
+        border = BorderStroke(2.dp, Coral),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Coral)
     ) {
         Text(texto, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
     }

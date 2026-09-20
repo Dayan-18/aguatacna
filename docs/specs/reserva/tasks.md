@@ -63,7 +63,7 @@ máximo 400 líneas.
 - [x] T029 `Recomendacion` y `SugerirRecortes`, por impacto en litros y según hábitos · CA-21, CA-22, CA-32
 - [x] T029b `SimularRecortes`: ahorro seleccionado, horas ganadas y horas que aún faltan · CA-29, CA-30, CA-31
 - [x] T029c Estado de la proyección (`COMODA`, `AJUSTADA`, `NO_ALCANZA`) con umbral configurable · CA-33
-- [ ] T030 Pantalla "Qué recortar" (Figma 05) con casillas y resumen de ahorro
+- [x] T030 Pantalla "Qué recortar" (Figma 05) con casillas y resumen de ahorro
 
 ## Semana 15 · Plataforma
 
