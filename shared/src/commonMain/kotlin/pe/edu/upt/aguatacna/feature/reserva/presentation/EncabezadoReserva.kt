@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -78,10 +79,10 @@ private fun CirculoDecorativo(modifier: Modifier) {
 
 @Composable
 private fun FilaSuperior(vista: ReservaVista, onAjustes: () -> Unit) {
-    Row(Modifier.fillMaxWidth().height(44.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(vista.saludo, fontFamily = FuenteTexto, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.75f))
-            Text(vista.subtituloHogar, fontFamily = FuenteTexto, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Blanco)
+            Text(vista.saludo, fontFamily = FuenteTexto, fontSize = 13.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.75f))
+            Text(vista.subtituloHogar, fontFamily = FuenteTexto, fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Bold, color = Blanco)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             BotonDeIcono(painterResource(Res.drawable.ic_avisos), "Avisos") {}
