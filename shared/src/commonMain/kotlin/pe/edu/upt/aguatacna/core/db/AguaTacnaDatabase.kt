@@ -8,6 +8,8 @@ import pe.edu.upt.aguatacna.data.local.UsuarioDao
 import pe.edu.upt.aguatacna.data.local.UsuarioEntity
 import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.EventoLlenadoEntity
+import pe.edu.upt.aguatacna.feature.reserva.data.local.AvisoReservaDao
+import pe.edu.upt.aguatacna.feature.reserva.data.local.AvisoReservaEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.NovedadReservaEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.PerfilHogarEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.ReservaDao
@@ -22,6 +24,7 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
         PerfilHogarEntity::class,
         EventoLlenadoEntity::class,
         NovedadReservaEntity::class,
+        AvisoReservaEntity::class,
         SectorEntity::class,
         ReciboEntity::class,
         RetoEntity::class
@@ -33,6 +36,7 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
 abstract class AguaTacnaDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
     abstract fun reservaDao(): ReservaDao
+    abstract fun avisoReservaDao(): AvisoReservaDao
 }
 
 // Room genera el `actual` de cada plataforma.

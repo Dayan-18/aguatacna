@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fce3119e177eefa69f76b0e790fb6b11",
+    "identityHash": "184a719c47f0959166acf7df07e69a59",
     "entities": [
       {
         "tableName": "usuario",
@@ -184,6 +184,77 @@
         }
       },
       {
+        "tableName": "aviso_reserva",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `clave` TEXT NOT NULL, `tipo` TEXT NOT NULL, `momento` TEXT NOT NULL, `fechaDato` TEXT NOT NULL, `horasDato` REAL, `leido` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clave",
+            "columnName": "clave",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "momento",
+            "columnName": "momento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaDato",
+            "columnName": "fechaDato",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horasDato",
+            "columnName": "horasDato",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "leido",
+            "columnName": "leido",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_aviso_reserva_usuarioId_clave",
+            "unique": true,
+            "columnNames": [
+              "usuarioId",
+              "clave"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_aviso_reserva_usuarioId_clave` ON `${TABLE_NAME}` (`usuarioId`, `clave`)"
+          }
+        ]
+      },
+      {
         "tableName": "sector",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
@@ -240,7 +311,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fce3119e177eefa69f76b0e790fb6b11')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '184a719c47f0959166acf7df07e69a59')"
     ]
   }
 }

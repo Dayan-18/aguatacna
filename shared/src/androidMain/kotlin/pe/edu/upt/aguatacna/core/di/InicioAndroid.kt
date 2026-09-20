@@ -13,6 +13,7 @@ fun moduloPlataforma(base: AguaTacnaDatabase, usuarioId: String) = module {
     single { base }
     single { base.usuarioDao() }
     single { base.reservaDao() }
+    single { base.avisoReservaDao() }
     single(QUALIFICADOR_USUARIO) { usuarioId }
 }
 

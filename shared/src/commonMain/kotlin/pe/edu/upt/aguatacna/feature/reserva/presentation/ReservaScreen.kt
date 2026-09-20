@@ -46,8 +46,17 @@ fun ReservaScreen(
     var editandoHogar by rememberSaveable { mutableStateOf(false) }
     var recortando by rememberSaveable { mutableStateOf(false) }
     var sinAgua by rememberSaveable { mutableStateOf(false) }
+    var viendoAvisos by rememberSaveable { mutableStateOf(false) }
 
-    if (sinAgua) {
+    if (viendoAvisos) {
+        AvisosScreen(
+            onVolver = { viendoAvisos = false },
+            onAbrir = { destino ->
+                viendoAvisos = false
+                if (destino == DestinoDelAviso.QUE_RECORTAR) recortando = true
+            }
+        )
+    } else if (sinAgua) {
         SinAguaScreen(onVolver = { sinAgua = false })
     } else if (recortando) {
         QueRecortarScreen(onVolver = { recortando = false }, onVerCisternas = { recortando = false; onVerCisternas() })
@@ -66,7 +75,7 @@ fun ReservaScreen(
             onVolver = { registrando = false }
         )
     } else {
-        ReservaContenido(uiState, viewModel::alEvento, { registrando = true }, { editandoHogar = true }, { recortando = true }, { sinAgua = true })
+        ReservaContenido(uiState, viewModel::alEvento, { registrando = true }, { editandoHogar = true }, { recortando = true }, { sinAgua = true }, { viendoAvisos = true })
     }
 }
 
@@ -77,7 +86,8 @@ fun ReservaContenido(
     onRegistrarLlenado: () -> Unit,
     onEditarHogar: () -> Unit,
     onQueRecortar: () -> Unit,
-    onSinAgua: () -> Unit
+    onSinAgua: () -> Unit,
+    onAvisos: () -> Unit
 ) {
     if (uiState.cargando) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -90,7 +100,7 @@ fun ReservaContenido(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (vista == null) SinDatosDeReserva() else EncabezadoReserva(vista, onEditarHogar)
+        if (vista == null) SinDatosDeReserva() else EncabezadoReserva(vista, onAvisos, onEditarHogar)
         uiState.error?.let { AvisoDeError(it, { onEvento(ReservaEvent.DescartarError) }, MARGEN) }
         if (vista?.horaLlenadoAsumido != null) {
             TarjetaConfirmarLlenado(

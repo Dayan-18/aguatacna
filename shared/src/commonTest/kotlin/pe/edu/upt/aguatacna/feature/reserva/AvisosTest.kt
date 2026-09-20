@@ -1,8 +1,11 @@
 package pe.edu.upt.aguatacna.feature.reserva
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.LocalDateTime
 import pe.edu.upt.aguatacna.feature.reserva.data.FakeReservaRepository
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Aviso
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.AvisoGuardado
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConsumoHorario
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EventoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.OrigenLlenado
@@ -59,11 +62,13 @@ class AvisosTest {
     }
 
     private class RegistroEnMemoria : RegistroDeAvisos {
-        val avisados = mutableSetOf<String>()
-        override fun yaSeAviso(clave: String) = clave in avisados
-        override fun marcarComoAvisado(clave: String) {
-            avisados += clave
+        val guardados = mutableListOf<AvisoGuardado>()
+        override suspend fun yaSeAviso(clave: String) = guardados.any { it.aviso.clave == clave }
+        override suspend fun registrar(aviso: Aviso, momento: LocalDateTime) {
+            guardados += AvisoGuardado("id-${guardados.size}", aviso, momento, leido = false)
         }
+        override fun observar(): Flow<List<AvisoGuardado>> = flowOf(guardados.toList())
+        override suspend fun marcarTodosComoLeidos() = Unit
     }
 
     private class NotificadorGrabador : Notificador {
@@ -99,5 +104,14 @@ class AvisosTest {
         val notificador = NotificadorGrabador()
         assertNull(ejecutar { tarea(RegistroEnMemoria(), notificador, enHora(20))(enHora(10)) })
         assertEquals(0, notificador.mostrados.size)
+    }
+
+    @Test
+    fun elAvisoMostradoQuedaEnElHistorialConSuMomento() {
+        val registro = RegistroEnMemoria()
+        ejecutar { tarea(registro, NotificadorGrabador(), enHora(29))(enHora(10)) }
+        val guardado = registro.guardados.single()
+        assertEquals(enHora(10), guardado.momento)
+        assertIs<Aviso.AgotamientoAntesDelAbastecimiento>(guardado.aviso)
     }
 }
