@@ -190,19 +190,33 @@ Con 275 L seleccionados y 82 L/h: ganas 3 h 20 min. Con déficit de
 | CA-33 | El estado es `NO_ALCANZA` con déficit, `AJUSTADA` con margen menor al umbral y `COMODA` con margen mayor. |
 | CA-34 | Sin cronograma no se asume ningún llenado. |
 
-## Decisiones abiertas
+## Decisiones
 
-| Decisión | Por qué importa | Fecha límite |
-|---|---|---|
-| Unidad de la capacidad | El anteproyecto §7 multiplica por 1000 para litros por habitante, lo que supone m³. El Figma y esta spec usan litros. Hay que corregir el anteproyecto. | Semana 9 |
-| Consulta de Dayan: inicio del último abastecimiento | Sin ella no hay llenado asumido real. Se pide en el PR de la spec. | Semana 10 |
-| Umbral de `AJUSTADA` frente a `COMODA` | El Figma muestra "Reserva cómoda" pero no define el límite. Propuesta: 2 horas de margen. | Semana 12 |
-| "Llenó a la mitad" como 50 % fijo | Puede ser otro porcentaje; hay que validarlo con hogares reales. | Semana 12 |
-| Pantallas faltantes en el Figma | "Me quedé sin agua", sector sin cronograma, estimación no confirmada. | Semana 11 |
-| 5 intervalos, doble de la mediana y tope de 30 % | Valores iniciales. Se ajustan con el piloto. | Semana 16 |
-| Coeficientes de recomendaciones | Los del Figma son de partida; falta una fuente (Sunass o el docente). | Semana 14 |
-| Persistir el consumo vigente | El tope del 30 % (CA-20) depende de la estimación anterior. Si el repositorio real recalcula todo desde los intervalos, el tope se pierde en el siguiente llenado y el intervalo observado pesa completo. Hay que guardar el consumo estimado en `perfil_hogar`. | Semana 11 |
-| Indicador "días con registro" (14 de 14) | Aparece en la pantalla 04 y no está definido. | Semana 12 |
+| Decisión | Estado |
+|---|---|
+| Unidad de la capacidad | **Resuelta en el código:** todo el dominio y el Figma usan litros. Falta corregir el texto del anteproyecto §7, que multiplica por 1000 y supone m³ (ese documento no está en el repositorio). |
+| Consulta de Dayan: inicio del último abastecimiento | **Resuelta:** `UltimoAbastecimiento` (PR de sector #6) y `AbastecimientosDeSector` la conectan. |
+| Persistir el consumo vigente | **Resuelta:** `perfil_hogar.consumoVigenteLitrosHora`. |
+| Pantallas faltantes en el Figma | **Abierta:** "me quedé sin agua", sector sin cronograma y la marca de estimación no confirmada se resolvieron en la app sin pantalla propia. Hay que pedirlas al Figma o aceptarlas. |
+| Umbral de `AJUSTADA` frente a `COMODA` | **Abierta:** 2 horas de margen, valor propio a validar. |
+| "Llenó a la mitad" como 50 % fijo | **Abierta:** validar con hogares reales. |
+| 5 intervalos, doble de la mediana y tope de 30 % | **Abierta:** valores iniciales, se ajustan con el piloto (T036). |
+| Coeficientes de las recomendaciones | **Abierta:** los del Figma son de partida; falta una fuente (Sunass o el docente). |
+| Coeficientes de consumo por hábitos | **Abierta:** `EstimadorPorHabitosProvisional` usa órdenes de magnitud propios. Iker debe aportar el estimador real de `feature/recibo`. |
+| Indicador "días con registro" (14 de 14) | **Abierta:** aparece en la pantalla 04 y no está definido. |
+| Regla de migraciones de Room | **Abierta, del equipo:** el esquema sigue en la versión 1 y se ha regenerado sin migración. Hay que acordar hasta cuándo se permite (propuesta: hasta la primera instalación en un dispositivo real). |
+| Backend en la nube y autenticación | **Abierta, del equipo (hito H2):** sin ella no se pueden crear las tablas en la nube (T022) ni la sincronización. |
+
+## Estado de la implementación
+
+Hecho y probado en JVM (dominio con 96,6 % de cobertura, ver `docs/cobertura.md`): cálculos, llenado
+asumido, déficit, "me quedé sin agua", recomendaciones, repositorio real sobre Room, UUID local,
+inyección con Koin, pantallas Mi reserva, Registrar llenado, Configuración y Qué recortar, tarea
+horaria y avisos en Android.
+
+**Sin verificar en un dispositivo:** la interfaz, el arranque de la base de datos, la tarea horaria,
+las notificaciones y la acción "Sí, lo llené" compilan y pasan las pruebas, pero nadie las ha visto
+correr (T034). El código de iOS tampoco se ha compilado, porque el equipo trabaja en Windows.
 
 ## Fuera de esta entrega
 
