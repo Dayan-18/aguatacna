@@ -7,6 +7,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConsumoHorario
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EstadoProyeccion
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EventoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.LitrosPorHabitanteDia
+import pe.edu.upt.aguatacna.feature.reserva.domain.model.OrigenLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.presentation.ConstruirVistaReserva
@@ -33,6 +34,7 @@ class ConstruirVistaReservaTest {
         assertEquals(301, vista.nivelLitros)
         assertEquals(1100, vista.capacidadLitros)
         assertEquals(27, vista.porcentaje)
+        assertEquals("Último llenado hoy 5:15 a.m.", vista.textoUltimoLlenado)
         assertEquals("hoy 6:40 p.m.", vista.textoAgotamiento)
         assertEquals("mañana 5:00 a.m.", vista.textoVuelveElAgua)
         assertEquals("10 h 20 min", vista.textoDeficit)
@@ -40,6 +42,14 @@ class ConstruirVistaReservaTest {
         assertEquals(82, vista.consumoLitrosPorHora)
         assertEquals(275, vista.litrosPorHabitanteDia)
         assertEquals(ConfirmacionEstimacion.CONFIRMADA, vista.confirmacion)
+    }
+
+    @Test // CA-13
+    fun unLlenadoAsumidoSeMuestraComoAsumido() {
+        val asumida = reserva.copy(llenado = EventoLlenado(LocalDateTime(2026, 9, 19, 5, 0), TipoLlenado.COMPLETO, OrigenLlenado.ASUMIDO))
+        val vista = construir(asumida, manana5, null, ahora)
+        assertEquals("Llenado asumido hoy 5:00 a.m.", vista.textoUltimoLlenado)
+        assertEquals(ConfirmacionEstimacion.NO_CONFIRMADA, vista.confirmacion)
     }
 
     @Test // CA-12

@@ -50,9 +50,9 @@ máximo 400 líneas.
 
 - [x] T023 `ReservaUiState` y `ReservaEvent`, un estado inmutable por pantalla
 - [x] T024 `ReservaViewModel` con el flujo del nivel; el formato de textos y la vista se arman en `ConstruirVistaReserva`, no en el ViewModel
-- [ ] T025 `IndicadorNivelReservorio` (composable máximo 60 líneas)
-- [ ] T026 `ReservaScreen` (Figma 03) con hora de agotamiento, déficit, L/h y L/hab·día
-- [ ] T026b Pantalla "Registrar llenado" (Figma 04): completo, a la mitad, no llegó
+- [x] T025 `IndicadorNivelReservorio` (composable máximo 60 líneas)
+- [x] T026 `ReservaScreen` (Figma 03) con hora de agotamiento, déficit, L/h y L/hab·día
+- [x] T026b Pantalla "Registrar llenado" (Figma 04): completo, a la mitad, no llegó
 - [ ] T027 Configuración inicial del hogar (Figma 02): tipo (Tanque elevado, Cisterna, Bidones), capacidad, habitantes, hábitos
 - [ ] T028 Integrar el déficit y cambiar el fake de cronograma por el real cuando exista
 
