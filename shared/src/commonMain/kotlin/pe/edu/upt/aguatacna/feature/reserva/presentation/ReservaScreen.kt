@@ -100,7 +100,7 @@ fun ReservaContenido(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (vista == null) SinDatosDeReserva() else EncabezadoReserva(vista, onAvisos, onEditarHogar)
+        if (vista == null) SinDatosDeReserva() else EncabezadoReserva(vista, uiState.avisosSinLeer, onAvisos, onEditarHogar)
         uiState.error?.let { AvisoDeError(it, { onEvento(ReservaEvent.DescartarError) }, MARGEN) }
         if (vista?.horaLlenadoAsumido != null) {
             TarjetaConfirmarLlenado(

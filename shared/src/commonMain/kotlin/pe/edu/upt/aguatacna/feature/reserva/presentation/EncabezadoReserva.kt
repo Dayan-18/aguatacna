@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -45,7 +46,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConfirmacionEstimacion
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EstadoProyeccion
 
 @Composable
-fun EncabezadoReserva(vista: ReservaVista, onAvisos: () -> Unit, onAjustes: () -> Unit) {
+fun EncabezadoReserva(vista: ReservaVista, avisosSinLeer: Int, onAvisos: () -> Unit, onAjustes: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -54,7 +55,7 @@ fun EncabezadoReserva(vista: ReservaVista, onAvisos: () -> Unit, onAjustes: () -
     ) {
         CirculoDecorativo(Modifier.align(Alignment.TopStart))
         Column(Modifier.statusBarsPadding().padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 40.dp)) {
-            FilaSuperior(vista, onAvisos, onAjustes)
+            FilaSuperior(vista, avisosSinLeer, onAvisos, onAjustes)
             Spacer(Modifier.height(30.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalAlignment = Alignment.CenterVertically) {
                 IndicadorNivelReservorio(vista.porcentaje / 100f)
@@ -78,26 +79,41 @@ private fun CirculoDecorativo(modifier: Modifier) {
 }
 
 @Composable
-private fun FilaSuperior(vista: ReservaVista, onAvisos: () -> Unit, onAjustes: () -> Unit) {
+private fun FilaSuperior(vista: ReservaVista, avisosSinLeer: Int, onAvisos: () -> Unit, onAjustes: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(vista.saludo, fontFamily = FuenteTexto, fontSize = 13.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.75f))
             Text(vista.subtituloHogar, fontFamily = FuenteTexto, fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Bold, color = Blanco)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            BotonDeIcono(painterResource(Res.drawable.ic_avisos), "Avisos", onAvisos)
+            BotonDeIcono(painterResource(Res.drawable.ic_avisos), if (avisosSinLeer > 0) "Avisos, $avisosSinLeer sin leer" else "Avisos", onAvisos, textoDeInsignia(avisosSinLeer))
             BotonDeIcono(painterResource(Res.drawable.ic_ajustes), "Editar mi hogar", onAjustes)
         }
     }
 }
 
 @Composable
-private fun BotonDeIcono(icono: Painter, descripcion: String, onClick: () -> Unit) {
+private fun BotonDeIcono(icono: Painter, descripcion: String, onClick: () -> Unit, insignia: String? = null) {
+    Box(Modifier.size(40.dp)) {
+        Box(
+            Modifier.matchParentSize().clip(RoundedCornerShape(14.dp)).background(Blanco.copy(alpha = 0.16f)).clickable(role = Role.Button, onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icono, contentDescription = descripcion, modifier = Modifier.size(20.dp), tint = Blanco)
+        }
+        insignia?.let { Insignia(it, Modifier.align(Alignment.TopEnd).offset(x = 5.dp, y = (-5).dp)) }
+    }
+}
+
+/** La cantidad de avisos sin leer, sobre la campana; el aro blanco la separa del fondo de la cabecera. */
+@Composable
+private fun Insignia(texto: String, modifier: Modifier) {
     Box(
-        Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Blanco.copy(alpha = 0.16f)).clickable(role = Role.Button, onClick = onClick),
+        modifier.defaultMinSize(minWidth = 18.dp, minHeight = 18.dp).clip(CircleShape).background(Blanco).padding(1.5.dp)
+            .clip(CircleShape).background(Coral),
         contentAlignment = Alignment.Center
     ) {
-        Icon(icono, contentDescription = descripcion, modifier = Modifier.size(20.dp), tint = Blanco)
+        Text(texto, Modifier.padding(horizontal = 4.dp), fontFamily = FuenteTexto, fontSize = 9.5.sp, lineHeight = 12.sp, fontWeight = FontWeight.Bold, color = Blanco)
     }
 }
 
