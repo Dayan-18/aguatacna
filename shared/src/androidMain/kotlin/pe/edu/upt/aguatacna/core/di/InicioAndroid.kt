@@ -6,6 +6,8 @@ import kotlinx.coroutines.runBlocking
 import org.koin.dsl.module
 import pe.edu.upt.aguatacna.core.db.AguaTacnaDatabase
 import pe.edu.upt.aguatacna.core.db.crearBaseDeDatos
+import pe.edu.upt.aguatacna.core.sesion.InicioConGoogle
+import pe.edu.upt.aguatacna.core.sesion.InicioConGoogleAndroid
 import pe.edu.upt.aguatacna.data.IdentidadLocal
 
 import pe.edu.upt.aguatacna.feature.recibo.domain.port.ReconocedorTexto
@@ -20,6 +22,7 @@ fun moduloPlataforma(base: AguaTacnaDatabase, usuarioId: String) = module {
     single { base.avisoReservaDao() }
     single(QUALIFICADOR_USUARIO) { usuarioId }
     single<ReconocedorTexto> { ReconocedorTextoAndroid() }
+    single<InicioConGoogle> { InicioConGoogleAndroid(get()) }
 }
 
 /** Se llama una sola vez desde la clase `Application`, antes de mostrar ninguna pantalla. */

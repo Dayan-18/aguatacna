@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import pe.edu.upt.aguatacna.core.sesion.ActividadActual
 import pe.edu.upt.aguatacna.feature.reserva.RecalculoHorarioWorker
 
 class MainActivity : ComponentActivity() {
@@ -21,11 +22,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        ActividadActual.registrar(this)
         solicitarPermisoDeAvisos()
 
         setContent {
             App()
         }
+    }
+
+    override fun onDestroy() {
+        ActividadActual.liberar(this)
+        super.onDestroy()
     }
 
     override fun onStart() {

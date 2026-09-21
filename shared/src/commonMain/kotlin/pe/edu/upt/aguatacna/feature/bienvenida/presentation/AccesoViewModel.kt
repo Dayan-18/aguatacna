@@ -62,6 +62,7 @@ class AccesoViewModel(
         fun mensajeDe(resultado: ResultadoInicio): String? = when (resultado) {
             ResultadoInicio.Exitoso, ResultadoInicio.Cancelado -> null
             ResultadoInicio.NoDisponible -> "Entrar con Google aún no está disponible. Puedes empezar sin cuenta."
+            ResultadoInicio.SinCuentas -> "No hay ninguna cuenta de Google en este teléfono. Agrega una o empieza sin cuenta."
             is ResultadoInicio.Fallido -> "No pudimos entrar con Google. Inténtalo de nuevo o empieza sin cuenta."
         }
 
@@ -69,7 +70,7 @@ class AccesoViewModel(
         fun desdeInyeccion(): AccesoViewModel {
             val koin = KoinPlatform.getKoinOrNull()
                 ?: return AccesoViewModel(RegistroDeAccesoEnMemoria(), InicioConGoogleNoDisponible)
-            return AccesoViewModel(koin.get(), koin.get())
+            return AccesoViewModel(koin.get(), koin.getOrNull<InicioConGoogle>() ?: InicioConGoogleNoDisponible)
         }
     }
 }

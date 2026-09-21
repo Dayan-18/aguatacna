@@ -10,6 +10,7 @@ sealed interface ResultadoInicio {
     data object Exitoso : ResultadoInicio
     data object Cancelado : ResultadoInicio
     data object NoDisponible : ResultadoInicio
+    data object SinCuentas : ResultadoInicio
     data class Fallido(val motivo: String) : ResultadoInicio
 }
 

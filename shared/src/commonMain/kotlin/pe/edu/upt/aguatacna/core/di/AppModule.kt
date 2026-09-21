@@ -7,8 +7,8 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatform
-import pe.edu.upt.aguatacna.core.sesion.InicioConGoogle
-import pe.edu.upt.aguatacna.core.sesion.InicioConGoogleNoDisponible
+import io.github.jan.supabase.SupabaseClient
+import pe.edu.upt.aguatacna.core.nube.crearClienteSupabase
 import pe.edu.upt.aguatacna.core.sesion.RegistroDeAcceso
 import pe.edu.upt.aguatacna.core.sesion.RegistroDeAccesoEnRoom
 import pe.edu.upt.aguatacna.core.util.Reloj
@@ -25,8 +25,8 @@ val QUALIFICADOR_USUARIO = named("usuarioId")
 val moduloCore = module {
     single<Reloj> { RelojDelSistema() }
     single<RegistroDeAcceso> { RegistroDeAccesoEnRoom(get()) }
-    // Cada plataforma sustituirá esto cuando tenga su inicio con Google.
-    single<InicioConGoogle> { InicioConGoogleNoDisponible }
+    // Se crea al primer uso; cada plataforma aporta su `InicioConGoogle`.
+    single<SupabaseClient> { crearClienteSupabase() }
 }
 
 val modulosApp: List<Module> = listOf(moduloCore, moduloReserva, moduloSector, moduloRecibo, moduloRetos, moduloAsistente)

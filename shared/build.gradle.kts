@@ -52,6 +52,13 @@ kotlin {
             implementation(libs.compose.uiTooling)
             implementation(libs.androidx.work.runtime)
             implementation(libs.mlkit.text.recognition)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.androidx.credentials)
+            implementation(libs.androidx.credentials.playServices)
+            implementation(libs.googleid)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -67,6 +74,7 @@ kotlin {
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.koin.core)
+            implementation(libs.supabase.auth)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.moko.permissions)
             implementation(libs.moko.permissions.compose)

@@ -73,6 +73,17 @@ class AccesoTest {
         assertNull(AccesoViewModel.mensajeDe(ResultadoInicio.Exitoso))
         assertNull(AccesoViewModel.mensajeDe(ResultadoInicio.Cancelado))
         assertTrue(AccesoViewModel.mensajeDe(ResultadoInicio.NoDisponible)!!.contains("sin cuenta"))
+        assertTrue(AccesoViewModel.mensajeDe(ResultadoInicio.SinCuentas)!!.contains("cuenta de Google"))
         assertTrue(AccesoViewModel.mensajeDe(ResultadoInicio.Fallido("x"))!!.contains("No pudimos"))
+    }
+}
+
+class HashDelNonceTest {
+    @Test
+    fun elHashEsSha256EnHexadecimal() {
+        assertEquals(
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+            pe.edu.upt.aguatacna.core.sesion.InicioConGoogleAndroid.hashDelNonce("abc")
+        )
     }
 }
