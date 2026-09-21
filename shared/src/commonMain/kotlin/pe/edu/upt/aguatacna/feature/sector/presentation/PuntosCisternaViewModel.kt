@@ -35,6 +35,7 @@ class PuntosCisternaViewModel(
             val puntos = sectores.flatMap { repositorio.obtenerPuntosCisterna(it.id) }
             _uiState.value = PuntosCisternaUiState(
                 cargando = false,
+                ubicacionCasa = ubicacion,
                 cisternas = buscarCisternas.buscar(puntos, ubicacion, RADIO_CISTERNAS_KM)
             )
         }

@@ -11,6 +11,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,7 +26,10 @@ fun PuntosCisternaScreen(
     viewModel: PuntosCisternaViewModel = viewModel { PuntosCisternaViewModel.conDatosDePrueba() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var mapaAbierto by rememberSaveable { mutableStateOf(false) }
+    val casa = uiState.ubicacionCasa
     val margen = Modifier.padding(horizontal = 20.dp)
+
     Column(
         modifier = Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -33,8 +39,15 @@ fun PuntosCisternaScreen(
             subtitulo = subtituloDe(uiState.cisternas.size),
             onVolver = onVolver
         )
+        if (casa != null) {
+            VistaPreviaMapa(casa, uiState.cisternas, onAbrir = { mapaAbierto = true }, margen)
+        }
         uiState.cisternas.forEach { cisterna -> TarjetaCisterna(cisterna, margen) }
         Spacer(Modifier.height(24.dp))
+    }
+
+    if (mapaAbierto && casa != null) {
+        MapaCompleto(casa, uiState.cisternas, onVolver = { mapaAbierto = false })
     }
 }
 
