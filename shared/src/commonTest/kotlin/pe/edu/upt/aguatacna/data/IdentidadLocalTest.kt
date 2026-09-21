@@ -15,6 +15,10 @@ class IdentidadLocalTest {
         override suspend fun guardar(usuario: UsuarioEntity) {
             guardado = usuario
         }
+        override fun observarModoDeAcceso(): kotlinx.coroutines.flow.Flow<String?> = kotlinx.coroutines.flow.flowOf(guardado?.modoAcceso)
+        override suspend fun guardarModoDeAcceso(modo: String) {
+            guardado = guardado?.copy(modoAcceso = modo)
+        }
     }
 
     @Test

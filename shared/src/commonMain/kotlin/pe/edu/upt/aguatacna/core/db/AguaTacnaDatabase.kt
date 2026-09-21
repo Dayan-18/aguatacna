@@ -31,10 +31,11 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
         ReciboEntity::class,
         RetoEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2)
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3)
     ]
 )
 @ConstructedBy(AguaTacnaDatabaseConstructor::class)
