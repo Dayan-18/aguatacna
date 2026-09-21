@@ -19,6 +19,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,24 +39,28 @@ import pe.edu.upt.aguatacna.core.ui.theme.Tinta
 import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
 
 @Composable
-fun RegistrarDomicilioScreen(onVolver: () -> Unit = {}) {
+fun RegistrarDomicilioScreen(
+    onVolver: () -> Unit = {},
+    viewModel: RegistrarDomicilioViewModel = viewModel { RegistrarDomicilioViewModel.conDatosDePrueba() }
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState())
     ) {
         EncabezadoRegistro(onVolver)
         VistaPreviaSectorMapa(
-            etiquetaSector = "SECTOR 04",
+            etiquetaSector = uiState.etiquetaMapa,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
         BotonesUbicacion(
-            onUsarUbicacion = {},
+            onUsarUbicacion = viewModel::detectarSector,
             onMarcarEnMapa = {},
             modifier = Modifier.padding(horizontal = 20.dp)
         )
         TarjetaSectorDetectado(
-            sectorDetectado = "Ciudad Nueva 04",
-            distrito = "Ciudad Nueva",
-            continuidad = "4 h/día",
+            sectorDetectado = uiState.sector?.nombre ?: "—",
+            distrito = uiState.sector?.distrito ?: "—",
+            continuidad = uiState.continuidad.ifEmpty { "—" },
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
         )
         NotaPrivacidad(
