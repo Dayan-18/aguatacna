@@ -6,8 +6,10 @@ import pe.edu.upt.aguatacna.feature.reserva.presentation.describirMomento
 import pe.edu.upt.aguatacna.feature.reserva.presentation.formatearDuracion
 import pe.edu.upt.aguatacna.feature.reserva.presentation.formatearHora
 import pe.edu.upt.aguatacna.feature.reserva.presentation.formatearMiles
+import pe.edu.upt.aguatacna.feature.reserva.presentation.textoDeInsignia
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class FormatoReservaTest {
     private val ahora = LocalDateTime(2026, 9, 19, 15, 0)
@@ -54,5 +56,19 @@ class FormatoReservaTest {
         assertEquals("1 100", formatearMiles(1100))
         assertEquals("680", formatearMiles(680))
         assertEquals("12 345", formatearMiles(12345))
+    }
+
+    @Test
+    fun laInsigniaNoApareceSinAvisosSinLeer() {
+        assertNull(textoDeInsignia(0))
+        assertNull(textoDeInsignia(-1))
+    }
+
+    @Test
+    fun laInsigniaMuestraLaCantidadHastaNueveYDespuesMasNueve() {
+        assertEquals("1", textoDeInsignia(1))
+        assertEquals("9", textoDeInsignia(9))
+        assertEquals("9+", textoDeInsignia(10))
+        assertEquals("9+", textoDeInsignia(50))
     }
 }

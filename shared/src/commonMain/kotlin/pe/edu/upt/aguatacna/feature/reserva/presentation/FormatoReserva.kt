@@ -51,6 +51,13 @@ fun describirHora(momento: LocalDateTime, referencia: LocalDateTime): String {
     return if (redondeado.date == referencia.date) formatearHora(redondeado.time) else describirMomento(momento, referencia)
 }
 
+/** Lo que dice la insignia de la campana: nada si no hay avisos sin leer y "9+" desde diez. */
+fun textoDeInsignia(sinLeer: Int): String? = when {
+    sinLeer <= 0 -> null
+    sinLeer > 9 -> "9+"
+    else -> sinLeer.toString()
+}
+
 private fun hora24(hora: LocalTime) = "${hora.hour}:${hora.minute.toString().padStart(2, '0')}"
 
 /** Cuándo pasó algo, como en la lista de avisos: "hace 12 min", "hoy 14:05", "ayer 19:40". */

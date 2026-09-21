@@ -20,6 +20,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.PerfilHogar
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.Reserva
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.TipoLlenado
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.AbastecimientosDelSector
+import pe.edu.upt.aguatacna.feature.reserva.domain.repository.RegistroDeAvisos
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.ReservaRepository
 
 private const val MILIS_POR_MINUTO = 60_000L
@@ -36,6 +37,7 @@ private fun cadaMinuto(): Flow<Unit> = flow {
 class ReservaViewModel(
     private val repositorio: ReservaRepository,
     private val sector: AbastecimientosDelSector,
+    private val avisos: RegistroDeAvisos,
     private val ahora: () -> LocalDateTime,
     reloj: Flow<Unit> = cadaMinuto()
 ) : ViewModel() {
@@ -48,9 +50,9 @@ class ReservaViewModel(
 
     init {
         viewModelScope.launch {
-            combine(repositorio.observarPerfil(), repositorio.observarReserva(), reloj) { perfil, reserva, _ ->
-                perfil to reserva
-            }.collect { (perfil, reserva) -> publicar(perfil, reserva) }
+            combine(repositorio.observarPerfil(), repositorio.observarReserva(), avisos.observar(), reloj) { perfil, reserva, guardados, _ ->
+                Triple(perfil, reserva, guardados.count { !it.leido })
+            }.collect { (perfil, reserva, sinLeer) -> publicar(perfil, reserva, sinLeer) }
         }
     }
 
@@ -84,7 +86,7 @@ class ReservaViewModel(
         return repositorio.registrarLlenado(LocalDateTime(llenado.momento.date, hora), TipoLlenado.COMPLETO)
     }
 
-    private suspend fun publicar(perfil: PerfilHogar?, reserva: Reserva?) {
+    private suspend fun publicar(perfil: PerfilHogar?, reserva: Reserva?, avisosSinLeer: Int) {
         reservaActual = reserva
         val momento = ahora()
         val vista = if (perfil == null || reserva == null) {
@@ -93,19 +95,19 @@ class ReservaViewModel(
             val hogar = ContextoDelHogar(perfil.tipoReservorio, perfil.habitantes.cantidad, sector.nombreDelSector())
             construirVista(reserva, hogar, sector.proximoDesde(momento), repositorio.litrosPorHabitanteDia(), momento)
         }
-        _uiState.update { it.copy(cargando = false, hogarConfigurado = perfil != null, vista = vista) }
+        _uiState.update { it.copy(cargando = false, hogarConfigurado = perfil != null, avisosSinLeer = avisosSinLeer, vista = vista) }
     }
 
     companion object {
         private const val SIN_RESERVA = "Aún no hay una reserva"
 
         // Temporal: se reemplaza cuando el core conecte la inyección de dependencias (T028).
-        fun conDatosDePrueba() = ReservaViewModel(ReservaDePrueba.repositorio, ReservaDePrueba.sector, ReservaDePrueba.reloj)
+        fun conDatosDePrueba() = ReservaViewModel(ReservaDePrueba.repositorio, ReservaDePrueba.sector, RegistroVacio, ReservaDePrueba.reloj)
 
         /** Con la inyección iniciada usa la base real; sin ella (iOS aún) recurre a los datos de prueba. */
         fun desdeInyeccion(): ReservaViewModel {
             val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
-            return ReservaViewModel(koin.get(), koin.get(), koin.get<Reloj>()::ahora)
+            return ReservaViewModel(koin.get(), koin.get(), koin.get(), koin.get<Reloj>()::ahora)
         }
     }
 }
