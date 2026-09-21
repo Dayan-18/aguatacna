@@ -79,6 +79,15 @@ fun SectorContenido(
         }
         return
     }
+    if (uiState.cronogramaDeHoy == null && uiState.proximoAbastecimiento == null) {
+        SectorSinHorarioScreen(
+            sectorNombre = sector.nombre,
+            distrito = sector.distrito,
+            codigoSector = sector.id.substringAfterLast('-'),
+            confirmaciones = uiState.confirmacionesDeHoy
+        )
+        return
+    }
     IconosClarosEnBarraDeEstado(claros = true)
     val margen = Modifier.padding(horizontal = 20.dp)
 
