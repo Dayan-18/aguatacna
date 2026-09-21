@@ -43,6 +43,11 @@ fun RegistrarDomicilioScreen(onVolver: () -> Unit = {}) {
             etiquetaSector = "SECTOR 04",
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
+        BotonesUbicacion(
+            onUsarUbicacion = {},
+            onMarcarEnMapa = {},
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
     }
 }
 
