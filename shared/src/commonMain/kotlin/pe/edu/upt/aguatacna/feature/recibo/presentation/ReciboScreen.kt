@@ -30,7 +30,6 @@ import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -43,15 +42,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.launch
+import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.util.RelojDelSistema
+import pe.edu.upt.aguatacna.feature.recibo.data.BorradorReciboStore
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.aBorrador
+import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Divisor
@@ -64,10 +73,10 @@ import pe.edu.upt.aguatacna.core.ui.theme.Tinta
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
 import pe.edu.upt.aguatacna.core.ui.theme.sombraSuave
+import pe.edu.upt.aguatacna.feature.recibo.presentation.captura.CamaraReciboScreen
+import pe.edu.upt.aguatacna.feature.recibo.presentation.comun.EstiloEstado
 
-// Colores específicos del diseño
-private val OcreFondo = Color(0xFFFDF2E7)
-private val OcreBorde = Color(0x33E18228) // 20% opacidad
+// Colores específicos del diseño (ya existían, no se crean nuevos — T-0.2)
 private val RojoFondo = Color(0xFFFEF2F2)
 private val Rojo = Color(0xFFDC2626)
 private val TealClaro = Color(0xFFE4F3F4)
@@ -78,13 +87,17 @@ private val InfoBorde = Color(0x33087E8B)
 /**
  * Pantalla principal del feature Recibo.
  * Actúa como pantalla base y gestiona el flujo hacia las sub-pantallas
- * (historial, foto y lectura manual de medidor).
+ * (historial, cámara, foto/revisión y lectura manual de medidor).
  */
 @Composable
 fun ReciboScreen(
     resetTrigger: Int = 0
 ) {
     var subPantalla by rememberSaveable { mutableStateOf("principal") }
+    var campoEdicion by rememberSaveable { mutableStateOf(TipoCampoEdicion.CONSUMO_M3) }
+    val borradorStore: BorradorReciboStore = remember { KoinPlatform.getKoin().get() }
+    val reciboRepo: ReciboRepository = remember { KoinPlatform.getKoin().get() }
+    val coroutineScope = rememberCoroutineScope()
 
     // Si el usuario toca el icono de Recibo en la barra inferior desde una sub-pantalla,
     // vuelve a la pantalla base. Si ya está en la base, no se recarga nada.
@@ -95,13 +108,74 @@ fun ReciboScreen(
     }
 
     when (subPantalla) {
-        "historial" -> ReciboHistorialScreen(onVolver = { subPantalla = "principal" })
-        "foto" -> ReciboFotoScreen(onVolver = { subPantalla = "principal" })
-        "manualMedidor" -> ReciboManualMedidorScreen(onVolver = { subPantalla = "principal" })
+        "historial" -> ReciboHistorialScreen(
+            onVolver = { subPantalla = "principal" },
+            onModificarRecibo = { periodo ->
+                coroutineScope.launch {
+                    val recibo = reciboRepo.obtenerPorPeriodo(periodo)
+                    if (recibo != null) {
+                        borradorStore.guardar(recibo.aBorrador())
+                    } else {
+                        borradorStore.guardar(
+                            pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador(
+                                periodoConsumo = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(periodo, 1f),
+                                consumoM3 = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(null, 1f),
+                                importeTotal = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(null, 1f),
+                                origen = pe.edu.upt.aguatacna.feature.recibo.domain.model.OrigenDatos.MANUAL
+                            )
+                        )
+                    }
+                    subPantalla = "foto"
+                }
+            }
+        )
+        "camara" -> CamaraReciboScreen(
+            onReciboDetectado = { subPantalla = "foto" },
+            onIngresarManual = {
+                campoEdicion = TipoCampoEdicion.CONSUMO_M3
+                subPantalla = "manualMedidor"
+            },
+            onVolver = { subPantalla = "principal" }
+        )
+        "foto" -> ReciboFotoScreen(
+            onVolver = { subPantalla = "principal" },
+            onRetomarFoto = { subPantalla = "camara" },
+            onCorregirCampo = { campo ->
+                campoEdicion = campo
+                subPantalla = "manualMedidor"
+            }
+        )
+        // T-3.7, T-9.1: Pantalla parametrizada con el campo editable
+        "manualMedidor" -> ReciboManualMedidorScreen(
+            campo = campoEdicion,
+            onVolver = { subPantalla = "foto" }
+        )
         else -> ReciboContenidoPrincipal(
             onVerHistorial = { subPantalla = "historial" },
-            onEscanearRecibo = { subPantalla = "foto" },
-            onLecturaManual = { subPantalla = "manualMedidor" }
+            onEscanearRecibo = { subPantalla = "camara" },
+            onRevisarLectura = { reciboOriginal ->
+                if (reciboOriginal != null) {
+                    borradorStore.guardar(reciboOriginal.aBorrador())
+                }
+                subPantalla = "foto"
+            },
+            onIngresarManual = {
+                val ahora = RelojDelSistema().ahora()
+                val periodoActual = pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo(ahora.year, ahora.monthNumber)
+                borradorStore.guardar(
+                    pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador(
+                        periodoConsumo = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(
+                            periodoActual,
+                            confianza = 1f,
+                            corregidoPorUsuario = false
+                        ),
+                        consumoM3 = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(null, 1f, corregidoPorUsuario = false),
+                        importeTotal = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(null, 1f, corregidoPorUsuario = false),
+                        origen = pe.edu.upt.aguatacna.feature.recibo.domain.model.OrigenDatos.MANUAL
+                    )
+                )
+                subPantalla = "foto"
+            }
         )
     }
 }
@@ -110,8 +184,20 @@ fun ReciboScreen(
 private fun ReciboContenidoPrincipal(
     onVerHistorial: () -> Unit,
     onEscanearRecibo: () -> Unit,
-    onLecturaManual: () -> Unit
+    onRevisarLectura: (pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo?) -> Unit,
+    onIngresarManual: () -> Unit = {},
+    viewModel: ReciboViewModel = viewModel { ReciboViewModel.desdeInyeccion() }
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val subtituloEncabezado = when (val s = uiState) {
+        is ReciboUiState.ConDatos -> {
+            val medidor = s.reciboOriginal?.numeroMedidor?.let { "Medidor $it · " } ?: ""
+            "${medidor}EPS Tacna · ${s.mes}"
+        }
+        else -> "EPS Tacna"
+    }
+
     IconosClarosEnBarraDeEstado(claros = false)
     Column(
         modifier = Modifier
@@ -121,27 +207,51 @@ private fun ReciboContenidoPrincipal(
             .verticalScroll(rememberScrollState())
     ) {
         // ── Header (sin flecha de volver) ──
-        EncabezadoRecibo()
+        EncabezadoRecibo(subtitulo = subtituloEncabezado)
 
         // ── Contenido scrolleable ──
         Column(
             modifier = Modifier.padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ── Tarjeta Recibo Activo (Hero Card) ──
-            TarjetaReciboActivo(onVerHistorial)
+            when (val state = uiState) {
+                is ReciboUiState.Cargando -> {
+                    // Mientras carga, mostrar solo la tarjeta de escaneo
+                    TarjetaEscanear(onEscanearRecibo = onEscanearRecibo, onIngresarManual = onIngresarManual)
+                }
 
-            // ── Escanear nuevo recibo ──
-            TarjetaEscanear(onEscanearRecibo)
+                is ReciboUiState.SinRecibos -> {
+                    // Sin recibos: escaneo principal + opción de ingreso a mano
+                    TarjetaEscanearPrincipal(
+                        onEscanearRecibo = onEscanearRecibo,
+                        onIngresarManual = onIngresarManual
+                    )
+                }
 
-            // ── Lectura manual del medidor (mismo tamaño) ──
-            TarjetaLecturaManual(onLecturaManual)
+                is ReciboUiState.ConDatos -> {
+                    val estilo = EstiloEstado.desde(state.estadoConsumo)
 
-            // ── Herramientas y Reportes ──
-            SeccionHerramientas()
+                    // ── Tarjeta Recibo Activo (Hero Card) con datos reales ──
+                    TarjetaReciboActivo(
+                        state = state,
+                        estilo = estilo,
+                        onVerHistorial = onVerHistorial,
+                        onRevisarLectura = { onRevisarLectura(state.reciboOriginal) }
+                    )
 
-            // ── Banner informativo Sunass ──
-            BannerSunass()
+                    // ── Escanear nuevo recibo o ingresar otro recibo a mano ──
+                    TarjetaEscanear(
+                        onEscanearRecibo = onEscanearRecibo,
+                        onIngresarManual = onIngresarManual
+                    )
+
+                    // ── Herramientas y Reportes ──
+                    SeccionHerramientas(promedioHistorico = state.promedioHistorico)
+
+                    // ── Banner informativo Sunass ──
+                    BannerSunass()
+                }
+            }
 
             Spacer(Modifier.height(24.dp))
         }
@@ -153,7 +263,7 @@ private fun ReciboContenidoPrincipal(
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun EncabezadoRecibo() {
+private fun EncabezadoRecibo(subtitulo: String = "EPS Tacna") {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -170,7 +280,7 @@ private fun EncabezadoRecibo() {
                 color = Tinta
             )
             Text(
-                "Suministro N° 0412887 · EPS Tacna",
+                subtitulo,
                 fontFamily = FuenteTexto,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
@@ -198,11 +308,16 @@ private fun EncabezadoRecibo() {
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Tarjeta Recibo Activo (Hero Card)
+// Tarjeta Recibo Activo (Hero Card) — T-3.3: datos reales
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
+private fun TarjetaReciboActivo(
+    state: ReciboUiState.ConDatos,
+    estilo: EstiloEstado,
+    onVerHistorial: () -> Unit,
+    onRevisarLectura: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -212,7 +327,7 @@ private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
             .border(1.dp, Divisor.copy(alpha = 0.5f), RoundedCornerShape(26.dp))
             .padding(20.dp)
     ) {
-        // Fila superior: Mes + badge atípico
+        // Fila superior: Mes + badge estado
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -244,7 +359,7 @@ private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
                         letterSpacing = 1.sp
                     )
                     Text(
-                        "Agosto 2026",
+                        state.mes, // ← dato real (T-3.3)
                         fontFamily = FuenteTexto,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -252,13 +367,13 @@ private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
                     )
                 }
             }
-            // Badge atípico
-            BadgeAtipico()
+            // Badge estado dinámico (T-3.4)
+            BadgeEstado(estilo)
         }
 
         Spacer(Modifier.height(12.dp))
 
-        // Precio y vencimiento
+        // Precio y vencimiento — datos reales (T-3.3)
         HorizontalDivider(color = Divisor)
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
@@ -270,14 +385,20 @@ private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text("S/", fontFamily = FuenteNumeros, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TintaSuave)
                     Spacer(Modifier.width(4.dp))
-                    Text("74,20", fontFamily = FuenteNumeros, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold, color = Tinta)
+                    Text(
+                        state.importeDisplay, // ← dato real
+                        fontFamily = FuenteNumeros,
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Tinta
+                    )
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text("Vencimiento", fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TintaTenue)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "28 Ago 2026",
+                    state.fechaVencimiento, // ← dato real
                     fontFamily = FuenteTexto,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -293,7 +414,7 @@ private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
 
         Spacer(Modifier.height(10.dp))
 
-        // Métricas: Consumo y Variación
+        // Métricas: Consumo y Variación — datos reales (T-3.3) con colores dinámicos (T-3.4)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             // Consumo facturado
             Column(
@@ -307,43 +428,57 @@ private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
                 Text("Consumo facturado", fontFamily = FuenteTexto, fontSize = 11.sp, color = TintaSuave)
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text("33", fontFamily = FuenteNumeros, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Tinta)
+                    Text(
+                        state.consumoM3.toString(), // ← dato real
+                        fontFamily = FuenteNumeros,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Tinta
+                    )
                     Spacer(Modifier.width(4.dp))
                     Text("m³", fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
                 }
             }
-            // Variación Sunass
+            // Variación Sunass — color dinámico (T-3.4)
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(OcreFondo)
-                    .border(1.dp, Color(0xFFFDE0B5), RoundedCornerShape(12.dp))
+                    .background(estilo.colorFondo)
+                    .border(1.dp, estilo.colorBorde, RoundedCornerShape(12.dp))
                     .padding(10.dp)
             ) {
-                Text("Variación Sunass", fontFamily = FuenteTexto, fontSize = 11.sp, color = Ocre)
+                Text("Variación Sunass", fontFamily = FuenteTexto, fontSize = 11.sp, color = estilo.variacionColor)
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text("+106 %", fontFamily = FuenteNumeros, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Ocre)
+                    Text(
+                        state.variacionTexto, // ← dato real
+                        fontFamily = FuenteNumeros,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = estilo.variacionColor
+                    )
                     Spacer(Modifier.width(4.dp))
-                    Text("vs prom.", fontFamily = FuenteTexto, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = Ocre.copy(alpha = 0.7f))
+                    Text("vs prom.", fontFamily = FuenteTexto, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = estilo.variacionColor.copy(alpha = 0.7f))
                 }
             }
         }
 
         Spacer(Modifier.height(12.dp))
 
-        // Botón principal naranja: Ver histórico y cómo reclamar
+        // T-3.5: Botón principal dinámico — naranja si atípico, teal si normal
         Button(
             onClick = onVerHistorial,
             modifier = Modifier.fillMaxWidth().height(48.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Ocre)
+            colors = ButtonDefaults.buttonColors(containerColor = estilo.botonHistorialColor)
         ) {
-            Icon(Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(18.dp), tint = Blanco)
-            Spacer(Modifier.width(8.dp))
+            if (state.esAtipico) {
+                Icon(Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(18.dp), tint = Blanco)
+                Spacer(Modifier.width(8.dp))
+            }
             Text(
-                "Ver histórico y cómo reclamar",
+                estilo.botonHistorialTexto,
                 fontFamily = FuenteTexto,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
@@ -352,9 +487,9 @@ private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
 
         Spacer(Modifier.height(8.dp))
 
-        // Botón secundario: Revisar lectura y datos detectados → manda a historial
+        // T-3.8: Botón "Revisar lectura y datos detectados" — visible solo con recibo
         OutlinedButton(
-            onClick = onVerHistorial,
+            onClick = onRevisarLectura,
             modifier = Modifier.fillMaxWidth().height(40.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -372,11 +507,100 @@ private fun TarjetaReciboActivo(onVerHistorial: () -> Unit) {
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Escanear nuevo recibo
+// Estado vacío: Tarjeta principal de escaneo (T-3.2)
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TarjetaEscanear(onEscanearRecibo: () -> Unit) {
+private fun TarjetaEscanearPrincipal(
+    onEscanearRecibo: () -> Unit,
+    onIngresarManual: () -> Unit = {}
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .sombraSuave(24.dp)
+            .clip(RoundedCornerShape(28.dp))
+            .background(Blanco)
+            .border(1.dp, Divisor.copy(alpha = 0.5f), RoundedCornerShape(28.dp))
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Ícono grande de cámara
+        Box(
+            modifier = Modifier
+                .size(72.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(TealClaro)
+                .border(1.dp, TealBorde, RoundedCornerShape(20.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Outlined.PhotoCamera,
+                contentDescription = null,
+                tint = AguaMedia,
+                modifier = Modifier.size(36.dp)
+            )
+        }
+
+        Text(
+            "Escanea tu recibo",
+            fontFamily = FuenteTexto,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Tinta
+        )
+
+        Text(
+            "Toma una foto de tu recibo de EPS Tacna y la app leerá los datos automáticamente.",
+            fontFamily = FuenteTexto,
+            fontSize = 13.sp,
+            color = TintaSuave,
+            lineHeight = 18.sp,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        Spacer(Modifier.height(4.dp))
+
+        Button(
+            onClick = onEscanearRecibo,
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = AguaMedia)
+        ) {
+            Icon(Icons.Outlined.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = Blanco)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "Tomar foto del recibo",
+                fontFamily = FuenteTexto,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
+        }
+
+        // T-9.6: Opción de entrada manual sin cámara
+        Text(
+            text = "o ingresa los datos a mano",
+            fontFamily = FuenteTexto,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = AguaMedia,
+            modifier = Modifier
+                .clickable(onClick = onIngresarManual)
+                .padding(top = 4.dp, bottom = 4.dp, start = 8.dp, end = 8.dp)
+        )
+    }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Escanear nuevo recibo — T-3.6: botón "+" reducido
+// ──────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun TarjetaEscanear(
+    onEscanearRecibo: () -> Unit,
+    onIngresarManual: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -393,7 +617,8 @@ private fun TarjetaEscanear(onEscanearRecibo: () -> Unit) {
                 .size(56.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(TealClaro)
-                .border(1.dp, TealBorde, RoundedCornerShape(16.dp)),
+                .border(1.dp, TealBorde, RoundedCornerShape(16.dp))
+                .clickable(onClick = onEscanearRecibo),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -415,128 +640,70 @@ private fun TarjetaEscanear(onEscanearRecibo: () -> Unit) {
                 color = Tinta
             )
             Text(
-                "Sube o toma una foto para digitalizar el consumo automáticamente.",
+                "Sube o toma una foto para digitalizar.",
                 fontFamily = FuenteTexto,
                 fontSize = 11.sp,
                 color = TintaSuave,
-                maxLines = 2
+                maxLines = 1
+            )
+            Text(
+                text = "o ingresar otro recibo a mano",
+                fontFamily = FuenteTexto,
+                fontSize = 11.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = AguaMedia,
+                modifier = Modifier
+                    .clickable(onClick = onIngresarManual)
+                    .padding(top = 2.dp)
             )
         }
 
         Spacer(Modifier.width(8.dp))
 
-        // Botón "+"
+        // Botón "+" reducido
         IconButton(
             onClick = onEscanearRecibo,
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(AguaMedia)
+            modifier = Modifier.size(40.dp)
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Escanear", tint = Blanco, modifier = Modifier.size(20.dp))
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(AguaMedia),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Escanear", tint = Blanco, modifier = Modifier.size(18.dp))
+            }
         }
     }
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Lectura manual del medidor (mismo tamaño y estilo que escanear)
+// Badge estado dinámico (T-3.4)
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TarjetaLecturaManual(onLecturaManual: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .sombraSuave(24.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(Blanco)
-            .border(1.dp, Divisor.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
-            .clickable(onClick = onLecturaManual)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Ícono medidor
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFFE8F0F1))
-                .border(1.dp, Divisor, RoundedCornerShape(16.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.Outlined.Speed,
-                contentDescription = null,
-                tint = AguaMedia,
-                modifier = Modifier.size(28.dp)
-            )
-        }
-
-        Spacer(Modifier.width(14.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                "Lectura manual del medidor",
-                fontFamily = FuenteTexto,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Tinta
-            )
-            Text(
-                "Ingresa la lectura de tu medidor de agua manualmente.",
-                fontFamily = FuenteTexto,
-                fontSize = 11.sp,
-                color = TintaSuave,
-                maxLines = 2
-            )
-        }
-
-        Spacer(Modifier.width(8.dp))
-
-        // Botón flecha
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(AguaMedia),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Ir a lectura manual",
-                tint = Blanco,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
-
-// ──────────────────────────────────────────────────────────────────────
-// Badge "Atípico"
-// ──────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun BadgeAtipico() {
+private fun BadgeEstado(estilo: EstiloEstado) {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .background(OcreFondo)
-            .border(1.dp, OcreBorde, RoundedCornerShape(50))
+            .background(estilo.chipColorFondo)
+            .border(1.dp, estilo.chipColorBorde, RoundedCornerShape(50))
             .padding(horizontal = 12.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Ocre))
-        Text("Atípico", fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Ocre)
+        Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(estilo.chipColorTexto))
+        Text(estilo.chipTexto, fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = estilo.chipColorTexto)
     }
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Sección Herramientas y Reportes
+// Sección Herramientas y Reportes — dato de promedio real (T-3.3)
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun SeccionHerramientas() {
+private fun SeccionHerramientas(promedioHistorico: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         // Encabezado
         Row(
@@ -560,13 +727,13 @@ private fun SeccionHerramientas() {
             )
         }
 
-        // 1. Histórico de 6 meses
+        // 1. Histórico de 6 meses — dato real de promedio
         TarjetaHerramienta(
             iconoVector = Icons.Outlined.BarChart,
             iconoColor = AguaMedia,
             iconoFondo = Color(0xFFF0F8F8),
             titulo = "Histórico de 6 meses",
-            subtitulo = "Promedio regular: 16 m³",
+            subtitulo = "Promedio regular: $promedioHistorico m³", // ← dato real (T-3.3)
             trailingContent = {
                 // Mini barras
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(3.dp)) {

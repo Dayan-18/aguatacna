@@ -11,7 +11,7 @@ class ModulosAppTest {
 
     @Test
     fun elCoreYCadaFeatureTienenSuModuloDeInyeccion() {
-        assertEquals(5, modulosApp.size)
+        assertEquals(6, modulosApp.size)
     }
 
     @Test

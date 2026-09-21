@@ -8,12 +8,17 @@ import pe.edu.upt.aguatacna.core.db.AguaTacnaDatabase
 import pe.edu.upt.aguatacna.core.db.crearBaseDeDatos
 import pe.edu.upt.aguatacna.data.IdentidadLocal
 
+import pe.edu.upt.aguatacna.feature.recibo.domain.port.ReconocedorTexto
+import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ReconocedorTextoAndroid
+
 /** Lo que solo Android sabe aportar: la base de datos y el usuario local. */
 fun moduloPlataforma(base: AguaTacnaDatabase, usuarioId: String) = module {
     single { base }
     single { base.usuarioDao() }
     single { base.reservaDao() }
+    single { base.reciboDao() }
     single(QUALIFICADOR_USUARIO) { usuarioId }
+    single<ReconocedorTexto> { ReconocedorTextoAndroid() }
 }
 
 /** Se llama una sola vez desde la clase `Application`, antes de mostrar ninguna pantalla. */

@@ -1,11 +1,13 @@
 package pe.edu.upt.aguatacna.core.db
 
+import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import pe.edu.upt.aguatacna.data.local.UsuarioDao
 import pe.edu.upt.aguatacna.data.local.UsuarioEntity
+import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboDao
 import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.EventoLlenadoEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.NovedadReservaEntity
@@ -26,13 +28,17 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
         ReciboEntity::class,
         RetoEntity::class
     ],
-    version = 1,
-    exportSchema = true
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 @ConstructedBy(AguaTacnaDatabaseConstructor::class)
 abstract class AguaTacnaDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
     abstract fun reservaDao(): ReservaDao
+    abstract fun reciboDao(): ReciboDao
 }
 
 // Room genera el `actual` de cada plataforma.

@@ -23,8 +23,10 @@ work = "2.11.2"
 filekit = "0.10.0"
 moko-permissions = "0.19.1"
 compose-material-icons = "1.7.3"
+mlkit-text-recognition = "16.0.1"
 
 [libraries]
+mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text-recognition" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }

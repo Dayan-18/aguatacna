@@ -7,6 +7,7 @@ import platform.Foundation.NSHomeDirectory
 
 fun crearBaseDeDatos(): AguaTacnaDatabase =
     Room.databaseBuilder<AguaTacnaDatabase>(name = "${NSHomeDirectory()}/$NOMBRE_BASE_DE_DATOS")
+        .fallbackToDestructiveMigration(dropAllTables = true)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

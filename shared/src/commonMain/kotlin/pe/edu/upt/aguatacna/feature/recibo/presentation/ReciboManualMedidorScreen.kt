@@ -16,10 +16,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -27,6 +28,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,40 +40,100 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
+import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.util.RelojDelSistema
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Divisor
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.core.ui.theme.FuenteNumeros
 import pe.edu.upt.aguatacna.core.ui.theme.FuenteTexto
 import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
+import pe.edu.upt.aguatacna.core.ui.theme.Ocre
 import pe.edu.upt.aguatacna.core.ui.theme.Tinta
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
 import pe.edu.upt.aguatacna.core.ui.theme.sombraSuave
+import pe.edu.upt.aguatacna.feature.recibo.data.BorradorReciboStore
+import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.CorregirCampoUseCase
 
 // Colores específicos del diseño manual medidor
 private val FondoPantalla = Color(0xFFF1F6F8)
-private val InfoFondo = Color(0xC0DCF0F4) // 75% opacidad
-private val InfoTexto = Color(0xFF16606A)
-private val InfoIcono = Color(0xFF0D7D8A)
 private val DigitoFondo = Color(0xFFF0F6F8)
 private val DigitoTexto = Color(0xFF14232C)
 private val CursorColor = Color(0xFF0992A5)
 private val CursorBorde = Color(0xFF0992A5)
-private val BadgeFondo = Color(0x99DBE8ED) // 60% opacidad
-private val BadgeTexto = Color(0xFF52707F)
 private val TeclaFondo = Blanco
-private val TeclaSombra = Color(0x08000000)
 private val BotonGuardar = Color(0xFF098093)
-private val MetaTexto = Color(0xFF7F8F99)
-private val MetaValor = Color(0xFF1E2E38)
+
+enum class TipoCampoEdicion(val nombre: String, val unidad: String) {
+    CONSUMO_M3("consumo", "m³"),
+    LECTURA_ANTERIOR("lectura anterior", "m³"),
+    LECTURA_ACTUAL("lectura actual", "m³"),
+    IMPORTE("importe total", "S/"),
+    PERIODO("período de consumo", "")
+}
 
 /**
- * Pantalla de lectura manual del medidor.
- * Corresponde al diseño de manualMedidor.html.
+ * Pantalla de corrección manual de campos del recibo (Fase 9).
+ * Permite corregir consumo, lecturas, importe y período (mes/año).
  */
 @Composable
-fun ReciboManualMedidorScreen(onVolver: () -> Unit) {
+fun ReciboManualMedidorScreen(
+    onVolver: () -> Unit,
+    campo: TipoCampoEdicion = TipoCampoEdicion.CONSUMO_M3,
+    borradorStore: BorradorReciboStore = KoinPlatform.getKoin().get(),
+    corregirUseCase: CorregirCampoUseCase = CorregirCampoUseCase()
+) {
+    val ahora = remember {
+        RelojDelSistema().ahora()
+    }
+    val periodoActual = remember(ahora) {
+        PeriodoConsumo(ahora.year, ahora.monthNumber)
+    }
+    var borrador = borradorStore.borrador.value
+    if (borrador == null) {
+        val nuevo = pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador(
+            periodoConsumo = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(
+                periodoActual,
+                confianza = 1f
+            ),
+            consumoM3 = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(null, 1f),
+            importeTotal = pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo(null, 1f),
+            origen = pe.edu.upt.aguatacna.feature.recibo.domain.model.OrigenDatos.MANUAL
+        )
+        borradorStore.guardar(nuevo)
+        borrador = nuevo
+    }
+
+    val valorDetectado = remember(campo, borrador) {
+        when (campo) {
+            TipoCampoEdicion.CONSUMO_M3 -> borrador.consumoM3.valor?.let { if (it == 0) "" else it.toString() } ?: ""
+            TipoCampoEdicion.LECTURA_ANTERIOR -> borrador.lecturaAnteriorM3.valor?.let { if (it == 0) "" else it.toString() } ?: ""
+            TipoCampoEdicion.LECTURA_ACTUAL -> borrador.lecturaActualM3.valor?.let { if (it == 0) "" else it.toString() } ?: ""
+            TipoCampoEdicion.IMPORTE -> borrador.importeTotal.valor?.let {
+                val soles = it.centimos / 100
+                val cent = it.centimos % 100
+                if (it.centimos == 0L) "" else "$soles,${cent.toString().padStart(2, '0')}"
+            } ?: ""
+            TipoCampoEdicion.PERIODO -> borrador.periodoConsumo.valor?.displayCompleto ?: ""
+        }
+    }
+
+    var entrada by remember(valorDetectado) {
+        mutableStateOf(if (valorDetectado == "0" || valorDetectado == "0,00") "" else valorDetectado)
+    }
+    var periodoSeleccionado by remember(borrador) {
+        mutableStateOf(borrador.periodoConsumo.valor ?: periodoActual)
+    }
+    var errorMensaje by remember { mutableStateOf<String?>(null) }
+
+    val permiteComa = campo == TipoCampoEdicion.IMPORTE
+    val maxDigitos = when (campo) {
+        TipoCampoEdicion.CONSUMO_M3 -> 3 // 0..999 m³
+        TipoCampoEdicion.IMPORTE -> 7 // Ej: 1234,56
+        else -> 6 // Lecturas de medidor hasta 999999
+    }
+
     IconosClarosEnBarraDeEstado(claros = false)
     Column(
         modifier = Modifier
@@ -76,18 +141,137 @@ fun ReciboManualMedidorScreen(onVolver: () -> Unit) {
             .background(FondoPantalla)
             .statusBarsPadding()
     ) {
-        // ── Parte superior: Header + Info + Tarjeta de dígitos ──
+        // ── Parte superior: Header + Tarjeta de entrada ──
         Column(modifier = Modifier.weight(1f)) {
-            EncabezadoMedidor(onVolver)
-            CalloutInformativo()
-            TarjetaLectura()
+            EncabezadoCorreccion(
+                onVolver = onVolver,
+                titulo = if (campo == TipoCampoEdicion.PERIODO) "Seleccionar período" else "Corregir ${campo.nombre}",
+                subtitulo = if (campo == TipoCampoEdicion.PERIODO) {
+                    "Recibo para: ${periodoSeleccionado.displayCompleto}"
+                } else {
+                    "Valor actual: ${if (valorDetectado.isBlank()) "Sin datos" else "$valorDetectado ${campo.unidad}"}"
+                }
+            )
+
+            if (campo == TipoCampoEdicion.PERIODO) {
+                SelectorPeriodo(
+                    periodoSeleccionado = periodoSeleccionado,
+                    onSeleccionarPeriodo = { periodoSeleccionado = it }
+                )
+            } else {
+                TarjetaDigitos(
+                    campoEtiqueta = "${campo.nombre} en ${campo.unidad}".uppercase(),
+                    digitos = entrada,
+                    unidad = campo.unidad,
+                    valorDetectado = if (valorDetectado.isBlank()) "0" else valorDetectado,
+                    errorMensaje = errorMensaje,
+                    maxDigitos = maxDigitos
+                )
+            }
         }
 
-        // ── Parte inferior: Teclado numérico + Botón guardar ──
+        // ── Parte inferior: Teclado numérico (o espacio) + Botón guardar ──
         Column(modifier = Modifier.padding(bottom = 32.dp)) {
-            TecladoNumerico()
-            Spacer(Modifier.height(20.dp))
-            BotonGuardarLectura()
+            if (campo != TipoCampoEdicion.PERIODO) {
+                TecladoNumerico(
+                    permiteComa = permiteComa,
+                    onDigitoPulsado = { tecla ->
+                        errorMensaje = null
+                        if (tecla == "←") {
+                            if (entrada.isNotEmpty()) {
+                                entrada = entrada.dropLast(1)
+                            }
+                        } else if (tecla == ",") {
+                            if (permiteComa && !entrada.contains(',')) {
+                                entrada = if (entrada.isEmpty()) "0," else entrada + ","
+                            }
+                        } else {
+                            // Si ya tiene coma en importe, permitir máx 2 decimales
+                            if (permiteComa && entrada.contains(',')) {
+                                val partes = entrada.split(',')
+                                if (partes.size > 1 && partes[1].length >= 2) {
+                                    return@TecladoNumerico
+                                }
+                            }
+                            if (entrada == "0" && tecla != ",") {
+                                entrada = tecla
+                            } else if (entrada.length < maxDigitos) {
+                                entrada += tecla
+                            }
+                        }
+                    }
+                )
+                Spacer(Modifier.height(20.dp))
+            }
+
+            BotonGuardar(
+                onGuardar = {
+                    when (campo) {
+                        TipoCampoEdicion.PERIODO -> {
+                            borradorStore.actualizar { borradorActual ->
+                                corregirUseCase(borradorActual, CorregirCampoUseCase.CampoEditable.Periodo(periodoSeleccionado))
+                            }
+                            onVolver()
+                        }
+                        TipoCampoEdicion.CONSUMO_M3 -> {
+                            val numero = entrada.toIntOrNull()
+                            if (numero == null || numero !in 0..999) {
+                                errorMensaje = "Ingresa un consumo válido entre 0 y 999 m³"
+                            } else {
+                                borradorStore.actualizar { borradorActual ->
+                                    corregirUseCase(borradorActual, CorregirCampoUseCase.CampoEditable.ConsumoM3(numero))
+                                }
+                                onVolver()
+                            }
+                        }
+                        TipoCampoEdicion.LECTURA_ANTERIOR -> {
+                            val numero = entrada.toIntOrNull()
+                            if (numero == null || numero < 0) {
+                                errorMensaje = "Ingresa una lectura válida"
+                            } else {
+                                val actual = borrador.lecturaActualM3.valor
+                                if (actual != null && numero > actual) {
+                                    errorMensaje = "La lectura anterior no puede superar la actual ($actual m³)"
+                                } else {
+                                    borradorStore.actualizar { borradorActual ->
+                                        corregirUseCase(borradorActual, CorregirCampoUseCase.CampoEditable.LecturaAnterior(numero))
+                                    }
+                                    onVolver()
+                                }
+                            }
+                        }
+                        TipoCampoEdicion.LECTURA_ACTUAL -> {
+                            val numero = entrada.toIntOrNull()
+                            if (numero == null || numero < 0) {
+                                errorMensaje = "Ingresa una lectura válida"
+                            } else {
+                                val anterior = borrador.lecturaAnteriorM3.valor
+                                if (anterior != null && numero < anterior) {
+                                    errorMensaje = "La lectura actual debe ser mayor o igual a la anterior ($anterior m³)"
+                                } else {
+                                    borradorStore.actualizar { borradorActual ->
+                                        corregirUseCase(borradorActual, CorregirCampoUseCase.CampoEditable.LecturaActual(numero))
+                                    }
+                                    onVolver()
+                                }
+                            }
+                        }
+                        TipoCampoEdicion.IMPORTE -> {
+                            val normalizado = entrada.replace(',', '.')
+                            val importeDouble = normalizado.toDoubleOrNull()
+                            if (importeDouble == null || importeDouble <= 0 || importeDouble > 99999.0) {
+                                errorMensaje = "Ingresa un importe válido mayor a S/ 0"
+                            } else {
+                                val centimos = (importeDouble * 100).toLong()
+                                borradorStore.actualizar { borradorActual ->
+                                    corregirUseCase(borradorActual, CorregirCampoUseCase.CampoEditable.Importe(centimos))
+                                }
+                                onVolver()
+                            }
+                        }
+                    }
+                }
+            )
         }
     }
 }
@@ -97,7 +281,11 @@ fun ReciboManualMedidorScreen(onVolver: () -> Unit) {
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun EncabezadoMedidor(onVolver: () -> Unit) {
+private fun EncabezadoCorreccion(
+    onVolver: () -> Unit,
+    titulo: String,
+    subtitulo: String
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -123,79 +311,41 @@ private fun EncabezadoMedidor(onVolver: () -> Unit) {
             }
             Column {
                 Text(
-                    "Lectura del medidor",
+                    titulo,
                     fontFamily = FuenteTexto,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = DigitoTexto
                 )
                 Text(
-                    "Opcional · una vez al mes",
+                    subtitulo,
                     fontFamily = FuenteTexto,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     color = TintaTenue
                 )
             }
         }
-        // Badge "Secundaria"
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(BadgeFondo)
-                .padding(horizontal = 10.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(BadgeTexto))
-            Text("Secundaria", fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = BadgeTexto)
-        }
     }
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Callout informativo
+// Tarjeta de lectura con dígitos interactivos (T-9.3)
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun CalloutInformativo() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(top = 16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(InfoFondo)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Icon(
-            Icons.Outlined.Info,
-            contentDescription = null,
-            tint = InfoIcono,
-            modifier = Modifier.size(16.dp)
-        )
-        Text(
-            "En Tacna el medidor está bajo la vereda. Úsala solo si sospechas una fuga: no hace falta para que la app funcione.",
-            fontFamily = FuenteTexto,
-            fontSize = 11.sp,
-            color = InfoTexto,
-            lineHeight = 15.sp,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-// ──────────────────────────────────────────────────────────────────────
-// Tarjeta de lectura con dígitos
-// ──────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun TarjetaLectura() {
+private fun TarjetaDigitos(
+    campoEtiqueta: String,
+    digitos: String,
+    unidad: String,
+    valorDetectado: String,
+    errorMensaje: String?,
+    maxDigitos: Int = 4
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .padding(top = 16.dp)
+            .padding(top = 24.dp)
             .sombraSuave(24.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(Blanco)
@@ -204,9 +354,116 @@ private fun TarjetaLectura() {
     ) {
         // Etiqueta
         Text(
-            "LECTURA ACTUAL EN M³",
+            campoEtiqueta,
             fontFamily = FuenteTexto,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = TintaTenue,
+            letterSpacing = 1.5.sp,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        // Dígitos responsivos (T-9.3)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Render de cada carácter escrito
+            for (char in digitos) {
+                if (char == ',') {
+                    Box(
+                        modifier = Modifier
+                            .size(width = 20.dp, height = 56.dp)
+                            .padding(bottom = 8.dp),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        Text(
+                            ",",
+                            fontFamily = FuenteNumeros,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DigitoTexto
+                        )
+                    }
+                } else {
+                    CajaDigito(digito = char.toString(), activa = false)
+                }
+            }
+            // Slot activo con cursor
+            if (digitos.length < maxDigitos) {
+                CajaDigito(digito = null, activa = true)
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        if (errorMensaje != null) {
+            Text(
+                errorMensaje,
+                fontFamily = FuenteTexto,
+                fontSize = 12.sp,
+                color = Ocre,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
+        // Valor detectado original (T-9.2)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Valor detectado por OCR",
+                fontFamily = FuenteTexto,
+                fontSize = 12.sp,
+                color = TintaSuave
+            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(valorDetectado, fontFamily = FuenteNumeros, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = DigitoTexto)
+                Spacer(Modifier.width(3.dp))
+                Text(unidad, fontFamily = FuenteTexto, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectorPeriodo(
+    periodoSeleccionado: PeriodoConsumo,
+    onSeleccionarPeriodo: (PeriodoConsumo) -> Unit
+) {
+    val ahora = remember {
+        RelojDelSistema().ahora()
+    }
+    val ultimos12Meses = remember(ahora) {
+        var p = PeriodoConsumo(ahora.year, ahora.monthNumber)
+        buildList {
+            repeat(12) {
+                add(p)
+                p = p.anterior()
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(top = 24.dp)
+            .sombraSuave(24.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(Blanco)
+            .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "SELECCIONA EL PERÍODO (ÚLTIMOS 12 MESES)",
+            fontFamily = FuenteTexto,
+            fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             color = TintaTenue,
             letterSpacing = 1.5.sp,
@@ -215,39 +472,46 @@ private fun TarjetaLectura() {
 
         Spacer(Modifier.height(16.dp))
 
-        // Dígitos
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Dígito 1
-            CajaDigito("1", activa = false)
-            // Dígito 2
-            CajaDigito("3", activa = false)
-            // Dígito 3
-            CajaDigito("1", activa = false)
-            // Slot activo con cursor
-            CajaDigito(null, activa = true)
-        }
+        // Grid de 12 meses: 4 filas x 3 columnas
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            for (fila in 0 until 4) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    for (col in 0 until 3) {
+                        val index = fila * 3 + col
+                        val periodo = ultimos12Meses[index]
+                        val esSeleccionado = periodo == periodoSeleccionado
 
-        Spacer(Modifier.height(20.dp))
-
-        // Lectura anterior
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "Lectura anterior",
-                fontFamily = FuenteTexto,
-                fontSize = 12.sp,
-                color = MetaTexto
-            )
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text("1 284", fontFamily = FuenteNumeros, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MetaValor)
-                Spacer(Modifier.width(3.dp))
-                Text("m³", fontFamily = FuenteTexto, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = MetaTexto)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(52.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (esSeleccionado) BotonGuardar else DigitoFondo)
+                                .clickable { onSeleccionarPeriodo(periodo) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = periodo.mesCorto,
+                                    fontFamily = FuenteTexto,
+                                    fontSize = 13.sp,
+                                    fontWeight = if (esSeleccionado) FontWeight.Bold else FontWeight.SemiBold,
+                                    color = if (esSeleccionado) Blanco else DigitoTexto
+                                )
+                                Text(
+                                    text = periodo.anio.toString(),
+                                    fontFamily = FuenteNumeros,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = if (esSeleccionado) Blanco.copy(alpha = 0.85f) else TintaTenue
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -257,7 +521,7 @@ private fun TarjetaLectura() {
 private fun CajaDigito(digito: String?, activa: Boolean) {
     Box(
         modifier = Modifier
-            .size(width = 56.dp, height = 56.dp)
+            .size(width = 52.dp, height = 56.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(if (activa) Blanco else DigitoFondo)
             .then(
@@ -270,12 +534,12 @@ private fun CajaDigito(digito: String?, activa: Boolean) {
             Text(
                 digito,
                 fontFamily = FuenteNumeros,
-                fontSize = 26.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = DigitoTexto
             )
         } else {
-            // Cursor parpadeante (visual estático, la animación requiere lógica)
+            // Cursor
             Box(
                 modifier = Modifier
                     .width(2.dp)
@@ -288,11 +552,14 @@ private fun CajaDigito(digito: String?, activa: Boolean) {
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Teclado numérico
+// Teclado numérico interactivo
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TecladoNumerico() {
+private fun TecladoNumerico(
+    permiteComa: Boolean = false,
+    onDigitoPulsado: (String) -> Unit
+) {
     val teclas = listOf(
         listOf("1", "2", "3"),
         listOf("4", "5", "6"),
@@ -310,12 +577,17 @@ private fun TecladoNumerico() {
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 fila.forEach { tecla ->
+                    val esComa = tecla == ","
+                    val habilitada = !esComa || permiteComa
+
                     OutlinedButton(
-                        onClick = { /* Solo visual */ },
+                        onClick = { if (habilitada) onDigitoPulsado(tecla) },
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(16.dp),
+                        enabled = habilitada,
                         colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = TeclaFondo
+                            containerColor = if (habilitada) TeclaFondo else TeclaFondo.copy(alpha = 0.4f),
+                            disabledContainerColor = TeclaFondo.copy(alpha = 0.3f)
                         ),
                         border = null
                     ) {
@@ -332,7 +604,7 @@ private fun TecladoNumerico() {
                                 fontFamily = FuenteNumeros,
                                 fontSize = 19.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = DigitoTexto
+                                color = if (habilitada) DigitoTexto else DigitoTexto.copy(alpha = 0.25f)
                             )
                         }
                     }
@@ -343,13 +615,13 @@ private fun TecladoNumerico() {
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Botón guardar lectura
+// Botón guardar
 // ──────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun BotonGuardarLectura() {
+private fun BotonGuardar(onGuardar: () -> Unit) {
     Button(
-        onClick = { /* Solo visual */ },
+        onClick = onGuardar,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
@@ -358,7 +630,7 @@ private fun BotonGuardarLectura() {
         colors = ButtonDefaults.buttonColors(containerColor = BotonGuardar)
     ) {
         Text(
-            "Guardar lectura",
+            "Guardar corrección",
             fontFamily = FuenteTexto,
             fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp

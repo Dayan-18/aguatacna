@@ -29,6 +29,12 @@ class InyeccionTest {
             }
         }
         single(QUALIFICADOR_USUARIO) { "u-1" }
+        single<pe.edu.upt.aguatacna.feature.recibo.domain.port.ReconocedorTexto> {
+            object : pe.edu.upt.aguatacna.feature.recibo.domain.port.ReconocedorTexto {
+                override suspend fun reconocer(bytesImagen: ByteArray): Result<pe.edu.upt.aguatacna.feature.recibo.domain.model.TextoReconocido> =
+                    Result.success(pe.edu.upt.aguatacna.feature.recibo.domain.model.TextoReconocido(""))
+            }
+        }
     }
 
     @AfterTest

@@ -10,6 +10,7 @@ fun crearBaseDeDatos(context: Context): AguaTacnaDatabase =
         context = context.applicationContext,
         name = context.getDatabasePath(NOMBRE_BASE_DE_DATOS).absolutePath
     )
+        .fallbackToDestructiveMigration(dropAllTables = true)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
