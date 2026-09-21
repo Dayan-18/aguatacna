@@ -20,7 +20,10 @@ val listaSectores = listOf(
     Sector("AA-02", "Alto de la Alianza 02", "Alto de la Alianza", Coordenada(-17.9930, -70.2520)),
     Sector("CE-01", "Cercado 01", "Tacna", Coordenada(-18.0130, -70.2500)),
     Sector("GA-07", "Viñani", "Gregorio Albarracín Lanchipa", Coordenada(-18.0480, -70.2530)),
-    Sector("PO-01", "Pocollay 01", "Pocollay", Coordenada(-17.9980, -70.2190))
+    Sector("PO-01", "Pocollay 01", "Pocollay", Coordenada(-17.9980, -70.2190)),
+    // Sector sin entrada en horarioPorSector: EPS aún no publicó su cronograma.
+    // Sirve para el estado "Sector sin horario" (pantalla 20).
+    Sector("LG-06", "Leguía 06", "Ciudad Nueva", Coordenada(-17.9700, -70.2600))
 )
 
 private val horarioPorSector = mapOf(

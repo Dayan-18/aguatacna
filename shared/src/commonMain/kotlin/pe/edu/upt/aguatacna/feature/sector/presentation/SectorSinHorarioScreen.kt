@@ -34,18 +34,25 @@ import pe.edu.upt.aguatacna.core.ui.theme.Tinta
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 
 @Composable
-fun SectorSinHorarioScreen() {
+fun SectorSinHorarioScreen(
+    sectorNombre: String,
+    distrito: String,
+    codigoSector: String,
+    confirmaciones: Int,
+    meta: Int = 3,
+    onLlegoAgua: () -> Unit = {}
+) {
     IconosClarosEnBarraDeEstado(claros = true)
     Column(
         modifier = Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        EncabezadoSinHorario(sectorNombre = "Ciudad Nueva 04", distrito = "Ciudad Nueva", codigoSector = "04")
+        EncabezadoSinHorario(sectorNombre = sectorNombre, distrito = distrito, codigoSector = codigoSector)
         TarjetaHorarioVacio(Modifier.padding(horizontal = 20.dp))
         TarjetaAyudanos(
-            confirmaciones = 1,
-            meta = 3,
-            onLlegoAgua = {},
+            confirmaciones = confirmaciones,
+            meta = meta,
+            onLlegoAgua = onLlegoAgua,
             modifier = Modifier.padding(horizontal = 20.dp)
         )
         AvisoReservaSinProyeccion(Modifier.padding(horizontal = 20.dp))
