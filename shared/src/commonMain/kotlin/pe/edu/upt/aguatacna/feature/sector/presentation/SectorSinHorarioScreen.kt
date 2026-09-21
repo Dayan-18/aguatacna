@@ -39,6 +39,7 @@ fun SectorSinHorarioScreen() {
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         EncabezadoSinHorario(sectorNombre = "Ciudad Nueva 04", distrito = "Ciudad Nueva", codigoSector = "04")
+        TarjetaHorarioVacio(Modifier.padding(horizontal = 20.dp))
     }
 }
 
