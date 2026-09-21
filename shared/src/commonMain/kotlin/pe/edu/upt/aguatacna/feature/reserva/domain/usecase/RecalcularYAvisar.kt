@@ -21,8 +21,9 @@ class RecalcularYAvisar(
         val reserva = repositorio.observarReserva().first()
         val aviso = evaluar(reserva, sector.proximoDesde(ahora), ahora) ?: return null
         if (registro.yaSeAviso(aviso.clave)) return null
+        // Primero se guarda: aunque el usuario no haya dado permiso de notificaciones, el aviso queda en su lista.
+        registro.registrar(aviso, ahora)
         notificador.mostrar(aviso)
-        registro.marcarComoAvisado(aviso.clave)
         return aviso
     }
 }

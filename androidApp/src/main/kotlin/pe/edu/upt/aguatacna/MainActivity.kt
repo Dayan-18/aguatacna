@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import pe.edu.upt.aguatacna.feature.reserva.RecalculoHorarioWorker
 
 class MainActivity : ComponentActivity() {
 
@@ -25,6 +26,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             App()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        RecalculoHorarioWorker.recalcularAhora(this)
     }
 
     // Desde Android 13 los avisos de la reserva necesitan el permiso del usuario.

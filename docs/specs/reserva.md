@@ -20,6 +20,7 @@ agotamiento proyectado y el siguiente abastecimiento del sector.
 | 03 Mi reserva | `5:2` | Nivel en litros y %, estado de la proyección, agotamiento, déficit, consumo en L/h, L/hab·día |
 | 04 Registrar llenado | `8:2` | Llenado completo, a la mitad, "no llegó" |
 | 05 Qué recortar | `8:51` | Recomendaciones seleccionables, ahorro, horas ganadas, horas que aún faltan |
+| 13 Avisos | `16:2` | Historial de avisos: agotamiento antes del abastecimiento y confirmar el llenado (los de sector los aporta sector) |
 | 19 Te quedaste sin agua | `53:2` | Previsualizar qué cambia al declarar que se acabó el agua, ahora o a una hora anterior |
 | 20 Sector sin cronograma | `53:55` | Sin horario no hay déficit ni proyección (es una pantalla de sector) |
 | 21 Estimación no confirmada | `54:2` | Llenado asumido con opción de confirmarlo o corregir la hora |

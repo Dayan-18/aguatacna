@@ -45,7 +45,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.model.ConfirmacionEstimacion
 import pe.edu.upt.aguatacna.feature.reserva.domain.model.EstadoProyeccion
 
 @Composable
-fun EncabezadoReserva(vista: ReservaVista, onAjustes: () -> Unit) {
+fun EncabezadoReserva(vista: ReservaVista, onAvisos: () -> Unit, onAjustes: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -54,7 +54,7 @@ fun EncabezadoReserva(vista: ReservaVista, onAjustes: () -> Unit) {
     ) {
         CirculoDecorativo(Modifier.align(Alignment.TopStart))
         Column(Modifier.statusBarsPadding().padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 40.dp)) {
-            FilaSuperior(vista, onAjustes)
+            FilaSuperior(vista, onAvisos, onAjustes)
             Spacer(Modifier.height(30.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalAlignment = Alignment.CenterVertically) {
                 IndicadorNivelReservorio(vista.porcentaje / 100f)
@@ -78,14 +78,14 @@ private fun CirculoDecorativo(modifier: Modifier) {
 }
 
 @Composable
-private fun FilaSuperior(vista: ReservaVista, onAjustes: () -> Unit) {
+private fun FilaSuperior(vista: ReservaVista, onAvisos: () -> Unit, onAjustes: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(vista.saludo, fontFamily = FuenteTexto, fontSize = 13.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.75f))
             Text(vista.subtituloHogar, fontFamily = FuenteTexto, fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Bold, color = Blanco)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            BotonDeIcono(painterResource(Res.drawable.ic_avisos), "Avisos") {}
+            BotonDeIcono(painterResource(Res.drawable.ic_avisos), "Avisos", onAvisos)
             BotonDeIcono(painterResource(Res.drawable.ic_ajustes), "Editar mi hogar", onAjustes)
         }
     }
