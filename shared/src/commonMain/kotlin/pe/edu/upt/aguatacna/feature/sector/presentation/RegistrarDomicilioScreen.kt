@@ -48,6 +48,12 @@ fun RegistrarDomicilioScreen(onVolver: () -> Unit = {}) {
             onMarcarEnMapa = {},
             modifier = Modifier.padding(horizontal = 20.dp)
         )
+        TarjetaSectorDetectado(
+            sectorDetectado = "Ciudad Nueva 04",
+            distrito = "Ciudad Nueva",
+            continuidad = "4 h/día",
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+        )
     }
 }
 
