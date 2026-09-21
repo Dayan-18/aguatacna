@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidxRoom)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 room {
@@ -75,6 +76,8 @@ kotlin {
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.koin.core)
             implementation(libs.supabase.auth)
+            implementation(libs.supabase.postgrest)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.moko.permissions)
             implementation(libs.moko.permissions.compose)
