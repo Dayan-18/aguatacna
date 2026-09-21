@@ -1,7 +1,13 @@
 package pe.edu.upt.aguatacna.feature.reserva.di
 
 import org.koin.dsl.module
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.flow.map
 import pe.edu.upt.aguatacna.core.di.QUALIFICADOR_USUARIO
+import pe.edu.upt.aguatacna.feature.reserva.data.sync.NubeReservaSupabase
+import pe.edu.upt.aguatacna.feature.reserva.data.sync.SincronizadorReserva
 import pe.edu.upt.aguatacna.core.util.Reloj
 import pe.edu.upt.aguatacna.core.util.nuevoUuid
 import pe.edu.upt.aguatacna.data.local.UsuarioDao
@@ -25,5 +31,14 @@ val moduloReserva = module {
     single<RegistroDeAvisos> { RegistroDeAvisosEnRoom(get(), get(QUALIFICADOR_USUARIO), ::nuevoUuid) }
     single<ReservaRepository> {
         ReservaRepositoryImpl(get(), get(QUALIFICADOR_USUARIO), get(), get<Reloj>()::ahora, ::nuevoUuid)
+    }
+    single {
+        val supabase = get<SupabaseClient>()
+        SincronizadorReserva(
+            dao = get(),
+            usuarioId = get(QUALIFICADOR_USUARIO),
+            nube = NubeReservaSupabase(supabase),
+            haySesion = supabase.auth.sessionStatus.map { it is SessionStatus.Authenticated }
+        )
     }
 }

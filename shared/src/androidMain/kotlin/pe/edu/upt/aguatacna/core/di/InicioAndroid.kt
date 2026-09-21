@@ -8,7 +8,9 @@ import pe.edu.upt.aguatacna.core.db.AguaTacnaDatabase
 import pe.edu.upt.aguatacna.core.db.crearBaseDeDatos
 import pe.edu.upt.aguatacna.core.sesion.InicioConGoogle
 import pe.edu.upt.aguatacna.core.sesion.InicioConGoogleAndroid
+import org.koin.mp.KoinPlatform
 import pe.edu.upt.aguatacna.data.IdentidadLocal
+import pe.edu.upt.aguatacna.feature.reserva.data.sync.SincronizadorReserva
 
 import pe.edu.upt.aguatacna.feature.recibo.domain.port.ReconocedorTexto
 import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ReconocedorTextoAndroid
@@ -32,4 +34,9 @@ fun iniciarAplicacion(context: Context) {
     // El usuario debe existir antes de la primera pantalla; es una lectura local y rápida.
     val usuario = runBlocking(Dispatchers.IO) { IdentidadLocal(base.usuarioDao()).obtenerOCrear() }
     iniciarKoin { modules(moduloPlataforma(base, usuario.id)) }
+}
+
+/** Se queda copiando la reserva a la nube (si hay sesión de Google) hasta que se cancele la corrutina que lo llama. */
+suspend fun mantenerReservaSincronizada() {
+    if (koinIniciado()) KoinPlatform.getKoin().get<SincronizadorReserva>().mantenerSincronizado()
 }

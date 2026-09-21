@@ -3,6 +3,7 @@ package pe.edu.upt.aguatacna.core.nube
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.postgrest.Postgrest
 
 /**
  * Datos públicos del proyecto Supabase "AguaTacna". La clave es la publicable (sb_publishable_…),
@@ -20,4 +21,5 @@ object ConfiguracionNube {
 fun crearClienteSupabase(): SupabaseClient =
     createSupabaseClient(ConfiguracionNube.URL, ConfiguracionNube.CLAVE_PUBLICA) {
         install(Auth)
+        install(Postgrest)
     }

@@ -95,7 +95,7 @@ máximo 400 líneas.
 
 - **T011** corregir el anteproyecto §7 (litros, no m³).
 - **T012** que otro integrante revise la spec (hito H1) y que Jimmy conozca el contrato `ReservaRepository`.
-- **Sincronización con Supabase:** las tablas ya existen (T022); falta añadir `supabase-kt`, iniciar sesión y sincronizar Room con la nube. Necesita elegir el método de autenticación.
+- **Sincronización con Supabase:** hecha para Android con sesión de Google (perfil, llenados y novedades; solo suma, no propaga borrados; el perfil del teléfono manda). Falta iOS y decidir cómo se propagan los borrados.
 - **T034** probar en un teléfono físico: interfaz, base de datos, tarea horaria y avisos (hito H5).
 - **T036** ajustar los coeficientes con los datos del piloto (semana 16 en adelante).
 - Avisar al equipo del cambio de catálogo (Room, KSP, Koin, WorkManager) y acordar la regla de migraciones.
