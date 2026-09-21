@@ -10,5 +10,7 @@ data class UsuarioEntity(
     @PrimaryKey val id: String,
     val googleSub: String? = null,
     val authProviderId: String? = null,
-    val sectorId: String? = null
+    val sectorId: String? = null,
+    // SIN_CUENTA o GOOGLE; nulo mientras no haya elegido en la pantalla de bienvenida.
+    val modoAcceso: String? = null
 )
