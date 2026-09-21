@@ -44,7 +44,7 @@ máximo 400 líneas.
 - [x] T019 `PerfilHogar` y `PerfilHogarEntity`. Vive en `feature/reserva/domain/model` y no en el dominio raíz, porque usa los objetos de valor de reserva; Iker lo consume desde ahí
 - [x] T020 `EventoLlenadoEntity` y `ReservaDao` con `Flow` de perfil y llenados. Los reportes de "no llegó" y las declaraciones de sin agua aún no tienen tabla: se resuelve en T021
 - [x] T021 `ReservaRepositoryImpl` leyendo y escribiendo solo en Room, con la tabla `novedad_reserva` para "no llegó" y "sin agua". Armar la reserva se extrajo a `ArmarReserva`, compartido con el fake
-- [ ] T022 Tablas en la nube (`perfil_hogar`, `evento_llenado`) con acceso por usuario (hito H3)
+- [x] T022 Tablas en la nube (`perfil_hogar`, `evento_llenado`, `novedad_reserva`) con acceso por usuario (RLS) en Supabase, proyecto AguaTacna (`supabase/migrations/`). Falta el cliente: autenticación y sincronización desde la app
 
 ## Semana 12 · Interfaz
 
@@ -95,7 +95,7 @@ máximo 400 líneas.
 
 - **T011** corregir el anteproyecto §7 (litros, no m³).
 - **T012** que otro integrante revise la spec (hito H1) y que Jimmy conozca el contrato `ReservaRepository`.
-- **T022** tablas en la nube: necesita la decisión de backend y autenticación (hito H2).
+- **Sincronización con Supabase:** las tablas ya existen (T022); falta añadir `supabase-kt`, iniciar sesión y sincronizar Room con la nube. Necesita elegir el método de autenticación.
 - **T034** probar en un teléfono físico: interfaz, base de datos, tarea horaria y avisos (hito H5).
 - **T036** ajustar los coeficientes con los datos del piloto (semana 16 en adelante).
 - Avisar al equipo del cambio de catálogo (Room, KSP, Koin, WorkManager) y acordar la regla de migraciones.
