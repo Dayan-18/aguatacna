@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -54,6 +56,13 @@ fun RegistrarDomicilioScreen(onVolver: () -> Unit = {}) {
             continuidad = "4 h/día",
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
         )
+        NotaPrivacidad(
+            texto = "En el servidor se guarda tu sector, nunca la coordenada exacta de tu casa.",
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+        Spacer(Modifier.height(28.dp))
+        BotonConfirmarSector(onClick = {}, modifier = Modifier.padding(horizontal = 20.dp))
+        Spacer(Modifier.height(24.dp))
     }
 }
 
