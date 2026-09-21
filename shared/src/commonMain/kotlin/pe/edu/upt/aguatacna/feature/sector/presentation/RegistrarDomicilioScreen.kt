@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,8 +35,14 @@ import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
 
 @Composable
 fun RegistrarDomicilioScreen(onVolver: () -> Unit = {}) {
-    Column(modifier = Modifier.fillMaxSize().background(Fondo)) {
+    Column(
+        modifier = Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState())
+    ) {
         EncabezadoRegistro(onVolver)
+        VistaPreviaSectorMapa(
+            etiquetaSector = "SECTOR 04",
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+        )
     }
 }
 
