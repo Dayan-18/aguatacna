@@ -446,7 +446,7 @@ private fun SelectorPeriodo(
                 add(p)
                 p = p.anterior()
             }
-        }
+        }.reversed() // Ascendente: antiguo arriba, reciente abajo
     }
 
     Column(

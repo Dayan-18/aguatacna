@@ -89,6 +89,7 @@ fun ReciboFotoScreen(
     viewModel: RevisionViewModel = viewModel { RevisionViewModel.desdeInyeccion() }
 ) {
     val borrador by viewModel.borrador.collectAsStateWithLifecycle()
+    val errorDuplicado by viewModel.errorDuplicado.collectAsStateWithLifecycle()
 
     LaunchedEffect(borrador) {
         if (borrador == null) {
@@ -103,6 +104,11 @@ fun ReciboFotoScreen(
             )
             viewModel.guardarBorrador(nuevo)
         }
+    }
+
+    // Limpiar error de duplicado cuando cambia el período del borrador
+    LaunchedEffect(borrador?.periodoConsumo?.valor) {
+        viewModel.descartarError()
     }
 
     IconosClarosEnBarraDeEstado(claros = false)
@@ -125,6 +131,35 @@ fun ReciboFotoScreen(
                 modifier = Modifier.padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // ── Alerta de período duplicado ──
+                if (errorDuplicado != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFFEF2E4))
+                            .border(1.dp, Color(0xFFF9DFC5), RoundedCornerShape(12.dp))
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            Icons.Outlined.Warning,
+                            contentDescription = null,
+                            tint = Ocre,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            errorDuplicado!!,
+                            fontFamily = FuenteTexto,
+                            fontSize = 12.sp,
+                            color = Color(0xFF7C4D29),
+                            lineHeight = 17.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
                 // ── Tarjeta del recibo (T-8.2) ──
                 TarjetaRecibo(
                     borrador = borrador

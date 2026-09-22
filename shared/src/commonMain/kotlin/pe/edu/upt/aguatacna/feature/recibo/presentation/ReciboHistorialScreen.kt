@@ -300,15 +300,17 @@ private fun GraficoBarras(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "metros cúbicos facturados",
+                text = "límite 100 m³",
                 fontFamily = FuenteTexto,
-                fontSize = 12.sp,
+                fontSize = 11.5.sp,
                 fontWeight = FontWeight.Normal,
-                color = Color(0xFF8899A6)
+                color = Color(0xFF8899A6),
+                softWrap = false,
+                maxLines = 1
             )
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = "límite 100 m³  ·  promedio ",
+                    text = "promedio ",
                     fontFamily = FuenteTexto,
                     fontSize = 11.5.sp,
                     fontWeight = FontWeight.Normal,
