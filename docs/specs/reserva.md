@@ -1,7 +1,7 @@
 # Especificación · Reserva domiciliaria
 
 **Dueño:** Cristhian Mamani · `feature/reserva/`
-**Estado:** borrador para revisión cruzada (v2, alineada con el Figma)
+**Estado:** lista para revisión cruzada (v3, 34 CA, alineada con el Figma y con el código de `feature/reserva/`)
 **Fuentes:** Anteproyecto §7 · Plan de Trabajo §3 · Constitución · `specs/sector.md` ·
 [Figma AguaTacna](https://www.figma.com/design/jNSK9uzGlMub59LwBEQi5I/AguaTacna)
 
