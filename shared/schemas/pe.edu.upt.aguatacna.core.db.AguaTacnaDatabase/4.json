@@ -1,0 +1,613 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "d098243554070eadb07c9ceec2c77f59",
+    "entities": [
+      {
+        "tableName": "usuario",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `googleSub` TEXT, `authProviderId` TEXT, `sectorId` TEXT, `modoAcceso` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "googleSub",
+            "columnName": "googleSub",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "authProviderId",
+            "columnName": "authProviderId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sectorId",
+            "columnName": "sectorId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "modoAcceso",
+            "columnName": "modoAcceso",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "perfil_hogar",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`usuarioId` TEXT NOT NULL, `tipoReservorio` TEXT NOT NULL, `capacidadLitros` REAL NOT NULL, `habitantes` INTEGER NOT NULL, `duchasPorDia` INTEGER NOT NULL, `usaLavadora` INTEGER NOT NULL, `riegaJardin` INTEGER NOT NULL, `consumoPorHabitosLitrosHora` REAL, `consumoVigenteLitrosHora` REAL, PRIMARY KEY(`usuarioId`))",
+        "fields": [
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipoReservorio",
+            "columnName": "tipoReservorio",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capacidadLitros",
+            "columnName": "capacidadLitros",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "habitantes",
+            "columnName": "habitantes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duchasPorDia",
+            "columnName": "duchasPorDia",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usaLavadora",
+            "columnName": "usaLavadora",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "riegaJardin",
+            "columnName": "riegaJardin",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "consumoPorHabitosLitrosHora",
+            "columnName": "consumoPorHabitosLitrosHora",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "consumoVigenteLitrosHora",
+            "columnName": "consumoVigenteLitrosHora",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "usuarioId"
+          ]
+        }
+      },
+      {
+        "tableName": "evento_llenado",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `tipo` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "momento",
+            "columnName": "momento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "novedad_reserva",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `tipo` TEXT NOT NULL, `inicioObservado` TEXT, `litrosObservados` REAL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "momento",
+            "columnName": "momento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inicioObservado",
+            "columnName": "inicioObservado",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "litrosObservados",
+            "columnName": "litrosObservados",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "aviso_reserva",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `clave` TEXT NOT NULL, `tipo` TEXT NOT NULL, `momento` TEXT NOT NULL, `fechaDato` TEXT NOT NULL, `horasDato` REAL, `leido` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clave",
+            "columnName": "clave",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "momento",
+            "columnName": "momento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaDato",
+            "columnName": "fechaDato",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horasDato",
+            "columnName": "horasDato",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "leido",
+            "columnName": "leido",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_aviso_reserva_usuarioId_clave",
+            "unique": true,
+            "columnNames": [
+              "usuarioId",
+              "clave"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_aviso_reserva_usuarioId_clave` ON `${TABLE_NAME}` (`usuarioId`, `clave`)"
+          }
+        ]
+      },
+      {
+        "tableName": "sector",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `nombre` TEXT NOT NULL DEFAULT '', `distrito` TEXT NOT NULL DEFAULT '', `latitud` REAL NOT NULL DEFAULT 0, `longitud` REAL NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "distrito",
+            "columnName": "distrito",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "latitud",
+            "columnName": "latitud",
+            "affinity": "REAL",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "longitud",
+            "columnName": "longitud",
+            "affinity": "REAL",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "cronograma",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `sectorId` TEXT NOT NULL, `fecha` TEXT NOT NULL, `horaInicio` TEXT NOT NULL, `horaFin` TEXT NOT NULL, `tipo` TEXT NOT NULL, `fuente` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sectorId",
+            "columnName": "sectorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horaInicio",
+            "columnName": "horaInicio",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horaFin",
+            "columnName": "horaFin",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fuente",
+            "columnName": "fuente",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cronograma_sectorId_fecha",
+            "unique": false,
+            "columnNames": [
+              "sectorId",
+              "fecha"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cronograma_sectorId_fecha` ON `${TABLE_NAME}` (`sectorId`, `fecha`)"
+          }
+        ]
+      },
+      {
+        "tableName": "punto_cisterna",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `sectorId` TEXT NOT NULL, `nombre` TEXT NOT NULL, `latitud` REAL NOT NULL, `longitud` REAL NOT NULL, `horarioInicio` TEXT NOT NULL, `horarioFin` TEXT NOT NULL, `estado` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sectorId",
+            "columnName": "sectorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitud",
+            "columnName": "latitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitud",
+            "columnName": "longitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horarioInicio",
+            "columnName": "horarioInicio",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horarioFin",
+            "columnName": "horarioFin",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_punto_cisterna_sectorId",
+            "unique": false,
+            "columnNames": [
+              "sectorId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_punto_cisterna_sectorId` ON `${TABLE_NAME}` (`sectorId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "confirmacion_horario",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `sectorId` TEXT NOT NULL, `usuarioId` TEXT NOT NULL, `momento` TEXT NOT NULL, `tipo` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sectorId",
+            "columnName": "sectorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usuarioId",
+            "columnName": "usuarioId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "momento",
+            "columnName": "momento",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_confirmacion_horario_sectorId_momento",
+            "unique": false,
+            "columnNames": [
+              "sectorId",
+              "momento"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_confirmacion_horario_sectorId_momento` ON `${TABLE_NAME}` (`sectorId`, `momento`)"
+          }
+        ]
+      },
+      {
+        "tableName": "recibo",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `anio` INTEGER NOT NULL DEFAULT 2026, `mes` INTEGER NOT NULL DEFAULT 1, `consumoM3` INTEGER NOT NULL DEFAULT 0, `importeCentimos` INTEGER NOT NULL DEFAULT 0, `fechaEmision` TEXT, `fechaVencimiento` TEXT, `tipoConsumo` TEXT NOT NULL DEFAULT 'LECTURA', `lecturaAnteriorM3` INTEGER, `lecturaActualM3` INTEGER, `numeroMedidor` TEXT, `numeroRecibo` TEXT, `origen` TEXT NOT NULL DEFAULT 'MANUAL', PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anio",
+            "columnName": "anio",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "2026"
+          },
+          {
+            "fieldPath": "mes",
+            "columnName": "mes",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "consumoM3",
+            "columnName": "consumoM3",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "importeCentimos",
+            "columnName": "importeCentimos",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "fechaEmision",
+            "columnName": "fechaEmision",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fechaVencimiento",
+            "columnName": "fechaVencimiento",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tipoConsumo",
+            "columnName": "tipoConsumo",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'LECTURA'"
+          },
+          {
+            "fieldPath": "lecturaAnteriorM3",
+            "columnName": "lecturaAnteriorM3",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lecturaActualM3",
+            "columnName": "lecturaActualM3",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "numeroMedidor",
+            "columnName": "numeroMedidor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "numeroRecibo",
+            "columnName": "numeroRecibo",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "origen",
+            "columnName": "origen",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'MANUAL'"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "reto",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd098243554070eadb07c9ceec2c77f59')"
+    ]
+  }
+}
