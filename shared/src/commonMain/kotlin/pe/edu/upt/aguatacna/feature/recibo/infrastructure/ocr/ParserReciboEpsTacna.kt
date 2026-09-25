@@ -67,6 +67,7 @@ object ParserReciboEpsTacna : ParserRecibo {
             .replace('Í', 'I')
             .replace('Ó', 'O')
             .replace('Ú', 'U')
+            .replace("M 3", "M³")
             .replace("M3", "M³")
             .replace("*", "")
     }
@@ -100,15 +101,15 @@ object ParserReciboEpsTacna : ParserRecibo {
 
     private fun extraerConsumoM3(texto: String): Campo<Int> {
         // Ejemplo: "VOLUMEN FAC M³ 23" o "VOLUMEN FAC: 23" o "VOLUMEN FACTURADO 23"
-        val regex = Regex("""VOLUMEN\s*FAC(?:TURADO)?\s*(?:M³)?\s*[:.]?\s*(\d+)""")
+        val regex = Regex("""VOLUMEN\s*FAC(?:TURADO)?\s*(?:M\s*[3³]|M)?\s*[:.]?\s*(\d+)""")
         val match = regex.find(texto)
         if (match != null) {
             val valor = match.groupValues[1].toIntOrNull()
             if (valor != null) return Campo(valor = valor, confianza = 0.95f)
         }
 
-        // Fallback secundario: "CONSUMO FACTURADO: 23" o "PROMEDIO M³ 23"
-        val fallbackRegex = Regex("""(?:CONSUMO\s*FACTURADO|PROMEDIO\s*M³)\s*[:.]?\s*(\d+)""")
+        // Fallback secundario: "CONSUMO FACTURADO: 23" o "PROMEDIO M³ 23" o "PROMEDIO 23"
+        val fallbackRegex = Regex("""(?:CONSUMO\s*FACTURADO|PROMEDIO)\s*(?:M\s*[3³]|M)?\s*[:.]?\s*(\d+)""")
         val matchFallback = fallbackRegex.find(texto)
         if (matchFallback != null) {
             val valor = matchFallback.groupValues[1].toIntOrNull()

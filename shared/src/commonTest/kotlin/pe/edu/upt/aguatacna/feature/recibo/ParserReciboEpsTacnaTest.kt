@@ -124,4 +124,40 @@ class ParserReciboEpsTacnaTest {
         val resultado = ParserReciboEpsTacna.parsearTexto(textoInutil)
         assertIs<ResultadoParseo.NoLegible>(resultado)
     }
+
+    @Test
+    fun parseaConsumoConVariacionesDeM3YPromedio() {
+        val textoPromedioM3 = """
+            EPS TACNA S.A.
+            Nº Rec: S001-1122334
+            Consumo: AGOSTO-2026
+            PROMEDIO m3 23
+            TOTAL A PAGAR: S/ 78.00
+        """.trimIndent()
+        val res1 = ParserReciboEpsTacna.parsearTexto(textoPromedioM3)
+        assertIs<ResultadoParseo.Exito>(res1)
+        assertEquals(23, res1.borrador.consumoM3.valor)
+
+        val textoPromedioEspacio = """
+            EPS TACNA S.A.
+            Nº Rec: S001-1122334
+            Consumo: AGOSTO-2026
+            PROMEDIO m 3 23
+            TOTAL A PAGAR: S/ 78.00
+        """.trimIndent()
+        val res2 = ParserReciboEpsTacna.parsearTexto(textoPromedioEspacio)
+        assertIs<ResultadoParseo.Exito>(res2)
+        assertEquals(23, res2.borrador.consumoM3.valor)
+
+        val textoVolumenEspacio = """
+            EPS TACNA S.A.
+            Nº Rec: S001-1122334
+            Consumo: AGOSTO-2026
+            Volumen Fac m 3 23
+            TOTAL A PAGAR: S/ 78.00
+        """.trimIndent()
+        val res3 = ParserReciboEpsTacna.parsearTexto(textoVolumenEspacio)
+        assertIs<ResultadoParseo.Exito>(res3)
+        assertEquals(23, res3.borrador.consumoM3.valor)
+    }
 }
