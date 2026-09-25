@@ -95,6 +95,7 @@ class FakeReciboRepositoryTest {
         val resumen = assertNotNull(ejecutar { observarResumen().first() })
         assertEquals("Agosto 2026", resumen.mes)
         assertEquals(33, resumen.consumoM3)
+        assertEquals("11 Set 2026", resumen.fechaVencimiento)
 
         // Historial no es nulo
         val historial = assertNotNull(ejecutar { observarHistorial().first() })

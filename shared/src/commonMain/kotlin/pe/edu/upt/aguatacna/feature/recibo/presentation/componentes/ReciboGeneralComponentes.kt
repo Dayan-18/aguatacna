@@ -1,5 +1,5 @@
 // Componentes visuales usados únicamente en la pantalla General (ReciboScreen): barra superior,
-// tarjeta del recibo activo, tarjetas de escaneo, banner Sunass y herramientas.
+// tarjeta del recibo activo, tarjetas de escaneo y herramientas.
 package pe.edu.upt.aguatacna.feature.recibo.presentation.componentes
 
 import androidx.compose.foundation.background
@@ -19,15 +19,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PhotoCamera
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -65,8 +61,6 @@ private val TealClaro = Color(0xFFE4F3F4)
 private val TealBorde = Color(0x33087E8B)
 private val RojoFondo = Color(0xFFFEF2F2)
 private val Rojo = Color(0xFFDC2626)
-private val InfoFondo = Color(0xCCDCF0F2) // 80% opacidad
-private val InfoBorde = Color(0x33087E8B)
 
 // ── EstiloEstado ──────────────────────────────────────────────────────────────
 
@@ -623,51 +617,9 @@ fun TarjetaEscanear(
     }
 }
 
-// ── BannerSunass ─────────────────────────────────────────────────────────────
-
-// Banner que explica la protección legal de Sunass ante consumos que exceden el 100% del promedio.
-@Composable
-fun BannerSunass(
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(InfoFondo)
-            .border(1.dp, InfoBorde, RoundedCornerShape(20.dp))
-            .padding(14.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(AguaMedia.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.Outlined.Info,
-                contentDescription = null,
-                tint = AguaMedia,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-        Text(
-            text = "Norma Sunass: Si tu consumo supera el 100% del promedio histórico, la EPS Tacna debe inspeccionar tu predio antes de cualquier corte.",
-            fontFamily = FuenteTexto,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            color = TintaSuave,
-            lineHeight = 16.sp,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
 // ── SeccionHerramientas / TarjetaHerramienta ─────────────────────────────────
 
-// Bloque de herramientas del recibo: histórico de 6 meses, reclamos Sunass y descarga de comprobantes en PDF.
+// Bloque de herramientas del recibo: histórico de 6 meses.
 @Composable
 fun SeccionHerramientas(
     promedioHistorico: Int,
@@ -728,46 +680,6 @@ fun SeccionHerramientas(
                             .background(Ocre)
                     )
                 }
-            }
-        )
-
-        // 2. Tus reclamos Sunass
-        TarjetaHerramienta(
-            iconoVector = Icons.Outlined.Shield,
-            iconoColor = Ocre,
-            iconoFondo = Color(0xFFFFF7ED),
-            titulo = "Tus reclamos Sunass",
-            subtitulo = "Paso 1: Inspección técnica domiciliaria",
-            badgeTexto = "1 ACTIVO",
-            trailingContent = {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = TintaTenue,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        )
-
-        // 3. Descargar recibo oficial
-        TarjetaHerramienta(
-            iconoVector = Icons.Outlined.FileDownload,
-            iconoColor = TintaSuave,
-            iconoFondo = Color(0xFFF1F5F9),
-            titulo = "Descargar recibo oficial",
-            subtitulo = "PDF con validez legal EPS Tacna",
-            trailingContent = {
-                Text(
-                    "PDF 420 KB",
-                    fontFamily = FuenteTexto,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AguaMedia,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(TealClaro)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
             }
         )
     }

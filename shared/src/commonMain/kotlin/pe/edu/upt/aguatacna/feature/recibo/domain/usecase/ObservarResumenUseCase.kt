@@ -52,9 +52,9 @@ class ObservarResumenUseCase(
                 EstadoConsumo.Normal(variacion, promedio)
             }
 
-            @Suppress("DEPRECATION")
             val vencimientoTexto = actual.fechaVencimiento?.let { fecha ->
-                "${fecha.dayOfMonth} ${actual.periodoConsumo.mesCorto} ${fecha.year}"
+                val mesTexto = PeriodoConsumo(fecha.year, fecha.monthNumber).mesCorto
+                "${fecha.dayOfMonth} $mesTexto ${fecha.year}"
             } ?: "—"
 
             ResumenRecibo(

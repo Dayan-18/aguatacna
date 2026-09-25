@@ -28,7 +28,7 @@ sealed interface ReciboUiState {
         val periodoConsumo: PeriodoConsumo,
         val importeTotal: Dinero,
         val importeDisplay: String,             // "74,20"
-        val fechaVencimiento: String,           // "28 Ago 2026"
+        val fechaVencimiento: String,           // "11 Set 2026"
         val consumoM3: Int,
         val estadoConsumo: EstadoConsumo,
         val variacionTexto: String,             // "+106 %" o "—"

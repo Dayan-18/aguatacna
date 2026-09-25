@@ -208,8 +208,6 @@ private fun ReciboContenidoPrincipal(
                     )
 
                     SeccionHerramientas(promedioHistorico = state.promedioHistorico)
-
-                    BannerSunass()
                 }
             }
 
