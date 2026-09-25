@@ -8,9 +8,7 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.domain.service.EvaluadorConsumo
 
-/**
- * Datos de una barra del gráfico de historial.
- */
+// Datos de una barra del gráfico de historial.
 data class BarraHistorial(
     val periodo: PeriodoConsumo,
     val consumoM3: Int,
@@ -19,9 +17,7 @@ data class BarraHistorial(
     val promedioPrevio: Int = 0
 )
 
-/**
- * Slot en la ventana de 6 meses del gráfico.
- */
+// Slot en la ventana de 6 meses del gráfico (puede quedar vacío si no hay recibo ese mes).
 data class BarraHistorialSlot(
     val periodo: PeriodoConsumo,
     val mesCorto: String,
@@ -32,9 +28,7 @@ data class BarraHistorialSlot(
     val esAtipico: Boolean
 )
 
-/**
- * Estado completo para la pantalla de Historial.
- */
+// Estado completo para la pantalla de Historial.
 data class HistorialCompleto(
     val barras: List<BarraHistorial>,
     val ventana6Meses: List<BarraHistorialSlot>,
@@ -44,9 +38,7 @@ data class HistorialCompleto(
     val estadoMesSeleccionado: EstadoConsumo?
 )
 
-/**
- * Calcula los últimos 6 meses de forma simple y directa con umbral fijo en 100 m³.
- */
+// Calcula la ventana de los últimos 6 meses de consumo, con umbral fijo en 100 m³.
 class ObservarHistorialUseCase(
     private val repository: ReciboRepository
 ) {

@@ -4,8 +4,8 @@ import kotlinx.datetime.LocalDate
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.TipoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.port.ResultadoParseo
 import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ParserReciboEpsTacna
-import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ResultadoParseo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

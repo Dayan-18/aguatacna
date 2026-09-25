@@ -8,14 +8,33 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.EstadoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.BarraHistorialSlot
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ObservarHistorialUseCase
 
-/**
- * ViewModel para la pantalla de Historial (T-10.1).
- * Gestiona la selección de mes (T-10.7) y la sincronización reactiva de datos.
- */
+// Estado de UI de la pantalla de Historial de Consumo.
+sealed interface HistorialUiState {
+    data object Cargando : HistorialUiState
+    data object SinHistorial : HistorialUiState
+
+    data class ConDatos(
+        val barras: List<BarraHistorialSlot>,
+        val promedioHistorico: Int,
+        val umbralAtipicoM3: Double,
+        val mesSeleccionado: PeriodoConsumo,
+        val consumoSeleccionado: Int?,
+        val estadoSeleccionado: EstadoConsumo?,
+        val importeSeleccionado: Dinero?,
+        val promedioHistoricoSeleccionado: Int,
+        val excesoPorcentajeSeleccionado: Int?,
+        val esAtipico: Boolean,
+        val mostrarDialogoReclamo: Boolean = false
+    ) : HistorialUiState
+}
+
+// Pantalla de Historial: gestiona la selección de mes y sincroniza los datos reactivamente.
 class HistorialViewModel(
     private val observarHistorial: ObservarHistorialUseCase
 ) : ViewModel() {

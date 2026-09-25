@@ -4,26 +4,43 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
-import pe.edu.upt.aguatacna.feature.recibo.data.ReciboRepositoryEnMemoria
-import pe.edu.upt.aguatacna.feature.recibo.data.SemillaDepuracion
+import pe.edu.upt.aguatacna.feature.recibo.data.FakeReciboRepository
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.EstadoConsumo
-import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ObservarResumenUseCase
 
-/**
- * ViewModel de la pantalla General (T-3.1).
- *
- * Observa el resumen del recibo más reciente y expone un [StateFlow] reactivo.
- * Si la semilla de depuración está activa y el repositorio está vacío, carga los datos de prueba.
- */
+// Estado de la pantalla General del Recibo.
+sealed interface ReciboUiState {
+
+    data object Cargando : ReciboUiState
+
+    // Sin recibos: mostrar solo "Escanea tu recibo"
+    data object SinRecibos : ReciboUiState
+
+    // Con datos: tarjeta activa, métricas y estado de consumo
+    data class ConDatos(
+        val mes: String,                        // "Agosto 2026"
+        val periodoConsumo: PeriodoConsumo,
+        val importeTotal: Dinero,
+        val importeDisplay: String,             // "74,20"
+        val fechaVencimiento: String,           // "28 Ago 2026"
+        val consumoM3: Int,
+        val estadoConsumo: EstadoConsumo,
+        val variacionTexto: String,             // "+106 %" o "—"
+        val promedioHistorico: Int,
+        val esAtipico: Boolean,
+        val reciboOriginal: Recibo? = null
+    ) : ReciboUiState
+}
+
+// ViewModel de la pantalla General: observa el resumen del recibo más reciente.
 class ReciboViewModel(
-    private val observarResumen: ObservarResumenUseCase,
-    private val repository: ReciboRepository
+    private val observarResumen: ObservarResumenUseCase
 ) : ViewModel() {
 
     val uiState: StateFlow<ReciboUiState> = observarResumen()
@@ -52,32 +69,14 @@ class ReciboViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ReciboUiState.Cargando)
 
-    init {
-        // Cargar semilla de depuración si está activa y no hay recibos previos (T-2.3)
-        if (SemillaDepuracion.DEBUG_SEED_ENABLED) {
-            viewModelScope.launch {
-                val existentes = repository.observarRecibos().first()
-                if (existentes.isEmpty()) {
-                    SemillaDepuracion.generarRecibos().forEach {
-                        repository.guardar(it)
-                    }
-                }
-            }
-        }
-    }
-
     companion object {
-        /** Con la inyección iniciada usa Koin; sin ella recurre a datos de prueba en memoria. */
+        // Con la inyección iniciada usa Koin; sin ella recurre a datos de prueba en memoria.
         fun desdeInyeccion(): ReciboViewModel {
             val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
-            return ReciboViewModel(koin.get(), koin.get())
+            return ReciboViewModel(koin.get())
         }
 
-        /** Fallback sin Koin: crea todo manualmente. */
-        private fun conDatosDePrueba(): ReciboViewModel {
-            val repo = ReciboRepositoryEnMemoria()
-            val useCase = ObservarResumenUseCase(repo)
-            return ReciboViewModel(useCase, repo)
-        }
+        private fun conDatosDePrueba(): ReciboViewModel =
+            ReciboViewModel(ObservarResumenUseCase(FakeReciboRepository()))
     }
 }

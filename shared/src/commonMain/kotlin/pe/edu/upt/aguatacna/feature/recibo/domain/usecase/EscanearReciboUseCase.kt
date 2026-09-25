@@ -1,17 +1,15 @@
 package pe.edu.upt.aguatacna.feature.recibo.domain.usecase
 
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador
+import pe.edu.upt.aguatacna.feature.recibo.domain.port.ParserRecibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.port.ReconocedorTexto
+import pe.edu.upt.aguatacna.feature.recibo.domain.port.ResultadoParseo
 import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ParserReciboEpsTacna
-import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ResultadoParseo
 
-/**
- * Caso de uso para escanear y analizar un recibo (T-2.2, T-4.3, T-5.1).
- *
- * Flujo: `bytesImagen -> OCR (ReconocedorTexto) -> ParserReciboEpsTacna -> ReciboBorrador`.
- */
+// Escanea y analiza un recibo: bytesImagen -> OCR (ReconocedorTexto) -> ParserRecibo -> ReciboBorrador.
 class EscanearReciboUseCase(
-    private val reconocedor: ReconocedorTexto
+    private val reconocedor: ReconocedorTexto,
+    private val parser: ParserRecibo = ParserReciboEpsTacna
 ) {
     suspend operator fun invoke(bytesImagen: ByteArray): Result<ReciboBorrador> {
         if (bytesImagen.isEmpty()) {
@@ -25,7 +23,7 @@ class EscanearReciboUseCase(
                     if (texto.estaVacio) {
                         Result.failure(IllegalStateException("No se detectó ningún texto en la imagen. Intenta con mejor iluminación."))
                     } else {
-                        when (val parseo = ParserReciboEpsTacna.parsear(texto)) {
+                        when (val parseo = parser.parsear(texto)) {
                             is ResultadoParseo.Exito -> Result.success(parseo.borrador)
                             is ResultadoParseo.NoLegible -> Result.failure(IllegalStateException(parseo.motivo))
                         }

@@ -1,4 +1,4 @@
-package pe.edu.upt.aguatacna.feature.recibo.presentation.revision
+package pe.edu.upt.aguatacna.feature.recibo.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,12 +12,8 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador
 import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ConfirmarReciboUseCase
 
-/**
- * ViewModel de la pantalla de revisión ("Revisa tu recibo") (T-8.1).
- *
- * Observa el borrador actual desde [BorradorReciboStore] y ejecuta la confirmación (T-8.5).
- * Verifica que no exista un recibo previo con el mismo período antes de confirmar.
- */
+// Pantalla de revisión: observa el borrador actual y confirma, validando que no exista
+// ya un recibo con el mismo período.
 class RevisionViewModel(
     private val borradorStore: BorradorReciboStore,
     private val confirmarRecibo: ConfirmarReciboUseCase,
@@ -27,7 +23,6 @@ class RevisionViewModel(
     val borrador: StateFlow<ReciboBorrador?> = borradorStore.borrador
 
     private val _errorDuplicado = MutableStateFlow<String?>(null)
-    /** Mensaje de error cuando se intenta confirmar un período que ya tiene recibo. */
     val errorDuplicado: StateFlow<String?> = _errorDuplicado.asStateFlow()
 
     fun confirmar(onCompletado: () -> Unit) {
@@ -74,4 +69,3 @@ class RevisionViewModel(
         }
     }
 }
-

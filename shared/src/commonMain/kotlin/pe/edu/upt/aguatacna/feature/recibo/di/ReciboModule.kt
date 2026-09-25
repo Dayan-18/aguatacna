@@ -2,9 +2,7 @@ package pe.edu.upt.aguatacna.feature.recibo.di
 
 import org.koin.dsl.module
 import pe.edu.upt.aguatacna.feature.recibo.data.BorradorReciboStore
-import pe.edu.upt.aguatacna.feature.recibo.data.ReciboRepositoryEnMemoria
 import pe.edu.upt.aguatacna.feature.recibo.data.ReciboRepositoryRoom
-import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboDao
 import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ConfirmarReciboUseCase
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.CorregirCampoUseCase
@@ -13,12 +11,8 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ObservarHistorialUseCa
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ObservarResumenUseCase
 
 val moduloRecibo = module {
-    // Repositorio y almacén de borrador (persistencia Room con fallback en memoria — T-11.1)
-    single { ReciboRepositoryEnMemoria() }
-    single<ReciboRepository> {
-        val dao = getOrNull<ReciboDao>()
-        if (dao != null) ReciboRepositoryRoom(dao) else get<ReciboRepositoryEnMemoria>()
-    }
+    // El DAO viene de la base de datos general (AguaTacnaDatabase), aportado por cada plataforma
+    single<ReciboRepository> { ReciboRepositoryRoom(get()) }
     single { BorradorReciboStore() }
 
     // Casos de uso

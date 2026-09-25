@@ -8,43 +8,24 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.TextoReconocido
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.TipoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.port.ParserRecibo
+import pe.edu.upt.aguatacna.feature.recibo.domain.port.ResultadoParseo
 
-/**
- * Resultado del análisis OCR sobre un recibo de EPS Tacna (Fase 5).
- */
-sealed interface ResultadoParseo {
-    /** Se leyeron los datos con éxito (al menos consumo o importe detectados). */
-    data class Exito(val borrador: ReciboBorrador) : ResultadoParseo
+// Parser de texto OCR para recibos de EPS Tacna: normaliza, extrae campos por regex/palabras
+// clave y valida los mínimos. Nunca extrae datos personales (nombre, DNI, dirección, contraseñas).
+object ParserReciboEpsTacna : ParserRecibo {
 
-    /** No se pudieron leer los campos mínimos clave (T-5.5). */
-    data class NoLegible(val motivo: String) : ResultadoParseo
-}
-
-/**
- * Parser de texto especializado para recibos de agua de EPS Tacna S.A.
- *
- * Sigue la estrategia de 3 pasos descrita en la sección 5 del plan:
- * 1. Normalizar texto (OCR cleanups, símbolos, tildes, mayúsculas).
- * 2. Extraer campos por etiquetas regex o palabras clave conocidas.
- * 3. Asignar puntuación de confianza y verificar campos clave mínimos.
- *
- * Cumple estrictamente T-5.3: ignora y descarta cualquier dato personal
- * (nombres, DNI, dirección catastral, contraseñas de portal web).
- */
-object ParserReciboEpsTacna {
-
-    fun parsear(texto: TextoReconocido): ResultadoParseo =
+    override fun parsear(texto: TextoReconocido): ResultadoParseo =
         parsearTexto(texto.textoPlano)
 
-    fun parsearTexto(textoOriginal: String): ResultadoParseo {
+    override fun parsearTexto(textoOriginal: String): ResultadoParseo {
         if (textoOriginal.isBlank()) {
             return ResultadoParseo.NoLegible("El texto del recibo está vacío.")
         }
 
-        // Paso 1: Normalización
         val normalizado = normalizar(textoOriginal)
 
-        // Paso 2: Extracción campo por campo
+        // Extracción campo por campo
         val periodo = extraerPeriodoConsumo(normalizado)
         val consumo = extraerConsumoM3(normalizado)
         val importe = extraerImporteTotal(normalizado)
@@ -70,7 +51,7 @@ object ParserReciboEpsTacna {
             origen = OrigenDatos.ESCANEADO
         )
 
-        // Paso 3: Validación de campos clave (T-5.5)
+        // Validación de campos clave mínimos
         if (consumo.valor == null && importe.valor == null) {
             return ResultadoParseo.NoLegible("No pudimos leer el consumo ni el importe total de tu recibo.")
         }
@@ -78,9 +59,7 @@ object ParserReciboEpsTacna {
         return ResultadoParseo.Exito(borrador)
     }
 
-    /**
-     * Paso 1: Limpieza y normalización de texto.
-     */
+    // Limpieza y normalización de texto antes de extraer campos.
     fun normalizar(texto: String): String {
         return texto.uppercase()
             .replace('Á', 'A')

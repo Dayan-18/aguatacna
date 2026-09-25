@@ -1,11 +1,6 @@
 package pe.edu.upt.aguatacna.feature.recibo.domain.model
 
-/**
- * Período de consumo: año + mes.
- * Se identifica por el mes de **consumo** (no el de facturación) — supuesto S1.
- *
- * Formato de entrada habitual del recibo: "AGOSTO-2026" o "SETIEMBRE-2026".
- */
+// Período de consumo (año + mes de consumo, no el de facturación), ej. entrada "AGOSTO-2026".
 data class PeriodoConsumo(
     val anio: Int,
     val mes: Int // 1..12
@@ -51,7 +46,7 @@ data class PeriodoConsumo(
             "Jul", "Ago", "Set", "Oct", "Nov", "Dic"
         )
 
-        /** Mapeo de nombres en español (mayúsculas, sin tildes) a número de mes. */
+        // Mapeo de nombres en español (mayúsculas, sin tildes) a número de mes
         private val NOMBRE_A_MES: Map<String, Int> = buildMap {
             val nombres = listOf(
                 listOf("ENERO"),
@@ -72,11 +67,7 @@ data class PeriodoConsumo(
             }
         }
 
-        /**
-         * Parsea un string del tipo "AGOSTO-2026" o "SETIEMBRE-2026".
-         * Acepta guion, espacio o slash como separador.
-         * Devuelve `null` si no se puede parsear.
-         */
+        // Parsea "MES-AÑO" (acepta guion, espacio o slash); devuelve null si no se puede parsear
         fun parsear(texto: String): PeriodoConsumo? {
             val limpio = texto.trim().uppercase()
                 .replace("Á", "A").replace("É", "E").replace("Í", "I")

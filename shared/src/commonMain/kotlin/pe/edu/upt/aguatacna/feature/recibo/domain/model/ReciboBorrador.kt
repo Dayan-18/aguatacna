@@ -2,12 +2,7 @@ package pe.edu.upt.aguatacna.feature.recibo.domain.model
 
 import kotlinx.datetime.LocalDate
 
-/**
- * Datos detectados del recibo aún sin confirmar por el usuario.
- * Cada campo usa [Campo] para llevar valor + confianza + flag de corrección.
- *
- * Se convierte en [Recibo] al confirmar.
- */
+// Datos del recibo aún sin confirmar; cada campo lleva valor + confianza (Campo). Se confirma como Recibo.
 data class ReciboBorrador(
     val periodoConsumo: Campo<PeriodoConsumo> = Campo(),
     val consumoM3: Campo<Int> = Campo(),
@@ -24,6 +19,10 @@ data class ReciboBorrador(
     /** true si tiene los campos mínimos para poder confirmar (consumo + importe). */
     val esConfirmable: Boolean
         get() = consumoM3.valor != null && importeTotal.valor != null
+
+    /** true si algún campo crítico (consumo, importe o período) tiene baja confianza. */
+    val tieneCamposDudosos: Boolean
+        get() = consumoM3.esDudoso || importeTotal.esDudoso || periodoConsumo.esDudoso
 
     /** Convierte el borrador a un [Recibo] confirmado. Requiere [esConfirmable]. */
     fun confirmar(id: String): Recibo {

@@ -2,10 +2,7 @@ package pe.edu.upt.aguatacna.feature.recibo.domain.service
 
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 
-/**
- * Validaciones de coherencia de un recibo.
- * Devuelve advertencias por campo (no bloquea la confirmación).
- */
+// Valida la coherencia de un recibo; las advertencias no bloquean la confirmación.
 object ValidadorRecibo {
 
     data class Advertencia(
@@ -13,18 +10,9 @@ object ValidadorRecibo {
         val mensaje: String
     )
 
-    /** Consumo máximo plausible en m³ (supuesto S9). */
     private const val CONSUMO_MAX = 999
     private const val CONSUMO_MIN = 0
 
-    /** Rango de días entre fechas de lectura (25-40 días). */
-    private const val DIAS_LECTURA_MIN = 25
-    private const val DIAS_LECTURA_MAX = 40
-
-    /**
-     * Valida un recibo y devuelve una lista de advertencias.
-     * Lista vacía = sin problemas detectados.
-     */
     fun validar(recibo: Recibo): List<Advertencia> {
         val advertencias = mutableListOf<Advertencia>()
 

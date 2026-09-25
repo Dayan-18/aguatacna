@@ -29,24 +29,7 @@ class FakeReciboDao : ReciboDao {
         recibos.value = actual
     }
 
-    override suspend fun guardarTodos(recibos: List<ReciboEntity>) {
-        val actual = this.recibos.value.toMutableList()
-        for (r in recibos) {
-            val idx = actual.indexOfFirst { it.id == r.id }
-            if (idx >= 0) actual[idx] = r else actual.add(r)
-        }
-        this.recibos.value = actual
-    }
-
     override suspend fun borrarPorId(id: String) {
         recibos.value = recibos.value.filterNot { it.id == id }
-    }
-
-    override suspend fun borrarPorPeriodo(anio: Int, mes: Int) {
-        recibos.value = recibos.value.filterNot { it.anio == anio && it.mes == mes }
-    }
-
-    override suspend fun borrarTodos() {
-        recibos.value = emptyList()
     }
 }

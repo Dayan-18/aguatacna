@@ -2,12 +2,8 @@ package pe.edu.upt.aguatacna.feature.recibo.domain.model
 
 import kotlinx.datetime.LocalDate
 
-/**
- * Entidad de recibo confirmada.
- *
- * Un recibo se identifica por su [periodoConsumo] (supuesto S1: período de consumo,
- * no el de facturación). Si el mismo período se escanea de nuevo, se reemplaza (upsert, S2).
- */
+// Recibo confirmado, identificado por su periodoConsumo (el mes de consumo, no el de facturación).
+// Si se vuelve a escanear el mismo período, se reemplaza (upsert).
 data class Recibo(
     val id: String,
     val periodoConsumo: PeriodoConsumo,
@@ -23,9 +19,7 @@ data class Recibo(
     val origen: OrigenDatos = OrigenDatos.ESCANEADO
 )
 
-/**
- * Convierte un [Recibo] confirmado en un [ReciboBorrador] para permitir su edición o revisión.
- */
+// Convierte un Recibo confirmado en un ReciboBorrador para permitir su edición o revisión.
 fun Recibo.aBorrador(): ReciboBorrador = ReciboBorrador(
     periodoConsumo = Campo(periodoConsumo, confianza = 1f, corregidoPorUsuario = false),
     consumoM3 = Campo(consumoM3, confianza = 1f, corregidoPorUsuario = false),

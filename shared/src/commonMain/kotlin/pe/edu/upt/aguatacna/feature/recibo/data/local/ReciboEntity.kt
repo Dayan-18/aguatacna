@@ -10,10 +10,7 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.TipoConsumo
 
-/**
- * Entidad de persistencia en Room para Recibo (T-11.1, T-11.2).
- * Únicamente almacena datos de consumo y facturación (sin DNI, nombres ni fotos).
- */
+// Entidad Room de Recibo: solo datos de consumo y facturación (sin DNI, nombres ni fotos).
 @Entity(tableName = "recibo")
 data class ReciboEntity(
     @PrimaryKey val id: String,

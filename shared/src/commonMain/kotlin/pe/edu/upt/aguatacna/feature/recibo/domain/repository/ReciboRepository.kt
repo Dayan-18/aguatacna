@@ -4,12 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 
-/**
- * Interfaz del repositorio de recibos.
- *
- * Expone un [Flow] reactivo para que todas las pantallas se recompongan
- * automáticamente al cambiar los datos (plan sección 4).
- */
+// Repositorio de recibos, expuesto como Flow reactivo para que la UI se recomponga con los cambios.
 interface ReciboRepository {
 
     /** Observa la lista completa de recibos, ordenados por período descendente. */

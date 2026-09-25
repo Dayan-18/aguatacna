@@ -9,27 +9,19 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 
-/**
- * Implementación de [ReciboRepository] respaldada por SQLite/Room KMP (T-11.1).
- * Mantiene la persistencia de los datos al cerrar y abrir la aplicación.
- */
+// Implementación de [ReciboRepository] sobre la tabla `recibo` de la base de datos general (Room).
 class ReciboRepositoryRoom(
     private val dao: ReciboDao
 ) : ReciboRepository {
 
     override fun observarRecibos(): Flow<List<Recibo>> =
-        dao.observarTodos().map { lista ->
-            lista.map { it.toDomain() }
-        }
+        dao.observarTodos().map { lista -> lista.map { it.toDomain() } }
 
     override suspend fun guardar(recibo: Recibo) {
-        // Upsert por período (supuesto S2): si ya existe un recibo del mismo período, reutiliza su ID
+        // Upsert por período: si ya existe un recibo del mismo período, reutiliza su ID
         val existente = dao.buscarPorPeriodo(recibo.periodoConsumo.anio, recibo.periodoConsumo.mes)
-        if (existente != null) {
-            dao.guardar(recibo.copy(id = existente.id).toEntity())
-        } else {
-            dao.guardar(recibo.toEntity())
-        }
+        val aGuardar = if (existente != null) recibo.copy(id = existente.id) else recibo
+        dao.guardar(aGuardar.toEntity())
     }
 
     override suspend fun obtenerPorPeriodo(periodo: PeriodoConsumo): Recibo? =
@@ -37,13 +29,5 @@ class ReciboRepositoryRoom(
 
     override suspend fun eliminar(id: String) {
         dao.borrarPorId(id)
-    }
-
-    suspend fun guardarTodos(recibos: List<Recibo>) {
-        dao.guardarTodos(recibos.map { it.toEntity() })
-    }
-
-    suspend fun borrarTodos() {
-        dao.borrarTodos()
     }
 }

@@ -8,29 +8,16 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 
-/**
- * Implementación del repositorio en memoria (Fase 2, supuesto S5).
- *
- * Los datos se pierden al cerrar la app. Se reemplazará por SQLDelight/Room
- * en Fase 11 (T-11.1).
- *
- * Upsert por período de consumo (supuesto S2).
- */
-class ReciboRepositoryEnMemoria : ReciboRepository {
+// Repositorio en memoria usado en pruebas y vistas previas (sin Koin); upsert por período de consumo.
+class FakeReciboRepository : ReciboRepository {
 
     private val _recibos = MutableStateFlow<List<Recibo>>(emptyList())
 
     override fun observarRecibos(): Flow<List<Recibo>> =
-        _recibos.map { lista ->
-            lista.sortedByDescending { it.periodoConsumo }
-        }
+        _recibos.map { lista -> lista.sortedByDescending { it.periodoConsumo } }
 
     override suspend fun guardar(recibo: Recibo) {
-        _recibos.update { lista ->
-            // Upsert: reemplazar si existe el mismo período (S2)
-            val sinDuplicado = lista.filter { it.periodoConsumo != recibo.periodoConsumo }
-            sinDuplicado + recibo
-        }
+        _recibos.update { lista -> lista.filter { it.periodoConsumo != recibo.periodoConsumo } + recibo }
     }
 
     override suspend fun obtenerPorPeriodo(periodo: PeriodoConsumo): Recibo? =
@@ -40,9 +27,7 @@ class ReciboRepositoryEnMemoria : ReciboRepository {
         _recibos.update { lista -> lista.filter { it.id != id } }
     }
 
-    /**
-     * Carga una lista de recibos en bloque (para la semilla de depuración).
-     */
+    // Carga en bloque, usada por la semilla de datos de ejemplo en pruebas.
     suspend fun cargarTodos(recibos: List<Recibo>) {
         _recibos.value = recibos
     }

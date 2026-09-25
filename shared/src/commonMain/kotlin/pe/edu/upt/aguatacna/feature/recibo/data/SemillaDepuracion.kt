@@ -7,26 +7,10 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.TipoConsumo
 
-/**
- * Semilla de depuración (T-2.3).
- *
- * Carga 6 meses de datos de ejemplo para poder ver los estados sin escanear.
- * Activar/desactivar con [DEBUG_SEED_ENABLED].
- *
- * **Se elimina en T-12.2.**
- */
+// Genera 6 meses de recibos de ejemplo para pruebas y vistas previas (sin escanear nada real).
 object SemillaDepuracion {
 
-    /** Activar para cargar datos de ejemplo al iniciar (desactivado para producción T-12.2). */
-    const val DEBUG_SEED_ENABLED = false
-
-    /**
-     * Genera 6 meses de recibos de ejemplo.
-     *
-     * Consumos: Mar=16, Abr=16, May=15, Jun=17, Jul=16, Ago=33
-     * Promedio de los 5 primeros: (16+16+15+17+16)/5 = 16
-     * Agosto 33 vs promedio 16 → exceso 106% → Atípico ✔
-     */
+    // Consumos: Mar=16, Abr=16, May=15, Jun=17, Jul=16, Ago=33 (Agosto queda atípico frente al promedio de 16)
     fun generarRecibos(): List<Recibo> {
         val datosEjemplo = listOf(
             Triple(PeriodoConsumo(2026, 3), 16, 4820L),   // Marzo

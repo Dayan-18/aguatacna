@@ -1,7 +1,7 @@
 package pe.edu.upt.aguatacna.feature.recibo
 
 import kotlinx.coroutines.flow.first
-import pe.edu.upt.aguatacna.feature.recibo.data.ReciboRepositoryEnMemoria
+import pe.edu.upt.aguatacna.feature.recibo.data.FakeReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.data.SemillaDepuracion
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.EstadoConsumo
@@ -20,7 +20,7 @@ class ObservarHistorialUseCaseTest {
 
     @Test
     fun ventanaDe6MesesCalculaBarrasYUmbral() {
-        val repo = ReciboRepositoryEnMemoria()
+        val repo = FakeReciboRepository()
         val useCase = ObservarHistorialUseCase(repo)
 
         // Cargar 6 meses de semilla: Mar=16, Abr=16, May=15, Jun=17, Jul=16, Ago=33
@@ -56,7 +56,7 @@ class ObservarHistorialUseCaseTest {
 
     @Test
     fun mesSinDatoMuestraCasillaVacia() {
-        val repo = ReciboRepositoryEnMemoria()
+        val repo = FakeReciboRepository()
         val useCase = ObservarHistorialUseCase(repo)
 
         // Solo recibos en Junio y Agosto (Julio faltante)
@@ -79,7 +79,7 @@ class ObservarHistorialUseCaseTest {
 
     @Test
     fun historialVacioDevuelveNull() {
-        val repo = ReciboRepositoryEnMemoria()
+        val repo = FakeReciboRepository()
         val useCase = ObservarHistorialUseCase(repo)
 
         val historial = ejecutar { useCase().first() }

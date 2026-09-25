@@ -9,9 +9,7 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.domain.service.EvaluadorConsumo
 
-/**
- * Resumen para la pantalla General (T-3.1).
- */
+// Resumen del recibo más reciente para la pantalla General.
 data class ResumenRecibo(
     val mes: String,
     val periodoConsumo: PeriodoConsumo,
@@ -24,10 +22,7 @@ data class ResumenRecibo(
     val reciboOriginal: Recibo? = null
 )
 
-/**
- * Observa el recibo más reciente y calcula su estado para la pantalla General.
- * Emite null si no hay recibos.
- */
+// Observa el recibo más reciente y calcula su estado; emite null si no hay recibos.
 class ObservarResumenUseCase(
     private val repository: ReciboRepository
 ) {

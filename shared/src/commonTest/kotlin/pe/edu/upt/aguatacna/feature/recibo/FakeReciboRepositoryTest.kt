@@ -1,7 +1,7 @@
 package pe.edu.upt.aguatacna.feature.recibo
 
 import kotlinx.coroutines.flow.first
-import pe.edu.upt.aguatacna.feature.recibo.data.ReciboRepositoryEnMemoria
+import pe.edu.upt.aguatacna.feature.recibo.data.FakeReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
@@ -19,11 +19,11 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class ReciboRepositoryEnMemoriaTest {
+class FakeReciboRepositoryTest {
 
     @Test
     fun upsertReemplazaReciboDelMismoPeriodo() {
-        val repo = ReciboRepositoryEnMemoria()
+        val repo = FakeReciboRepository()
         val periodo = PeriodoConsumo(2026, 8)
 
         val r1 = Recibo("1", periodo, 20, Dinero(5000L))
@@ -43,7 +43,7 @@ class ReciboRepositoryEnMemoriaTest {
 
     @Test
     fun ordenarDescendentePorPeriodo() {
-        val repo = ReciboRepositoryEnMemoria()
+        val repo = FakeReciboRepository()
         val rJul = Recibo("1", PeriodoConsumo(2026, 7), 16, Dinero(4000L))
         val rAgo = Recibo("2", PeriodoConsumo(2026, 8), 33, Dinero(7420L))
         val rJun = Recibo("3", PeriodoConsumo(2026, 6), 15, Dinero(3800L))
@@ -63,7 +63,7 @@ class ReciboRepositoryEnMemoriaTest {
 
     @Test
     fun casosDeUsoFuncionanCorrectamente() {
-        val repo = ReciboRepositoryEnMemoria()
+        val repo = FakeReciboRepository()
         val observarResumen = ObservarResumenUseCase(repo)
         val observarHistorial = ObservarHistorialUseCase(repo)
         val confirmar = ConfirmarReciboUseCase(repo)

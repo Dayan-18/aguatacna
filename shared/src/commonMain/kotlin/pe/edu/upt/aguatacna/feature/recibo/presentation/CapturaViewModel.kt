@@ -1,4 +1,4 @@
-package pe.edu.upt.aguatacna.feature.recibo.presentation.captura
+package pe.edu.upt.aguatacna.feature.recibo.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,26 +13,15 @@ import pe.edu.upt.aguatacna.feature.recibo.data.BorradorReciboStore
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.EscanearReciboUseCase
 
-/**
- * Estados del flujo de captura de foto del recibo (T-6.1).
- */
+// Estados del flujo de captura de foto del recibo.
 sealed interface CapturaUiState {
-    /** Estado inicial, listo para disparar cámara. */
     data object Inactivo : CapturaUiState
-
-    /** Procesando OCR y analizando campos (T-6.4). */
     data object Procesando : CapturaUiState
-
-    /** Recibo leído con éxito, listo para navegar a revisión (T-6.4). */
     data class Exito(val borrador: ReciboBorrador) : CapturaUiState
-
-    /** Error al procesar o leer el recibo (T-6.6). */
     data class Error(val mensaje: String) : CapturaUiState
 }
 
-/**
- * ViewModel que orquesta la captura y procesamiento OCR del recibo.
- */
+// Orquesta la captura de la foto y su procesamiento OCR.
 class CapturaViewModel(
     private val escanearRecibo: EscanearReciboUseCase,
     private val borradorStore: BorradorReciboStore
@@ -59,7 +48,7 @@ class CapturaViewModel(
             resultado.fold(
                 onSuccess = { borrador ->
                     borradorStore.guardar(borrador)
-                    liberarFoto() // Liberar foto de memoria
+                    liberarFoto()
                     _uiState.value = CapturaUiState.Exito(borrador)
                 },
                 onFailure = { error ->
@@ -76,7 +65,7 @@ class CapturaViewModel(
         _uiState.value = CapturaUiState.Inactivo
     }
 
-    /** T-6.5: Liberar la foto de memoria al terminar (no persistirla). */
+    // La foto nunca se persiste; se descarta apenas se procesa.
     private fun liberarFoto() {
         fotoEnMemoria = null
     }

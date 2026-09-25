@@ -1,15 +1,11 @@
 package pe.edu.upt.aguatacna.feature.recibo.data.local
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Data Access Object para la tabla `recibo` en Room (T-11.1).
- */
+// Acceso a la tabla `recibo` de la base de datos general (AguaTacnaDatabase).
 @Dao
 interface ReciboDao {
 
@@ -22,15 +18,6 @@ interface ReciboDao {
     @Upsert
     suspend fun guardar(recibo: ReciboEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun guardarTodos(recibos: List<ReciboEntity>)
-
     @Query("DELETE FROM recibo WHERE id = :id")
     suspend fun borrarPorId(id: String)
-
-    @Query("DELETE FROM recibo WHERE anio = :anio AND mes = :mes")
-    suspend fun borrarPorPeriodo(anio: Int, mes: Int)
-
-    @Query("DELETE FROM recibo")
-    suspend fun borrarTodos()
 }
