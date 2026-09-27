@@ -41,7 +41,7 @@ import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
 @Composable
 fun RegistrarDomicilioScreen(
     onVolver: () -> Unit = {},
-    viewModel: RegistrarDomicilioViewModel = viewModel { RegistrarDomicilioViewModel.conDatosDePrueba() }
+    viewModel: RegistrarDomicilioViewModel = viewModel { RegistrarDomicilioViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(

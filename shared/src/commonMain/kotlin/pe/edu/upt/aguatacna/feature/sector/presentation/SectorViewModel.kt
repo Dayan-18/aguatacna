@@ -21,6 +21,8 @@ import pe.edu.upt.aguatacna.feature.sector.domain.usecase.ProximoAbastecimiento
 import pe.edu.upt.aguatacna.feature.sector.domain.usecase.ResolverSector
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.util.Reloj
 
 class SectorViewModel(
     private val repositorio: SectorRepository,
@@ -97,6 +99,12 @@ class SectorViewModel(
         fun conDatosDePrueba(): SectorViewModel {
             val reloj = { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
             return SectorViewModel(FakeSectorRepository(reloj().date), CASA_DE_PRUEBA, reloj)
+        }
+
+        // La app real: el repositorio (Room + Supabase) viene de Koin; sin Koin (preview) cae al fake.
+        fun desdeInyeccion(): SectorViewModel {
+            val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
+            return SectorViewModel(koin.get(), CASA_DE_PRUEBA, koin.get<Reloj>()::ahora)
         }
     }
 }
