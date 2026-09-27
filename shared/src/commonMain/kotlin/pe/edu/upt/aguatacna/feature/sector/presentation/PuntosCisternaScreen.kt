@@ -23,7 +23,7 @@ import pe.edu.upt.aguatacna.core.ui.theme.Fondo
 @Composable
 fun PuntosCisternaScreen(
     onVolver: () -> Unit = {},
-    viewModel: PuntosCisternaViewModel = viewModel { PuntosCisternaViewModel.conDatosDePrueba() }
+    viewModel: PuntosCisternaViewModel = viewModel { PuntosCisternaViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var mapaAbierto by rememberSaveable { mutableStateOf(false) }

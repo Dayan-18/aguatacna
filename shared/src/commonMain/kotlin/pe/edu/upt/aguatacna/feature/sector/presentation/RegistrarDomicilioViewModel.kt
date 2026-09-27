@@ -15,6 +15,7 @@ import pe.edu.upt.aguatacna.feature.sector.domain.repository.SectorRepository
 import pe.edu.upt.aguatacna.feature.sector.domain.usecase.ResolverSector
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import org.koin.mp.KoinPlatform
 
 class RegistrarDomicilioViewModel(
     private val repositorio: SectorRepository,
@@ -57,6 +58,11 @@ class RegistrarDomicilioViewModel(
         fun conDatosDePrueba(): RegistrarDomicilioViewModel {
             val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             return RegistrarDomicilioViewModel(FakeSectorRepository(hoy), CASA_DE_PRUEBA)
+        }
+
+        fun desdeInyeccion(): RegistrarDomicilioViewModel {
+            val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
+            return RegistrarDomicilioViewModel(koin.get(), CASA_DE_PRUEBA)
         }
     }
 }

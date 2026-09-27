@@ -14,6 +14,7 @@ import pe.edu.upt.aguatacna.feature.sector.domain.repository.SectorRepository
 import pe.edu.upt.aguatacna.feature.sector.domain.usecase.BuscarCisternasCercanas
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import org.koin.mp.KoinPlatform
 
 class PuntosCisternaViewModel(
     private val repositorio: SectorRepository,
@@ -52,6 +53,11 @@ class PuntosCisternaViewModel(
         fun conDatosDePrueba(): PuntosCisternaViewModel {
             val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             return PuntosCisternaViewModel(FakeSectorRepository(hoy), CASA_DE_PRUEBA)
+        }
+
+        fun desdeInyeccion(): PuntosCisternaViewModel {
+            val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
+            return PuntosCisternaViewModel(koin.get(), CASA_DE_PRUEBA)
         }
     }
 }
