@@ -34,18 +34,23 @@ class RegistrarDomicilioViewModel(
     fun detectarSector() {
         viewModelScope.launch {
             _uiState.update { it.copy(cargando = true) }
-            val sector = resolverSector.resolver(ubicacion, repositorio.obtenerSectores())
-            if (sector == null) {
+            try {
+                val sector = resolverSector.resolver(ubicacion, repositorio.obtenerSectores())
+                if (sector == null) {
+                    _uiState.update { it.copy(cargando = false) }
+                    return@launch
+                }
+                val minutos = repositorio.obtenerCronogramas(sector.id).firstOrNull()?.duracionMinutos
+                _uiState.value = RegistrarDomicilioUiState(
+                    cargando = false,
+                    sector = sector,
+                    continuidad = minutos?.let { "${duracionATexto(it)}/día" } ?: "Sin horario",
+                    etiquetaMapa = "SECTOR ${sector.id.substringAfterLast('-')}"
+                )
+            } catch (e: Exception) {
+                // Sin conexión o error del servidor: no dejamos la pantalla colgada.
                 _uiState.update { it.copy(cargando = false) }
-                return@launch
             }
-            val minutos = repositorio.obtenerCronogramas(sector.id).firstOrNull()?.duracionMinutos
-            _uiState.value = RegistrarDomicilioUiState(
-                cargando = false,
-                sector = sector,
-                continuidad = minutos?.let { "${duracionATexto(it)}/día" } ?: "Sin horario",
-                etiquetaMapa = "SECTOR ${sector.id.substringAfterLast('-')}"
-            )
         }
     }
 

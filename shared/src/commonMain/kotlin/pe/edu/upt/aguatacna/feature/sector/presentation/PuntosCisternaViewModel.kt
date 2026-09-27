@@ -32,13 +32,18 @@ class PuntosCisternaViewModel(
 
     private fun cargar() {
         viewModelScope.launch {
-            val sectores = repositorio.obtenerSectores()
-            val puntos = sectores.flatMap { repositorio.obtenerPuntosCisterna(it.id) }
-            _uiState.value = PuntosCisternaUiState(
-                cargando = false,
-                ubicacionCasa = ubicacion,
-                cisternas = buscarCisternas.buscar(puntos, ubicacion, RADIO_CISTERNAS_KM)
-            )
+            try {
+                val sectores = repositorio.obtenerSectores()
+                val puntos = sectores.flatMap { repositorio.obtenerPuntosCisterna(it.id) }
+                _uiState.value = PuntosCisternaUiState(
+                    cargando = false,
+                    ubicacionCasa = ubicacion,
+                    cisternas = buscarCisternas.buscar(puntos, ubicacion, RADIO_CISTERNAS_KM)
+                )
+            } catch (e: Exception) {
+                // Sin conexión: mostramos la lista vacía en vez de un spinner infinito.
+                _uiState.value = _uiState.value.copy(cargando = false)
+            }
         }
     }
 
