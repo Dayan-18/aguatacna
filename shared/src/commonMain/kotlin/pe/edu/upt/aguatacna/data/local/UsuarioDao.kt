@@ -20,4 +20,7 @@ interface UsuarioDao {
 
     @Query("UPDATE usuario SET modoAcceso = :modo")
     suspend fun guardarModoDeAcceso(modo: String)
+
+    @Query("UPDATE usuario SET sectorId = :sectorId")
+    suspend fun guardarSector(sectorId: String)
 }

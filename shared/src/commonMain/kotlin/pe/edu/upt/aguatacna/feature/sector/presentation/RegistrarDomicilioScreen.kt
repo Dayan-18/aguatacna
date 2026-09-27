@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import aguatacna.shared.generated.resources.Res
 import aguatacna.shared.generated.resources.ic_atras
 import org.jetbrains.compose.resources.painterResource
+import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
 import pe.edu.upt.aguatacna.core.ui.theme.Fondo
 import pe.edu.upt.aguatacna.core.ui.theme.FuenteTexto
@@ -68,7 +69,17 @@ fun RegistrarDomicilioScreen(
             modifier = Modifier.padding(horizontal = 20.dp)
         )
         Spacer(Modifier.height(28.dp))
-        BotonConfirmarSector(onClick = {}, modifier = Modifier.padding(horizontal = 20.dp))
+        BotonConfirmarSector(onClick = viewModel::confirmarSector, modifier = Modifier.padding(horizontal = 20.dp))
+        if (uiState.guardado) {
+            Text(
+                "✓ Sector guardado",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                fontFamily = FuenteTexto,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = AguaMedia
+            )
+        }
         Spacer(Modifier.height(24.dp))
     }
 }
