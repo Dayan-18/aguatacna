@@ -22,6 +22,7 @@ fun moduloPlataforma(base: AguaTacnaDatabase, usuarioId: String) = module {
     single { base.reservaDao() }
     single { base.reciboDao() }
     single { base.avisoReservaDao() }
+    single { base.sectorDao() }
     single(QUALIFICADOR_USUARIO) { usuarioId }
     single<ReconocedorTexto> { ReconocedorTextoAndroid() }
     single<InicioConGoogle> { InicioConGoogleAndroid(get()) }
