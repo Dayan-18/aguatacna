@@ -11,8 +11,10 @@ import kotlinx.datetime.TimeZone
 import pe.edu.upt.aguatacna.feature.retos.data.FakeRetosRepository
 import pe.edu.upt.aguatacna.feature.retos.domain.repository.RetosRepository
 import pe.edu.upt.aguatacna.feature.retos.domain.usecase.CalcularRacha
+import pe.edu.upt.aguatacna.feature.retos.domain.usecase.CompararConSector
 import pe.edu.upt.aguatacna.feature.retos.domain.usecase.MarcarRetoCumplido
 import pe.edu.upt.aguatacna.feature.retos.domain.usecase.ObtenerRetosSemana
+import pe.edu.upt.aguatacna.feature.retos.domain.model.LitrosPorHabitanteDia
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -30,11 +32,16 @@ class RetosViewModel(private val repositorio: RetosRepository) : ViewModel() {
     private fun cargar(mensaje: String? = null) = viewModelScope.launch {
         val retos = ObtenerRetosSemana(repositorio).ejecutar()
         val cumplimientos = repositorio.obtenerCumplimientos()
+        val posicion = CompararConSector(repositorio).ejecutar(
+            sectorId = "CN-04",
+            consumo = LitrosPorHabitanteDia(92.0)
+        )
         _uiState.value = RetosUiState(
             cargando = false,
             retos = retos,
             cumplidos = cumplimientos.filter { it.cumplido }.map { it.retoId }.toSet(),
             racha = CalcularRacha().calcular(cumplimientos, repositorio.fechaActual()),
+            posicionSector = posicion,
             mensaje = mensaje
         )
     }
