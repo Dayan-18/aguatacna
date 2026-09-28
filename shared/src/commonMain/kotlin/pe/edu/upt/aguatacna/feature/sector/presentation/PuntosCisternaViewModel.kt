@@ -14,6 +14,7 @@ import pe.edu.upt.aguatacna.feature.sector.domain.repository.SectorRepository
 import pe.edu.upt.aguatacna.feature.sector.domain.usecase.BuscarCisternasCercanas
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import org.koin.mp.KoinPlatform
 
 class PuntosCisternaViewModel(
     private val repositorio: SectorRepository,
@@ -31,13 +32,18 @@ class PuntosCisternaViewModel(
 
     private fun cargar() {
         viewModelScope.launch {
-            val sectores = repositorio.obtenerSectores()
-            val puntos = sectores.flatMap { repositorio.obtenerPuntosCisterna(it.id) }
-            _uiState.value = PuntosCisternaUiState(
-                cargando = false,
-                ubicacionCasa = ubicacion,
-                cisternas = buscarCisternas.buscar(puntos, ubicacion, RADIO_CISTERNAS_KM)
-            )
+            try {
+                val sectores = repositorio.obtenerSectores()
+                val puntos = sectores.flatMap { repositorio.obtenerPuntosCisterna(it.id) }
+                _uiState.value = PuntosCisternaUiState(
+                    cargando = false,
+                    ubicacionCasa = ubicacion,
+                    cisternas = buscarCisternas.buscar(puntos, ubicacion, RADIO_CISTERNAS_KM)
+                )
+            } catch (e: Exception) {
+                // Sin conexión: mostramos la lista vacía en vez de un spinner infinito.
+                _uiState.value = _uiState.value.copy(cargando = false)
+            }
         }
     }
 
@@ -52,6 +58,11 @@ class PuntosCisternaViewModel(
         fun conDatosDePrueba(): PuntosCisternaViewModel {
             val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             return PuntosCisternaViewModel(FakeSectorRepository(hoy), CASA_DE_PRUEBA)
+        }
+
+        fun desdeInyeccion(): PuntosCisternaViewModel {
+            val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
+            return PuntosCisternaViewModel(koin.get(), CASA_DE_PRUEBA)
         }
     }
 }

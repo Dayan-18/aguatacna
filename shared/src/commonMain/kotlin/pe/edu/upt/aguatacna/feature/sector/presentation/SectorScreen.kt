@@ -41,7 +41,7 @@ import pe.edu.upt.aguatacna.feature.sector.domain.model.TipoConfirmacion
 
 @Composable
 fun SectorScreen(
-    viewModel: SectorViewModel = viewModel { SectorViewModel.conDatosDePrueba() }
+    viewModel: SectorViewModel = viewModel { SectorViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var mapaAbierto by rememberSaveable { mutableStateOf(false) }

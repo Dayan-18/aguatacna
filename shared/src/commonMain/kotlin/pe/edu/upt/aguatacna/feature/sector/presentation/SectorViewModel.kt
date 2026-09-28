@@ -21,6 +21,8 @@ import pe.edu.upt.aguatacna.feature.sector.domain.usecase.ProximoAbastecimiento
 import pe.edu.upt.aguatacna.feature.sector.domain.usecase.ResolverSector
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.util.Reloj
 
 class SectorViewModel(
     private val repositorio: SectorRepository,
@@ -42,46 +44,55 @@ class SectorViewModel(
 
     private fun cargarSector() {
         viewModelScope.launch {
-            val momento = ahora()
-            val sectores = repositorio.obtenerSectores()
-            val sector = resolverSector.resolver(ubicacionCasa, sectores)
-            if (sector == null) {
+            try {
+                val momento = ahora()
+                val sectores = repositorio.obtenerSectores()
+                val sector = resolverSector.resolver(ubicacionCasa, sectores)
+                if (sector == null) {
+                    _uiState.update { it.copy(cargando = false) }
+                    return@launch
+                }
+                val cronogramas = repositorio.obtenerCronogramas(sector.id)
+                val puntos = sectores.flatMap { repositorio.obtenerPuntosCisterna(it.id) }
+                _uiState.value = SectorUiState(
+                    cargando = false,
+                    ahora = momento,
+                    sector = sector,
+                    ubicacionCasa = ubicacionCasa,
+                    cronogramaDeHoy = cronogramas.firstOrNull { it.fecha == momento.date },
+                    aguaLlegandoAhora = cronogramaVigente.obtener(cronogramas, momento) != null,
+                    proximoAbastecimiento = proximoAbastecimiento.calcular(cronogramas, momento),
+                    cisternas = buscarCisternas.buscar(puntos, ubicacionCasa, RADIO_CISTERNAS_KM),
+                    confirmacionesDeHoy = repositorio.obtenerConfirmaciones(sector.id, momento.date).size
+                )
+            } catch (e: Exception) {
+                // Sin conexión o error del servidor: no dejamos la pantalla colgada en el spinner.
                 _uiState.update { it.copy(cargando = false) }
-                return@launch
             }
-            val cronogramas = repositorio.obtenerCronogramas(sector.id)
-            val puntos = sectores.flatMap { repositorio.obtenerPuntosCisterna(it.id) }
-            _uiState.value = SectorUiState(
-                cargando = false,
-                ahora = momento,
-                sector = sector,
-                ubicacionCasa = ubicacionCasa,
-                cronogramaDeHoy = cronogramas.firstOrNull { it.fecha == momento.date },
-                aguaLlegandoAhora = cronogramaVigente.obtener(cronogramas, momento) != null,
-                proximoAbastecimiento = proximoAbastecimiento.calcular(cronogramas, momento),
-                cisternas = buscarCisternas.buscar(puntos, ubicacionCasa, RADIO_CISTERNAS_KM),
-                confirmacionesDeHoy = repositorio.obtenerConfirmaciones(sector.id, momento.date).size
-            )
         }
     }
 
     fun confirmar(tipo: TipoConfirmacion) {
         val sector = _uiState.value.sector ?: return
         viewModelScope.launch {
-            val momento = ahora()
-            repositorio.registrarConfirmacion(
-                ConfirmacionHorario(
-                    id = "$tipo-$momento",
-                    sectorId = sector.id,
-                    // Provisional hasta que core/ genere el UUID local (constitución, artículo III).
-                    usuarioId = "invitado",
-                    momento = momento,
-                    tipo = tipo
+            try {
+                val momento = ahora()
+                repositorio.registrarConfirmacion(
+                    ConfirmacionHorario(
+                        id = "$tipo-$momento",
+                        sectorId = sector.id,
+                        // Provisional hasta que core/ genere el UUID local (constitución, artículo III).
+                        usuarioId = "invitado",
+                        momento = momento,
+                        tipo = tipo
+                    )
                 )
-            )
-            val total = repositorio.obtenerConfirmaciones(sector.id, momento.date).size
-            _uiState.update {
-                it.copy(confirmacionesDeHoy = total, mensaje = "Gracias, registramos tu confirmación")
+                val total = repositorio.obtenerConfirmaciones(sector.id, momento.date).size
+                _uiState.update {
+                    it.copy(confirmacionesDeHoy = total, mensaje = "Gracias, registramos tu confirmación")
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(mensaje = "No pudimos registrar tu confirmación. Revisa tu conexión.") }
             }
         }
     }
@@ -97,6 +108,12 @@ class SectorViewModel(
         fun conDatosDePrueba(): SectorViewModel {
             val reloj = { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
             return SectorViewModel(FakeSectorRepository(reloj().date), CASA_DE_PRUEBA, reloj)
+        }
+
+        // La app real: el repositorio (Room + Supabase) viene de Koin; sin Koin (preview) cae al fake.
+        fun desdeInyeccion(): SectorViewModel {
+            val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
+            return SectorViewModel(koin.get(), CASA_DE_PRUEBA, koin.get<Reloj>()::ahora)
         }
     }
 }
