@@ -15,6 +15,7 @@ import pe.edu.upt.aguatacna.feature.asistente.presentation.AsistenteScreen
 import pe.edu.upt.aguatacna.feature.recibo.presentation.ReciboScreen
 import pe.edu.upt.aguatacna.feature.reserva.presentation.ReservaScreen
 import pe.edu.upt.aguatacna.feature.sector.presentation.SectorScreen
+import pe.edu.upt.aguatacna.feature.retos.presentation.RetosScreen
 
 // Navegación provisional por pestañas, sin librería de navegación.
 // Pendiente de revisión del custodio del core (Cristhian).
@@ -44,7 +45,7 @@ fun AppNavegacion() {
                 Destino.SECTOR -> SectorScreen()
                 Destino.RECIBO -> ReciboScreen(resetTrigger = resetReciboTrigger)
                 Destino.ASISTENTE -> AsistenteScreen()
-                else -> PantallaPendiente(destinoActual)
+                Destino.AHORRO -> RetosScreen()
             }
         }
     }
