@@ -10,10 +10,12 @@ Para acceder a la versión completa e indexada de esta documentación, consulta:
 
 ## Resumen Ejecutivo
 
-El módulo `recibo` implementa la captura, digitalización mediante OCR local, revisión, corrección manual, persistencia en Room SQLite y análisis histórico de los recibos de agua de la **EPS Tacna S.A.**, aplicando las reglas de protección al usuario establecidas por la **Sunass (art. 88)**.
+El módulo `recibo` implementa la captura, digitalización mediante OCR local, revisión, corrección manual, persistencia en Room SQLite y análisis histórico de los recibos de agua de la **EPS Tacna S.A.**.
+
+**Regla de consumo:** un mes con más de **100 m³** se marca como "Alto consumo" y la app muestra un mensaje corto para revisar posibles fugas en casa. Es el único criterio; el promedio de los meses previos y la variación porcentual se muestran solo como referencia.
 
 ### Sub-paquetes:
-- **`domain`**: Modelos inmutables (`Recibo`, `Dinero`, `PeriodoConsumo`, `EstadoConsumo`, `Campo<T>`), reglas de negocio de Sunass (`EvaluadorConsumo`), validaciones de coherencia (`ValidadorRecibo`) y casos de uso (`EscanearReciboUseCase`, `ConfirmarReciboUseCase`, `CorregirCampoUseCase`, `ObservarResumenUseCase`, `ObservarHistorialUseCase`).
+- **`domain`**: Modelos inmutables (`Recibo`, `Dinero`, `PeriodoConsumo`, `EstadoConsumo`, `Campo<T>`), regla de alto consumo de 100 m³ (`EvaluadorConsumo`), validaciones de coherencia (`ValidadorRecibo`) y casos de uso (`EscanearReciboUseCase`, `ConfirmarReciboUseCase`, `CorregirCampoUseCase`, `ObservarResumenUseCase`, `ObservarHistorialUseCase`).
 - **`infrastructure/ocr`**: Parser regex para recibos de EPS Tacna (`ParserReciboEpsTacna`) y reconocimiento con Google ML Kit para Android (`ReconocedorTextoAndroid`).
 - **`data`**: Store reactivo en memoria (`BorradorReciboStore`), implementación SQLite con Room KMP (`ReciboRepositoryRoom`), DAO y entidades locales.
 - **`presentation`**: Pantalla principal (`ReciboScreen`), Historial con gráfico de 6 meses y umbral de 100 m³ (`ReciboHistorialScreen`), Revisión de borrador (`ReciboFotoScreen`), Corrección manual con teclado táctil (`ReciboManualMedidorScreen`) y Cámara (`CamaraReciboScreen`).

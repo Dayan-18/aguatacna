@@ -96,33 +96,10 @@ data class EstiloEstado(
                 chipColorFondo = Color(0xFFFEF2E6),
                 chipColorBorde = Color(0xFFFDE0B5),
                 variacionColor = Ocre,
-                botonHistorialTexto = "Ver histórico y cómo reclamar",
+                botonHistorialTexto = BOTON_HISTORIAL,
                 botonHistorialColor = Ocre
             )
-            is EstadoConsumo.Normal -> EstiloEstado(
-                colorPrincipal = AguaMedia,
-                colorFondo = TealFondo,
-                colorBorde = TealBorde,
-                chipTexto = "Normal",
-                chipColorTexto = AguaMedia,
-                chipColorFondo = Color(0xFFE4F3F4),
-                chipColorBorde = Color(0xFFCAEBED),
-                variacionColor = AguaMedia,
-                botonHistorialTexto = "Ver histórico de consumo",
-                botonHistorialColor = AguaMedia
-            )
-            is EstadoConsumo.SinHistorial -> EstiloEstado(
-                colorPrincipal = AguaMedia,
-                colorFondo = TealFondo,
-                colorBorde = TealBorde,
-                chipTexto = "Registro",
-                chipColorTexto = AguaMedia,
-                chipColorFondo = Color(0xFFE4F3F4),
-                chipColorBorde = Color(0xFFCAEBED),
-                variacionColor = AguaMedia,
-                botonHistorialTexto = "Ver histórico de consumo",
-                botonHistorialColor = AguaMedia
-            )
+            is EstadoConsumo.Normal, is EstadoConsumo.SinHistorial -> estiloTeal(estado.chipTexto)
             is EstadoConsumo.FacturadoPorPromedio -> EstiloEstado(
                 colorPrincipal = TintaSuave,
                 colorFondo = NeutroFondo,
@@ -132,10 +109,25 @@ data class EstiloEstado(
                 chipColorFondo = Color(0xFFE8EEF0),
                 chipColorBorde = Color(0xFFD0DCE0),
                 variacionColor = TintaSuave,
-                botonHistorialTexto = "Ver histórico de consumo",
+                botonHistorialTexto = BOTON_HISTORIAL,
                 botonHistorialColor = AguaMedia
             )
         }
+
+        private fun estiloTeal(chip: String) = EstiloEstado(
+            colorPrincipal = AguaMedia,
+            colorFondo = TealFondo,
+            colorBorde = TealBorde,
+            chipTexto = chip,
+            chipColorTexto = AguaMedia,
+            chipColorFondo = Color(0xFFE4F3F4),
+            chipColorBorde = Color(0xFFCAEBED),
+            variacionColor = AguaMedia,
+            botonHistorialTexto = BOTON_HISTORIAL,
+            botonHistorialColor = AguaMedia
+        )
+
+        private const val BOTON_HISTORIAL = "Ver histórico de consumo"
     }
 }
 
@@ -352,7 +344,7 @@ fun TarjetaReciboActivo(
 
         Spacer(Modifier.height(10.dp))
 
-        // Métricas: Consumo facturado y Variación Sunass
+        // Métricas: Consumo facturado y variación frente al promedio
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -369,7 +361,7 @@ fun TarjetaReciboActivo(
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        state.consumoM3.toString(),
+                        state.recibo.consumoM3.toString(),
                         fontFamily = FuenteNumeros,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
@@ -387,11 +379,11 @@ fun TarjetaReciboActivo(
                     .border(1.dp, estilo.colorBorde, RoundedCornerShape(12.dp))
                     .padding(10.dp)
             ) {
-                Text("Variación Sunass", fontFamily = FuenteTexto, fontSize = 11.sp, color = estilo.variacionColor)
+                Text("Variación", fontFamily = FuenteTexto, fontSize = 11.sp, color = estilo.variacionColor)
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        state.variacionTexto,
+                        state.estadoConsumo.variacionTexto,
                         fontFamily = FuenteNumeros,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
@@ -622,7 +614,7 @@ fun TarjetaEscanear(
 // Bloque de herramientas del recibo: histórico de 6 meses.
 @Composable
 fun SeccionHerramientas(
-    promedioHistorico: Int,
+    promedioHistorico: Int?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -656,7 +648,7 @@ fun SeccionHerramientas(
             iconoColor = AguaMedia,
             iconoFondo = Color(0xFFF0F8F8),
             titulo = "Histórico de 6 meses",
-            subtitulo = "Promedio regular: $promedioHistorico m³",
+            subtitulo = promedioHistorico?.let { "Promedio regular: $it m³" } ?: "Aún sin meses previos para promediar",
             trailingContent = {
                 Row(
                     verticalAlignment = Alignment.Bottom,

@@ -21,16 +21,16 @@ data class Recibo(
 
 // Convierte un Recibo confirmado en un ReciboBorrador para permitir su edición o revisión.
 fun Recibo.aBorrador(): ReciboBorrador = ReciboBorrador(
-    periodoConsumo = Campo(periodoConsumo, confianza = 1f, corregidoPorUsuario = false),
-    consumoM3 = Campo(consumoM3, confianza = 1f, corregidoPorUsuario = false),
-    importeTotal = Campo(importeTotal, confianza = 1f, corregidoPorUsuario = false),
-    numeroMedidor = Campo(numeroMedidor, confianza = 1f, corregidoPorUsuario = false),
-    numeroRecibo = Campo(numeroRecibo, confianza = 1f, corregidoPorUsuario = false),
-    lecturaAnteriorM3 = Campo(lecturaAnteriorM3, confianza = 1f, corregidoPorUsuario = false),
-    lecturaActualM3 = Campo(lecturaActualM3, confianza = 1f, corregidoPorUsuario = false),
-    fechaEmision = Campo(fechaEmision, confianza = 1f, corregidoPorUsuario = false),
-    fechaVencimiento = Campo(fechaVencimiento, confianza = 1f, corregidoPorUsuario = false),
-    tipoConsumo = Campo(tipoConsumo, confianza = 1f, corregidoPorUsuario = false),
-    origen = origen
+    periodoConsumo = Campo.confirmado(periodoConsumo),
+    consumoM3 = Campo.confirmado(consumoM3),
+    importeTotal = Campo.confirmado(importeTotal),
+    numeroMedidor = Campo.confirmado(numeroMedidor),
+    numeroRecibo = Campo.confirmado(numeroRecibo),
+    lecturaAnteriorM3 = Campo.confirmado(lecturaAnteriorM3),
+    lecturaActualM3 = Campo.confirmado(lecturaActualM3),
+    fechaEmision = Campo.confirmado(fechaEmision),
+    fechaVencimiento = Campo.confirmado(fechaVencimiento),
+    tipoConsumo = Campo.confirmado(tipoConsumo),
+    origen = origen,
+    idRecibo = id
 )
-

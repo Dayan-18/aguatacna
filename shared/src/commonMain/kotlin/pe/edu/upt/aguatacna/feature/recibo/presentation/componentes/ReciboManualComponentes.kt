@@ -39,8 +39,8 @@ import pe.edu.upt.aguatacna.core.ui.theme.Ocre
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
 import pe.edu.upt.aguatacna.core.ui.theme.sombraSuave
-import pe.edu.upt.aguatacna.core.util.RelojDelSistema
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.presentation.TECLA_BORRAR
 
 // ── Colores privados ──────────────────────────────────────────────────────────
 
@@ -54,12 +54,15 @@ private val TeclaFondo = Blanco
 // ── TipoCampoEdicion ─────────────────────────────────────────────────────────
 
 // Tipos de campos del recibo que el usuario puede editar o corregir manualmente.
-enum class TipoCampoEdicion(val nombre: String, val unidad: String) {
-    CONSUMO_M3("consumo", "m³"),
-    LECTURA_ANTERIOR("lectura anterior", "m³"),
-    LECTURA_ACTUAL("lectura actual", "m³"),
-    IMPORTE("importe total", "S/"),
-    PERIODO("período de consumo", "")
+// maxDigitos cuenta la coma del importe: 7 caracteres admiten "1234,56".
+enum class TipoCampoEdicion(val nombre: String, val unidad: String, val maxDigitos: Int) {
+    CONSUMO_M3("consumo", "m³", 3),
+    LECTURA_ANTERIOR("lectura anterior", "m³", 6),
+    LECTURA_ACTUAL("lectura actual", "m³", 6),
+    IMPORTE("importe total", "S/", 7),
+    PERIODO("período de consumo", "", 0);
+
+    val permiteComa: Boolean get() = this == IMPORTE
 }
 
 // ── DisplayDigitosMedidor / CajaDigito ───────────────────────────────────────
@@ -222,7 +225,7 @@ fun TecladoNumericoMedidor(
         listOf("1", "2", "3"),
         listOf("4", "5", "6"),
         listOf("7", "8", "9"),
-        listOf(",", "0", "←")
+        listOf(",", "0", TECLA_BORRAR)
     )
 
     Column(
@@ -249,7 +252,7 @@ fun TecladoNumericoMedidor(
                         ),
                         border = null
                     ) {
-                        if (tecla == "←") {
+                        if (tecla == TECLA_BORRAR) {
                             Icon(
                                 Icons.AutoMirrored.Filled.Backspace,
                                 contentDescription = "Borrar",
@@ -277,19 +280,13 @@ fun TecladoNumericoMedidor(
 // Cuadrícula de 12 meses (4x3) para elegir el período de consumo del recibo.
 @Composable
 fun SelectorPeriodoMeses(
+    periodoActual: PeriodoConsumo,
     periodoSeleccionado: PeriodoConsumo,
     onSeleccionarPeriodo: (PeriodoConsumo) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val ahora = remember { RelojDelSistema().ahora() }
-    val ultimos12Meses = remember(ahora) {
-        var p = PeriodoConsumo(ahora.year, ahora.monthNumber)
-        buildList {
-            repeat(12) {
-                add(p)
-                p = p.anterior()
-            }
-        }.reversed()
+    val ultimos12Meses = remember(periodoActual) {
+        generateSequence(periodoActual) { it.anterior() }.take(12).toList().reversed()
     }
 
     Column(

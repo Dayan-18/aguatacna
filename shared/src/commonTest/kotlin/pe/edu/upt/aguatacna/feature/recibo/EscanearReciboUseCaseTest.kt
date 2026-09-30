@@ -4,6 +4,7 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.LineaTexto
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.TextoReconocido
 import pe.edu.upt.aguatacna.feature.recibo.domain.port.ReconocedorTexto
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.EscanearReciboUseCase
+import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ParserReciboEpsTacna
 import pe.edu.upt.aguatacna.feature.reserva.ejecutar
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,7 +21,7 @@ class EscanearReciboUseCaseTest {
     @Test
     fun fotoVaciaDevuelveError() {
         val fake = FakeReconocedor(Result.success(TextoReconocido("Texto")))
-        val useCase = EscanearReciboUseCase(fake)
+        val useCase = EscanearReciboUseCase(fake, ParserReciboEpsTacna)
 
         val resultado = ejecutar { useCase(byteArrayOf()) }
         assertTrue(resultado.isFailure)
@@ -30,7 +31,7 @@ class EscanearReciboUseCaseTest {
     @Test
     fun imagenSinTextoDevuelveErrorEntendible() {
         val fake = FakeReconocedor(Result.success(TextoReconocido("   ", emptyList())))
-        val useCase = EscanearReciboUseCase(fake)
+        val useCase = EscanearReciboUseCase(fake, ParserReciboEpsTacna)
 
         val resultado = ejecutar { useCase(byteArrayOf(1, 2, 3)) }
         assertTrue(resultado.isFailure)
@@ -40,7 +41,7 @@ class EscanearReciboUseCaseTest {
     @Test
     fun excepcionDelOcrDevuelveFailure() {
         val fake = FakeReconocedor(Result.failure(RuntimeException("Error en sensor de cámara")))
-        val useCase = EscanearReciboUseCase(fake)
+        val useCase = EscanearReciboUseCase(fake, ParserReciboEpsTacna)
 
         val resultado = ejecutar { useCase(byteArrayOf(1, 2, 3)) }
         assertTrue(resultado.isFailure)
@@ -62,7 +63,7 @@ class EscanearReciboUseCaseTest {
             )
         )
         val fake = FakeReconocedor(Result.success(textoEsperado))
-        val useCase = EscanearReciboUseCase(fake)
+        val useCase = EscanearReciboUseCase(fake, ParserReciboEpsTacna)
 
         val resultado = ejecutar { useCase(byteArrayOf(1, 2, 3)) }
         assertTrue(resultado.isSuccess)

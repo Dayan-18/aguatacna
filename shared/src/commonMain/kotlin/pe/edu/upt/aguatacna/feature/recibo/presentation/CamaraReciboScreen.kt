@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,13 +27,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,7 +58,6 @@ fun CamaraReciboScreen(
     viewModel: CapturaViewModel = viewModel { CapturaViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var camaraIniciada by rememberSaveable { mutableStateOf(false) }
 
     val capturaFoto = rememberCapturaFoto(
         onFotoCapturada = { bytes ->
@@ -142,7 +140,10 @@ fun CamaraReciboScreen(
                     viewModel.reiniciar()
                     capturaFoto.tomarFoto()
                 },
-                onIngresarManual = onIngresarManual,
+                onIngresarManual = {
+                    viewModel.iniciarManual()
+                    onIngresarManual()
+                },
                 onVolver = onVolver
             )
         }
@@ -196,6 +197,63 @@ private fun PantallaErrorLectura(
     onIngresarManual: () -> Unit,
     onVolver: () -> Unit
 ) {
+    TarjetaAvisoCamara(
+        icono = Icons.Outlined.PhotoCamera,
+        colorIcono = Ocre,
+        fondoIcono = FondoIconoOcre,
+        titulo = "No pudimos leer tu recibo",
+        mensaje = mensaje
+    ) {
+        BotonPrincipalAviso("Tomar otra foto", onReintentar)
+        BotonSecundarioAviso("Ingresar datos a mano", onIngresarManual, colorTexto = AguaMedia)
+        BotonSecundarioAviso("Cancelar", onVolver)
+    }
+}
+
+@Composable
+private fun PantallaPermisoDenegado(
+    onReintentar: () -> Unit,
+    onVolver: () -> Unit
+) {
+    TarjetaAvisoCamara(
+        icono = Icons.Outlined.PhotoCamera,
+        colorIcono = Ocre,
+        fondoIcono = FondoIconoOcre,
+        titulo = "Permiso de cámara necesario",
+        mensaje = "Para digitalizar tu recibo de EPS Tacna automáticamente, necesitamos acceso a la cámara."
+    ) {
+        BotonPrincipalAviso("Permitir acceso", onReintentar)
+        BotonSecundarioAviso("Cancelar", onVolver)
+    }
+}
+
+@Composable
+private fun PantallaPermisoDenegadoPermanente(
+    onAbrirAjustes: () -> Unit,
+    onVolver: () -> Unit
+) {
+    TarjetaAvisoCamara(
+        icono = Icons.Outlined.Lock,
+        colorIcono = Color(0xFFDC2626),
+        fondoIcono = Color(0xFFFEF2F2),
+        titulo = "Acceso a la cámara bloqueado",
+        mensaje = "El permiso fue denegado de forma permanente. Para escanear recibos, por favor actívalo en los ajustes de tu dispositivo."
+    ) {
+        BotonPrincipalAviso("Abrir ajustes", onAbrirAjustes, icono = Icons.Outlined.Settings)
+        BotonSecundarioAviso("Volver", onVolver)
+    }
+}
+
+// Tarjeta centrada común a los avisos de la cámara: ícono, título, mensaje y botones.
+@Composable
+private fun TarjetaAvisoCamara(
+    icono: ImageVector,
+    colorIcono: Color,
+    fondoIcono: Color,
+    titulo: String,
+    mensaje: String,
+    acciones: @Composable ColumnScope.() -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -214,21 +272,13 @@ private fun PantallaErrorLectura(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFFFF7ED)),
+                modifier = Modifier.size(56.dp).clip(CircleShape).background(fondoIcono),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Outlined.PhotoCamera,
-                    contentDescription = null,
-                    tint = Ocre,
-                    modifier = Modifier.size(28.dp)
-                )
+                Icon(icono, contentDescription = null, tint = colorIcono, modifier = Modifier.size(28.dp))
             }
             Text(
-                "No pudimos leer tu recibo",
+                titulo,
                 fontFamily = FuenteTexto,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -244,148 +294,36 @@ private fun PantallaErrorLectura(
                 lineHeight = 18.sp
             )
             Spacer(Modifier.height(4.dp))
-            Button(
-                onClick = onReintentar,
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AguaMedia)
-            ) {
-                Text("Tomar otra foto", fontFamily = FuenteTexto, fontWeight = FontWeight.Bold)
-            }
-            OutlinedButton(
-                onClick = onIngresarManual,
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Ingresar datos a mano", fontFamily = FuenteTexto, color = AguaMedia, fontWeight = FontWeight.SemiBold)
-            }
-            OutlinedButton(
-                onClick = onVolver,
-                modifier = Modifier.fillMaxWidth().height(44.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Cancelar", fontFamily = FuenteTexto, color = TintaSuave)
-            }
+            acciones()
         }
     }
 }
 
 @Composable
-private fun PantallaPermisoDenegado(
-    onReintentar: () -> Unit,
-    onVolver: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF2F7F7))
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+private fun BotonPrincipalAviso(texto: String, onClick: () -> Unit, icono: ImageVector? = null) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(48.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = AguaMedia)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .sombraSuave(24.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Blanco)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFFFF7ED)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Outlined.PhotoCamera, contentDescription = null, tint = Ocre, modifier = Modifier.size(28.dp))
-            }
-            Text("Permiso de cámara necesario", fontFamily = FuenteTexto, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Tinta, textAlign = TextAlign.Center)
-            Text(
-                "Para digitalizar tu recibo de EPS Tacna automáticamente, necesitamos acceso a la cámara.",
-                fontFamily = FuenteTexto,
-                fontSize = 13.sp,
-                color = TintaSuave,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(4.dp))
-            Button(
-                onClick = onReintentar,
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AguaMedia)
-            ) {
-                Text("Permitir acceso", fontFamily = FuenteTexto, fontWeight = FontWeight.Bold)
-            }
-            OutlinedButton(
-                onClick = onVolver,
-                modifier = Modifier.fillMaxWidth().height(44.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Cancelar", fontFamily = FuenteTexto, color = TintaSuave)
-            }
+        if (icono != null) {
+            Icon(icono, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
         }
+        Text(texto, fontFamily = FuenteTexto, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-private fun PantallaPermisoDenegadoPermanente(
-    onAbrirAjustes: () -> Unit,
-    onVolver: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF2F7F7))
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+private fun BotonSecundarioAviso(texto: String, onClick: () -> Unit, colorTexto: Color = TintaSuave) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(48.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .sombraSuave(24.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Blanco)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFFEF2F2)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Outlined.Lock, contentDescription = null, tint = Color(0xFFDC2626), modifier = Modifier.size(28.dp))
-            }
-            Text("Acceso a la cámara bloqueado", fontFamily = FuenteTexto, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Tinta, textAlign = TextAlign.Center)
-            Text(
-                "El permiso fue denegado de forma permanente. Para escanear recibos, por favor actívalo en los ajustes de tu dispositivo.",
-                fontFamily = FuenteTexto,
-                fontSize = 13.sp,
-                color = TintaSuave,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(4.dp))
-            Button(
-                onClick = onAbrirAjustes,
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AguaMedia)
-            ) {
-                Icon(Icons.Outlined.Settings, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Abrir ajustes", fontFamily = FuenteTexto, fontWeight = FontWeight.Bold)
-            }
-            OutlinedButton(
-                onClick = onVolver,
-                modifier = Modifier.fillMaxWidth().height(44.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Volver", fontFamily = FuenteTexto, color = TintaSuave)
-            }
-        }
+        Text(texto, fontFamily = FuenteTexto, color = colorTexto, fontWeight = FontWeight.SemiBold)
     }
 }
+
+private val FondoIconoOcre = Color(0xFFFFF7ED)

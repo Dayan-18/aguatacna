@@ -2,10 +2,13 @@ package pe.edu.upt.aguatacna.feature.recibo
 
 import kotlinx.datetime.LocalDate
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.LineaTexto
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.TextoReconocido
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.TipoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.port.ResultadoParseo
 import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ParserReciboEpsTacna
+import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.reconstruirFilas
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -159,5 +162,71 @@ class ParserReciboEpsTacnaTest {
         val res3 = ParserReciboEpsTacna.parsearTexto(textoVolumenEspacio)
         assertIs<ResultadoParseo.Exito>(res3)
         assertEquals(23, res3.borrador.consumoM3.valor)
+    }
+
+    // ML Kit devuelve la columna de etiquetas y la de valores en bloques distintos.
+    @Test
+    fun leeElConsumoCuandoEtiquetasYValoresSalenEnBloquesDistintos() {
+        val texto = TextoReconocido(
+            textoPlano = """
+                PROMEDIO m³
+                Volumen Fac m³
+                Tipo Consumo: PROMEDIO
+                Consumo: AGOSTO-2026
+                TOTAL A PAGAR: S/ 78.00
+                23
+                23
+            """.trimIndent(),
+            lineas = listOf(
+                LineaTexto("PROMEDIO m³", x = 370f, y = 427f, ancho = 150f, alto = 20f),
+                LineaTexto("Volumen Fac m³", x = 370f, y = 463f, ancho = 170f, alto = 20f),
+                LineaTexto("Tipo Consumo: PROMEDIO", x = 370f, y = 499f, ancho = 260f, alto = 20f),
+                LineaTexto("Consumo: AGOSTO-2026", x = 370f, y = 535f, ancho = 240f, alto = 20f),
+                LineaTexto("23", x = 578f, y = 427f, ancho = 24f, alto = 20f),
+                LineaTexto("23", x = 578f, y = 463f, ancho = 24f, alto = 20f)
+            )
+        )
+
+        val resultado = assertIs<ResultadoParseo.Exito>(ParserReciboEpsTacna.parsear(texto))
+        assertEquals(23, resultado.borrador.consumoM3.valor)
+        assertEquals(PeriodoConsumo(2026, 8), resultado.borrador.periodoConsumo.valor)
+        assertEquals(TipoConsumo.PROMEDIO, resultado.borrador.tipoConsumo.valor)
+    }
+
+    @Test
+    fun reconstruirFilasUneEtiquetaYValorDeLaMismaAltura() {
+        val filas = reconstruirFilas(
+            listOf(
+                LineaTexto("23", x = 578f, y = 427f, alto = 20f),
+                LineaTexto("Volumen Fac m³", x = 370f, y = 463f, alto = 20f),
+                LineaTexto("PROMEDIO m³", x = 370f, y = 427f, alto = 20f),
+                LineaTexto("23", x = 578f, y = 465f, alto = 20f)
+            )
+        )
+        assertEquals("PROMEDIO m³  23\nVolumen Fac m³  23", filas)
+    }
+
+    @Test
+    fun toleraLasLecturasErradasDelSuperindiceTres() {
+        listOf("PROMEDIO m² 23", "PROMEDIO mª 23", "PROMEDIO m° 23", "Volumen Fac. m³ 23", "PROMEDIO m 3 23").forEach { linea ->
+            val resultado = assertIs<ResultadoParseo.Exito>(
+                ParserReciboEpsTacna.parsearTexto("Consumo: AGOSTO-2026\n$linea\nTOTAL A PAGAR: S/ 78.00")
+            )
+            assertEquals(23, resultado.borrador.consumoM3.valor, "No leyó '$linea'")
+        }
+    }
+
+    @Test
+    fun tipoConsumoPromedioSeguidoDeMedidorNoInventaUnConsumo() {
+        val texto = """
+            Consumo: AGOSTO-2026
+            Tipo Consumo: PROMEDIO
+            MEDIDOR > Numero: EA18490784
+            TOTAL A PAGAR: S/ 78.00
+        """.trimIndent()
+
+        val resultado = assertIs<ResultadoParseo.Exito>(ParserReciboEpsTacna.parsearTexto(texto))
+        assertNull(resultado.borrador.consumoM3.valor)
+        assertEquals("EA18490784", resultado.borrador.numeroMedidor.valor)
     }
 }

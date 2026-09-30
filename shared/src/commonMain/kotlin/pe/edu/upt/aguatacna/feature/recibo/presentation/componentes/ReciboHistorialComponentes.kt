@@ -1,5 +1,5 @@
 // Componentes visuales usados únicamente en la pantalla de Historial (ReciboHistorialScreen):
-// gráfico de barras de 6 meses, alerta de estado, detalle del período y diálogo de reclamo Sunass.
+// gráfico de barras de 6 meses, alerta de estado y detalle del período.
 package pe.edu.upt.aguatacna.feature.recibo.presentation.componentes
 
 import androidx.compose.foundation.Canvas
@@ -17,17 +17,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -52,9 +46,9 @@ import pe.edu.upt.aguatacna.core.ui.theme.Tinta
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
 import pe.edu.upt.aguatacna.core.ui.theme.sombraSuave
-import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.EstadoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.service.EvaluadorConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.BarraHistorialSlot
 
 // ── Colores privados ──────────────────────────────────────────────────────────
@@ -63,12 +57,11 @@ private val OcreTextoOscuro = Color(0xFF7C4D29)
 
 // ── GraficoBarrasHistorial ───────────────────────────────────────────────────
 
-// Gráfico de barras de 6 meses con umbral punteado en 100 m³; color según consumo normal (Teal) o alto (Ocre).
+// Gráfico de barras de 6 meses con el límite de consumo punteado; color según consumo normal (Teal) o alto (Ocre).
 @Composable
 fun GraficoBarrasHistorial(
     barras: List<BarraHistorialSlot>,
-    promedioM3: Int,
-    umbralAtipicoM3: Double,
+    promedioM3: Int?,
     mesSeleccionado: PeriodoConsumo,
     onSeleccionarMes: (PeriodoConsumo) -> Unit,
     modifier: Modifier = Modifier
@@ -95,7 +88,7 @@ fun GraficoBarrasHistorial(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "límite 100 m³",
+                text = "límite ${EvaluadorConsumo.LIMITE_M3} m³",
                 fontFamily = FuenteTexto,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Normal,
@@ -112,7 +105,7 @@ fun GraficoBarrasHistorial(
                     color = Color(0xFF8899A6)
                 )
                 Text(
-                    text = "$promedioM3",
+                    text = promedioM3?.toString() ?: "—",
                     fontFamily = FuenteNumeros,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
@@ -135,14 +128,14 @@ fun GraficoBarrasHistorial(
             thickness = 1.dp
         )
 
-        // Contenedor del Canvas (Línea discontinua a 100 m³ + barras)
+        // Contenedor del Canvas (línea discontinua en el límite + barras)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(chartHeight)
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                val posLinea = (100f / yMax).coerceIn(0f, 1f)
+                val posLinea = (EvaluadorConsumo.LIMITE_M3 / yMax).coerceIn(0f, 1f)
                 val lineYDashed = size.height * (1f - posLinea)
                 val dashEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f)
 
@@ -174,8 +167,7 @@ fun GraficoBarrasHistorial(
                     val esSeleccionado = item.periodo == mesSeleccionado
                     val m3 = item.consumoM3
                     val barHeight = if (m3 != null) chartHeight * (m3.toFloat() / yMax).coerceAtMost(1f) else 0.dp
-                    val esAltoConsumo = (m3 ?: 0) > 100
-                    val barColor = if (esAltoConsumo) Color(0xFFE18228) else Color(0xFF10939C)
+                    val barColor = if (item.esAtipico) Color(0xFFE18228) else Color(0xFF10939C)
 
                     Box(
                         modifier = Modifier
@@ -193,7 +185,7 @@ fun GraficoBarrasHistorial(
                                     .background(barColor),
                                 contentAlignment = Alignment.TopCenter
                             ) {
-                                if (esAltoConsumo || esSeleccionado) {
+                                if (item.esAtipico || esSeleccionado) {
                                     Text(
                                         text = "$m3",
                                         fontFamily = FuenteNumeros,
@@ -245,19 +237,14 @@ fun GraficoBarrasHistorial(
 
 // ── AlertaEstadoHistorial ────────────────────────────────────────────────────
 
-// Alerta contextual del Historial: informa el estado del mes seleccionado (alto, normal, sin historial o por promedio).
+// Alerta del mes seleccionado: solo el mensaje corto de su estado.
 @Composable
 fun AlertaEstadoHistorial(
     estado: EstadoConsumo?,
-    mes: PeriodoConsumo,
-    promedio: Int,
-    exceso: Int?,
-    esAtipico: Boolean,
-    modifier: Modifier = Modifier,
-    onComoReclamar: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
-    val estadoSeguro = estado ?: EstadoConsumo.SinHistorial(0)
-    val estilo = EstiloEstado.desde(estadoSeguro)
+    val estilo = EstiloEstado.desde(estado ?: EstadoConsumo.SinHistorial)
+    val esAtipico = estado is EstadoConsumo.Atipico
 
     Column(
         modifier = modifier
@@ -280,7 +267,7 @@ fun AlertaEstadoHistorial(
                 modifier = Modifier.size(16.dp)
             )
             Text(
-                if (esAtipico) "Alto consumo" else estilo.chipTexto,
+                estilo.chipTexto,
                 fontFamily = FuenteTexto,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
@@ -288,20 +275,8 @@ fun AlertaEstadoHistorial(
             )
         }
         Spacer(Modifier.height(6.dp))
-
-        val descripcion = when (estado) {
-            is EstadoConsumo.Atipico ->
-                "${mes.mesLargo} supera los 100 m³ o excede tu promedio habitual de $promedio m³. Puedes revisar o reclamar tu recibo ante EPS Tacna."
-            is EstadoConsumo.Normal ->
-                "${mes.mesLargo} está dentro de tu promedio habitual de $promedio m³. Todo en orden."
-            is EstadoConsumo.FacturadoPorPromedio ->
-                "EPS Tacna facturó ${mes.mesLargo} por promedio; no corresponde a una lectura real del medidor."
-            is EstadoConsumo.SinHistorial, null ->
-                "Registro de consumo para evaluar tus recibos."
-        }
-
         Text(
-            text = descripcion,
+            text = estado?.mensaje ?: "No registraste un recibo para este mes.",
             fontFamily = FuenteTexto,
             fontSize = 12.sp,
             color = if (esAtipico) OcreTextoOscuro else TintaSuave,
@@ -312,18 +287,14 @@ fun AlertaEstadoHistorial(
 
 // ── DetallePeriodoHistorial / FilaDetalle ─────────────────────────────────────
 
-// Desglose del período seleccionado: consumo, promedio histórico, variación, importe y opción de editar.
+// Desglose del mes seleccionado: consumo, promedio de los meses previos, variación, importe y opción de editar.
 @Composable
 fun DetallePeriodoHistorial(
-    mes: PeriodoConsumo,
-    consumo: Int?,
-    promedio: Int,
-    exceso: Int?,
-    importe: Dinero?,
-    esAtipico: Boolean,
+    slot: BarraHistorialSlot,
     modifier: Modifier = Modifier,
     onModificarRecibo: (PeriodoConsumo) -> Unit = {}
 ) {
+    val mes = slot.periodo
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -350,26 +321,25 @@ fun DetallePeriodoHistorial(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            val consumoTexto = consumo?.toString() ?: "—"
-            val consumoColor = if (esAtipico) Ocre else Tinta
-            FilaDetalle("Consumo de ${mes.mesLargo.lowercase()}", consumoTexto, if (consumo != null) "m³" else null, consumoColor)
-
-            FilaDetalle("Promedio histórico", "$promedio", "m³", Tinta)
-
-            val excesoTexto = when {
-                exceso == null -> "—"
-                exceso > 0 -> "+$exceso %"
-                else -> "$exceso %"
-            }
-            val excesoColor = if (esAtipico) Ocre else TintaSuave
-            FilaDetalle("Exceso", excesoTexto, null, excesoColor)
+            val colorDestacado = if (slot.esAtipico) Ocre else Tinta
+            FilaDetalle(
+                "Consumo de ${mes.mesLargo.lowercase()}",
+                slot.consumoM3?.toString() ?: "—",
+                if (slot.consumoM3 != null) "m³" else null,
+                colorDestacado
+            )
+            FilaDetalle("Promedio histórico", slot.promedioPrevio?.toString() ?: "—", slot.promedioPrevio?.let { "m³" }, Tinta)
+            FilaDetalle(
+                "Variación",
+                slot.estado?.variacionTexto ?: "—",
+                null,
+                if (slot.esAtipico) Ocre else TintaSuave
+            )
 
             HorizontalDivider(color = Divisor.copy(alpha = 0.5f))
+            FilaDetalle("Importe facturado", slot.importeTotal?.formatear() ?: "—", null, Tinta)
 
-            val importeTexto = importe?.formatear() ?: "—"
-            FilaDetalle("Importe facturado", importeTexto, null, Tinta)
-
-            if (consumo != null) {
+            if (slot.consumoM3 != null) {
                 HorizontalDivider(color = Divisor.copy(alpha = 0.5f))
                 Row(
                     modifier = Modifier
@@ -425,129 +395,3 @@ fun FilaDetalle(
     }
 }
 
-// ── DialogoComoReclamar / PasoReclamo ────────────────────────────────────────
-
-// Modal con los pasos oficiales de Sunass (art. 88) para reclamar un consumo atípico ante EPS Tacna.
-@Composable
-fun DialogoComoReclamar(
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    Icons.Default.Warning,
-                    contentDescription = null,
-                    tint = Color(0xFFE18228),
-                    modifier = Modifier.size(22.dp)
-                )
-                Text(
-                    text = "Reclamo por Consumo Atípico",
-                    fontFamily = FuenteTexto,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Tinta
-                )
-            }
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.verticalScroll(rememberScrollState())
-            ) {
-                Text(
-                    text = "Según el Reglamento de Calidad de la Sunass (art. 88), sigue estos pasos ante un consumo excesivo:",
-                    fontFamily = FuenteTexto,
-                    fontSize = 13.sp,
-                    color = TintaSuave,
-                    lineHeight = 18.sp
-                )
-
-                PasoReclamo(
-                    numero = "1",
-                    titulo = "Revisa fugas internas",
-                    descripcion = "Verifica inodoros, grifos y cisternas. Si la fuga es interna, el usuario es responsable de repararla antes de solicitar una inspección."
-                )
-
-                PasoReclamo(
-                    numero = "2",
-                    titulo = "Presenta tu reclamo a tiempo",
-                    descripcion = "Tienes hasta 60 días calendario contados desde el vencimiento del recibo (o hasta 12 meses si ya lo pagaste) para reclamar ante EPS Tacna."
-                )
-
-                PasoReclamo(
-                    numero = "3",
-                    titulo = "Protección durante el trámite",
-                    descripcion = "Mientras el reclamo esté en trámite, EPS Tacna no puede cortar el servicio ni condicionar la atención al pago del importe reclamado."
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onDismiss,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE18228))
-            ) {
-                Text("Entendido", fontFamily = FuenteTexto, fontWeight = FontWeight.Bold)
-            }
-        },
-        containerColor = Blanco,
-        shape = RoundedCornerShape(24.dp)
-    )
-}
-
-@Composable
-fun PasoReclamo(
-    numero: String,
-    titulo: String,
-    descripcion: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF8FAFC))
-            .border(1.dp, Divisor.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFFEF2E6)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                numero,
-                fontFamily = FuenteNumeros,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFE18228)
-            )
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                titulo,
-                fontFamily = FuenteTexto,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = Tinta
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(
-                descripcion,
-                fontFamily = FuenteTexto,
-                fontSize = 12.sp,
-                color = TintaSuave,
-                lineHeight = 16.sp
-            )
-        }
-    }
-}

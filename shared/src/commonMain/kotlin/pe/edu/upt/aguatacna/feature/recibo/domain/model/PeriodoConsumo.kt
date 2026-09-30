@@ -1,5 +1,8 @@
 package pe.edu.upt.aguatacna.feature.recibo.domain.model
 
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
+
 // Período de consumo (año + mes de consumo, no el de facturación), ej. entrada "AGOSTO-2026".
 data class PeriodoConsumo(
     val anio: Int,
@@ -66,6 +69,9 @@ data class PeriodoConsumo(
                 variantes.forEach { put(it, index + 1) }
             }
         }
+
+        /** Período del mes al que pertenece [fecha]. */
+        fun de(fecha: LocalDate): PeriodoConsumo = PeriodoConsumo(fecha.year, fecha.month.number)
 
         // Parsea "MES-AÑO" (acepta guion, espacio o slash); devuelve null si no se puede parsear
         fun parsear(texto: String): PeriodoConsumo? {

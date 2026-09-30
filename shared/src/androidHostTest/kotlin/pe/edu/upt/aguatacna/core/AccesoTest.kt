@@ -25,6 +25,7 @@ private class FakeUsuarioDao : UsuarioDao {
     override suspend fun guardar(usuario: UsuarioEntity) = Unit
     override fun observarModoDeAcceso(): Flow<String?> = modo
     override suspend fun guardarModoDeAcceso(modo: String) { this.modo.value = modo }
+    override suspend fun guardarSector(sectorId: String) = Unit
 }
 
 class AccesoTest {

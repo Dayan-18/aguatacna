@@ -7,10 +7,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
-import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
-import pe.edu.upt.aguatacna.feature.recibo.domain.model.EstadoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.data.BorradorReciboStore
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.aBorrador
+import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.BarraHistorialSlot
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ObservarHistorialUseCase
 
@@ -21,84 +24,43 @@ sealed interface HistorialUiState {
 
     data class ConDatos(
         val barras: List<BarraHistorialSlot>,
-        val promedioHistorico: Int,
-        val umbralAtipicoM3: Double,
-        val mesSeleccionado: PeriodoConsumo,
-        val consumoSeleccionado: Int?,
-        val estadoSeleccionado: EstadoConsumo?,
-        val importeSeleccionado: Dinero?,
-        val promedioHistoricoSeleccionado: Int,
-        val excesoPorcentajeSeleccionado: Int?,
-        val esAtipico: Boolean,
-        val mostrarDialogoReclamo: Boolean = false
+        val promedioHistorico: Int?,
+        val seleccionado: BarraHistorialSlot
     ) : HistorialUiState
 }
 
-// Pantalla de Historial: gestiona la selección de mes y sincroniza los datos reactivamente.
+// Pantalla de Historial: elige el mes seleccionado y prepara el borrador para modificar un recibo.
 class HistorialViewModel(
-    private val observarHistorial: ObservarHistorialUseCase
+    observarHistorial: ObservarHistorialUseCase,
+    private val repository: ReciboRepository,
+    private val borradorStore: BorradorReciboStore
 ) : ViewModel() {
 
-    private val _mesSeleccionadoOverride = MutableStateFlow<PeriodoConsumo?>(null)
-    private val _mostrarDialogoReclamo = MutableStateFlow(false)
+    private val mesElegido = MutableStateFlow<PeriodoConsumo?>(null)
 
-    val uiState: StateFlow<HistorialUiState> = combine(
-        observarHistorial(),
-        _mesSeleccionadoOverride,
-        _mostrarDialogoReclamo
-    ) { historial, mesOverride, mostrarReclamo ->
-        if (historial == null || historial.ventana6Meses.isEmpty()) {
-            return@combine HistorialUiState.SinHistorial
-        }
-
-        // Determinar qué mes está seleccionado
-        val periodoSeleccionado = mesOverride
-            ?: historial.mesSeleccionado
-            ?: historial.ventana6Meses.lastOrNull { it.consumoM3 != null }?.periodo
-            ?: historial.ventana6Meses.last().periodo
-
-        // Buscar el slot correspondiente en la ventana de 6 meses
-        val slotSeleccionado = historial.ventana6Meses.find { it.periodo == periodoSeleccionado }
-
-        val consumo = slotSeleccionado?.consumoM3
-        val estado = slotSeleccionado?.estado
-        val importe = slotSeleccionado?.importeTotal
-        val promPrevio = slotSeleccionado?.promedioPrevio ?: historial.promedioHistorico
-
-        val excesoPct = if (consumo != null && promPrevio > 0) {
-            val dif = consumo - promPrevio
-            ((dif.toDouble() / promPrevio) * 100).toInt()
-        } else null
-
-        val esAtipico = estado is EstadoConsumo.Atipico
-
-        HistorialUiState.ConDatos(
-            barras = historial.ventana6Meses,
-            promedioHistorico = historial.promedioHistorico,
-            umbralAtipicoM3 = historial.umbralAtipicoM3,
-            mesSeleccionado = periodoSeleccionado,
-            consumoSeleccionado = consumo,
-            estadoSeleccionado = estado,
-            importeSeleccionado = importe,
-            promedioHistoricoSeleccionado = promPrevio,
-            excesoPorcentajeSeleccionado = excesoPct,
-            esAtipico = esAtipico,
-            mostrarDialogoReclamo = mostrarReclamo
-        )
+    val uiState: StateFlow<HistorialUiState> = combine(observarHistorial(), mesElegido) { historial, elegido ->
+        if (historial == null) return@combine HistorialUiState.SinHistorial
+        val seleccionado = historial.ventana6Meses.find { it.periodo == elegido }
+            ?: historial.ventana6Meses.first { it.periodo == historial.mesSeleccionado }
+        HistorialUiState.ConDatos(historial.ventana6Meses, historial.promedioHistorico, seleccionado)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HistorialUiState.Cargando)
 
     fun seleccionarMes(periodo: PeriodoConsumo) {
-        _mesSeleccionadoOverride.value = periodo
+        mesElegido.value = periodo
     }
 
-    fun mostrarDialogoReclamo(mostrar: Boolean) {
-        _mostrarDialogoReclamo.value = mostrar
+    fun prepararEdicion(periodo: PeriodoConsumo, onListo: () -> Unit) {
+        viewModelScope.launch {
+            val recibo = repository.obtenerPorPeriodo(periodo)
+            borradorStore.guardar(recibo?.aBorrador() ?: ReciboBorrador.vacio(periodo))
+            onListo()
+        }
     }
 
     companion object {
         fun desdeInyeccion(): HistorialViewModel {
             val koin = KoinPlatform.getKoin()
-            return HistorialViewModel(koin.get())
+            return HistorialViewModel(koin.get(), koin.get(), koin.get())
         }
     }
 }

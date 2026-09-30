@@ -15,49 +15,35 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.port.ResultadoParseo
 // clave y valida los mínimos. Nunca extrae datos personales (nombre, DNI, dirección, contraseñas).
 object ParserReciboEpsTacna : ParserRecibo {
 
-    override fun parsear(texto: TextoReconocido): ResultadoParseo =
-        parsearTexto(texto.textoPlano)
+    private val PERIODO = Regex("""CONSUMO\s*[:.]?\s*([A-Z]+[- /]\d{4})""")
+    private val PERIODO_SUELTO = Regex("""\b([A-Z]{4,10}[- /]\d{4})\b""")
+    // "(?![A-Z])" evita leer "MEDIDOR" o "MES" como la unidad m³; el "³" a veces sale como ², ª, ° o '.
+    private val VOLUMEN_FACTURADO = Regex("""VOLUMEN\s*FAC[A-Z.]*\s*(?:M(?![A-Z]))?[^\d]{0,4}?(\d{1,4})""")
+    private val PROMEDIO_M3 = Regex("""PROMEDIO\s*M(?![A-Z])[^\d]{0,4}?(\d{1,4})""")
+    private val CONSUMO_FACTURADO = Regex("""CONSUMO\s*FACTURADO\s*(?:M(?![A-Z]))?[^\d]{0,4}?(\d{1,4})""")
+    private val TOTAL = Regex("""TOTAL\s*(?:A\s*PAGAR|MES)?\s*[:.]?\s*(?:S/|S/\.)?\s*(\d+[.,]\d{2})""")
+    private val SOLES = Regex("""(?:S/|S/\.)\s*(\d+[.,]\d{2})""")
+    private val TIPO_CONSUMO = Regex("""TIPO\s*CONSUMO\s*[:.]?\s*([A-Z]+)""")
+    private val EMISION = Regex("""(?:FECHA\s*DE\s*)?EMISION\s*[:.]?\s*(\d{2}[/-]\d{2}[/-]\d{4})""")
+    private val VENCIMIENTO = Regex("""(?:FECHA\s*DE\s*)?VENCIMIENTO\s*[:.]?\s*(\d{2}[/-]\d{2}[/-]\d{4})""")
+    private val LECTURA_ANTERIOR = Regex("""LECTURA\s*ANTERIOR\s*[:.]?\s*(\d+)""")
+    private val LECTURA_ACTUAL = Regex("""LECTURA\s*ACTUAL\s*[:.]?\s*(\d+)""")
+    private val MEDIDOR = Regex("""MEDIDOR\s*(?:>|:|\b)?\s*(?:NUMERO)?\s*[:.]?\s*([A-Z0-9]{7,12})""")
+    private val NUMERO_RECIBO = Regex("""(?:N[º°]|NUMERO)?\s*REC(?:IBO)?\s*[:.]?\s*([A-Z0-9]+-[A-Z0-9]+)""")
 
-    override fun parsearTexto(textoOriginal: String): ResultadoParseo {
-        if (textoOriginal.isBlank()) {
-            return ResultadoParseo.NoLegible("El texto del recibo está vacío.")
-        }
-
-        val normalizado = normalizar(textoOriginal)
-
-        // Extracción campo por campo
-        val periodo = extraerPeriodoConsumo(normalizado)
-        val consumo = extraerConsumoM3(normalizado)
-        val importe = extraerImporteTotal(normalizado)
-        val tipoConsumo = extraerTipoConsumo(normalizado)
-        val emision = extraerFechaEmision(normalizado)
-        val vencimiento = extraerFechaVencimiento(normalizado)
-        val lecturaAnterior = extraerLecturaAnterior(normalizado)
-        val lecturaActual = extraerLecturaActual(normalizado)
-        val medidor = extraerNumeroMedidor(normalizado)
-        val numRecibo = extraerNumeroRecibo(normalizado)
-
-        val borrador = ReciboBorrador(
-            periodoConsumo = periodo,
-            consumoM3 = consumo,
-            importeTotal = importe,
-            fechaEmision = emision,
-            fechaVencimiento = vencimiento,
-            tipoConsumo = tipoConsumo,
-            lecturaAnteriorM3 = lecturaAnterior,
-            lecturaActualM3 = lecturaActual,
-            numeroMedidor = medidor,
-            numeroRecibo = numRecibo,
-            origen = OrigenDatos.ESCANEADO
-        )
-
-        // Validación de campos clave mínimos
-        if (consumo.valor == null && importe.valor == null) {
+    // Se lee dos veces: el texto plano de ML Kit y el texto rearmado por filas. Por cada campo manda el
+    // texto plano (lo que ya funcionaba), salvo que las filas den un valor que falta o más confiable.
+    override fun parsear(texto: TextoReconocido): ResultadoParseo {
+        if (texto.estaVacio) return ResultadoParseo.NoLegible("El texto del recibo está vacío.")
+        val plano = extraer(texto.textoPlano)
+        val borrador = if (texto.lineas.isEmpty()) plano else combinar(plano, extraer(reconstruirFilas(texto.lineas)))
+        if (borrador.consumoM3.valor == null && borrador.importeTotal.valor == null) {
             return ResultadoParseo.NoLegible("No pudimos leer el consumo ni el importe total de tu recibo.")
         }
-
         return ResultadoParseo.Exito(borrador)
     }
+
+    override fun parsearTexto(textoOriginal: String): ResultadoParseo = parsear(TextoReconocido(textoOriginal))
 
     // Limpieza y normalización de texto antes de extraer campos.
     fun normalizar(texto: String): String {
@@ -72,158 +58,69 @@ object ParserReciboEpsTacna : ParserRecibo {
             .replace("*", "")
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Extractores individuales
-    // ─────────────────────────────────────────────────────────────
-
-    private fun extraerPeriodoConsumo(texto: String): Campo<PeriodoConsumo> {
-        // Ejemplo: "CONSUMO: AGOSTO-2026" o "CONSUMO AGOSTO 2026"
-        val regex = Regex("""CONSUMO\s*[:.]?\s*([A-Z]+[- /]\d{4})""")
-        val match = regex.find(texto)
-        if (match != null) {
-            val periodo = PeriodoConsumo.parsear(match.groupValues[1])
-            if (periodo != null) {
-                return Campo(valor = periodo, confianza = 0.95f)
-            }
-        }
-
-        // Fallback: buscar cualquier "MES-AÑO" presente en el texto
-        val fallbackRegex = Regex("""\b([A-Z]{4,10}[- /]\d{4})\b""")
-        for (m in fallbackRegex.findAll(texto)) {
-            val periodo = PeriodoConsumo.parsear(m.groupValues[1])
-            if (periodo != null) {
-                return Campo(valor = periodo, confianza = 0.70f)
-            }
-        }
-
-        return Campo(valor = null, confianza = 0f)
+    private fun extraer(textoOriginal: String): ReciboBorrador {
+        val t = normalizar(textoOriginal)
+        return ReciboBorrador(
+            periodoConsumo = buscar(PERIODO, t, 0.95f, PeriodoConsumo::parsear)
+                ?: PERIODO_SUELTO.findAll(t).firstNotNullOfOrNull { campo(it.groupValues[1], 0.70f, PeriodoConsumo::parsear) }
+                ?: Campo(),
+            consumoM3 = buscarEntero(VOLUMEN_FACTURADO, t, 0.95f)
+                ?: buscarEntero(PROMEDIO_M3, t, 0.90f)
+                ?: buscarEntero(CONSUMO_FACTURADO, t, 0.75f)
+                ?: Campo(),
+            importeTotal = buscar(TOTAL, t, 0.95f, Dinero::parsear)
+                ?: SOLES.findAll(t).lastOrNull()?.let { campo(it.groupValues[1], 0.65f, Dinero::parsear) }
+                ?: Campo(),
+            tipoConsumo = buscar(TIPO_CONSUMO, t, 0.90f, TipoConsumo::parsear)
+                ?: Campo(TipoConsumo.DESCONOCIDO, confianza = 0.40f),
+            fechaEmision = buscarFecha(EMISION, t) ?: Campo(),
+            fechaVencimiento = buscarFecha(VENCIMIENTO, t) ?: Campo(),
+            // Sin lecturas es lo normal en un recibo por PROMEDIO: no se marcan como dudosas.
+            lecturaAnteriorM3 = buscarEntero(LECTURA_ANTERIOR, t, 0.90f) ?: Campo(confianza = 1f),
+            lecturaActualM3 = buscarEntero(LECTURA_ACTUAL, t, 0.90f) ?: Campo(confianza = 1f),
+            numeroMedidor = buscarTexto(MEDIDOR, t, 0.90f) ?: Campo(),
+            numeroRecibo = buscarTexto(NUMERO_RECIBO, t, 0.95f) ?: Campo(),
+            origen = OrigenDatos.ESCANEADO
+        )
     }
 
-    private fun extraerConsumoM3(texto: String): Campo<Int> {
-        // Ejemplo: "VOLUMEN FAC M³ 23" o "VOLUMEN FAC: 23" o "VOLUMEN FACTURADO 23"
-        val regex = Regex("""VOLUMEN\s*FAC(?:TURADO)?\s*(?:M\s*[3³]|M)?\s*[:.]?\s*(\d+)""")
-        val match = regex.find(texto)
-        if (match != null) {
-            val valor = match.groupValues[1].toIntOrNull()
-            if (valor != null) return Campo(valor = valor, confianza = 0.95f)
-        }
+    private fun combinar(plano: ReciboBorrador, filas: ReciboBorrador) = ReciboBorrador(
+        periodoConsumo = elegir(plano.periodoConsumo, filas.periodoConsumo),
+        consumoM3 = elegir(plano.consumoM3, filas.consumoM3),
+        importeTotal = elegir(plano.importeTotal, filas.importeTotal),
+        fechaEmision = elegir(plano.fechaEmision, filas.fechaEmision),
+        fechaVencimiento = elegir(plano.fechaVencimiento, filas.fechaVencimiento),
+        tipoConsumo = elegir(plano.tipoConsumo, filas.tipoConsumo),
+        lecturaAnteriorM3 = elegir(plano.lecturaAnteriorM3, filas.lecturaAnteriorM3),
+        lecturaActualM3 = elegir(plano.lecturaActualM3, filas.lecturaActualM3),
+        numeroMedidor = elegir(plano.numeroMedidor, filas.numeroMedidor),
+        numeroRecibo = elegir(plano.numeroRecibo, filas.numeroRecibo),
+        origen = OrigenDatos.ESCANEADO
+    )
 
-        // Fallback secundario: "CONSUMO FACTURADO: 23" o "PROMEDIO M³ 23" o "PROMEDIO 23"
-        val fallbackRegex = Regex("""(?:CONSUMO\s*FACTURADO|PROMEDIO)\s*(?:M\s*[3³]|M)?\s*[:.]?\s*(\d+)""")
-        val matchFallback = fallbackRegex.find(texto)
-        if (matchFallback != null) {
-            val valor = matchFallback.groupValues[1].toIntOrNull()
-            if (valor != null) return Campo(valor = valor, confianza = 0.75f)
-        }
+    private fun <T> elegir(plano: Campo<T>, filas: Campo<T>): Campo<T> =
+        if (filas.valor != null && (plano.valor == null || filas.confianza > plano.confianza)) filas else plano
 
-        return Campo(valor = null, confianza = 0f)
-    }
+    private fun <T> campo(texto: String, confianza: Float, convertir: (String) -> T?): Campo<T>? =
+        convertir(texto)?.let { Campo(it, confianza) }
 
-    private fun extraerImporteTotal(texto: String): Campo<Dinero> {
-        // Ejemplo: "TOTAL A PAGAR: S/ 78.00" o "TOTAL A PAGAR S/ 78.00" o "TOTAL MES S/ 78.00"
-        val regex = Regex("""TOTAL\s*(?:A\s*PAGAR|MES)?\s*[:.]?\s*(?:S/|S/\.)?\s*(\d+[.,]\d{2})""")
-        val match = regex.find(texto)
-        if (match != null) {
-            val dinero = Dinero.parsear(match.groupValues[1])
-            if (dinero != null) return Campo(valor = dinero, confianza = 0.95f)
-        }
+    private fun <T> buscar(regex: Regex, texto: String, confianza: Float, convertir: (String) -> T?): Campo<T>? =
+        regex.find(texto)?.let { campo(it.groupValues[1], confianza, convertir) }
 
-        // Fallback: buscar "S/ XX.XX" cerca del final
-        val fallbackRegex = Regex("""(?:S/|S/\.)\s*(\d+[.,]\d{2})""")
-        val matches = fallbackRegex.findAll(texto).toList()
-        if (matches.isNotEmpty()) {
-            val ultimo = matches.last()
-            val dinero = Dinero.parsear(ultimo.groupValues[1])
-            if (dinero != null) return Campo(valor = dinero, confianza = 0.65f)
-        }
+    private fun buscarEntero(regex: Regex, texto: String, confianza: Float): Campo<Int>? =
+        buscar(regex, texto, confianza, String::toIntOrNull)
 
-        return Campo(valor = null, confianza = 0f)
-    }
+    private fun buscarTexto(regex: Regex, texto: String, confianza: Float): Campo<String>? =
+        buscar(regex, texto, confianza) { it }
 
-    private fun extraerTipoConsumo(texto: String): Campo<TipoConsumo> {
-        // Ejemplo: "TIPO CONSUMO: PROMEDIO"
-        val regex = Regex("""TIPO\s*CONSUMO\s*[:.]?\s*([A-Z]+)""")
-        val match = regex.find(texto)
-        if (match != null) {
-            val tipo = TipoConsumo.parsear(match.groupValues[1])
-            return Campo(valor = tipo, confianza = 0.90f)
-        }
-
-        return Campo(valor = TipoConsumo.DESCONOCIDO, confianza = 0.40f)
-    }
-
-    private fun extraerFechaEmision(texto: String): Campo<LocalDate> {
-        // Ejemplo: "FECHA DE EMISION 31/08/2026"
-        val regex = Regex("""(?:FECHA\s*DE\s*)?EMISION\s*[:.]?\s*(\d{2}[/-]\d{2}[/-]\d{4})""")
-        val match = regex.find(texto)
-        if (match != null) {
-            val fecha = parsearFecha(match.groupValues[1])
-            if (fecha != null) return Campo(valor = fecha, confianza = 0.95f)
-        }
-        return Campo(valor = null, confianza = 0f)
-    }
-
-    private fun extraerFechaVencimiento(texto: String): Campo<LocalDate> {
-        // Ejemplo: "FECHA DE VENCIMIENTO 11/09/2026"
-        val regex = Regex("""(?:FECHA\s*DE\s*)?VENCIMIENTO\s*[:.]?\s*(\d{2}[/-]\d{2}[/-]\d{4})""")
-        val match = regex.find(texto)
-        if (match != null) {
-            val fecha = parsearFecha(match.groupValues[1])
-            if (fecha != null) return Campo(valor = fecha, confianza = 0.95f)
-        }
-        return Campo(valor = null, confianza = 0f)
-    }
-
-    private fun extraerLecturaAnterior(texto: String): Campo<Int> {
-        val regex = Regex("""LECTURA\s*ANTERIOR\s*[:.]?\s*(\d+)""")
-        val match = regex.find(texto)
-        if (match != null) {
-            val valor = match.groupValues[1].toIntOrNull()
-            if (valor != null) return Campo(valor = valor, confianza = 0.90f)
-        }
-        return Campo(valor = null, confianza = 1f) // Opcional (null es normal si es PROMEDIO)
-    }
-
-    private fun extraerLecturaActual(texto: String): Campo<Int> {
-        val regex = Regex("""LECTURA\s*ACTUAL\s*[:.]?\s*(\d+)""")
-        val match = regex.find(texto)
-        if (match != null) {
-            val valor = match.groupValues[1].toIntOrNull()
-            if (valor != null) return Campo(valor = valor, confianza = 0.90f)
-        }
-        return Campo(valor = null, confianza = 1f) // Opcional
-    }
-
-    private fun extraerNumeroMedidor(texto: String): Campo<String> {
-        // Ejemplo: "MEDIDOR: EA18490784" o "NUMERO DE MEDIDOR EA18490784"
-        val regex = Regex("""MEDIDOR\s*(?:>|:|\b)?\s*(?:NUMERO)?\s*[:.]?\s*([A-Z0-9]{7,12})""")
-        val match = regex.find(texto)
-        if (match != null) {
-            return Campo(valor = match.groupValues[1], confianza = 0.90f)
-        }
-        return Campo(valor = null, confianza = 0f)
-    }
-
-    private fun extraerNumeroRecibo(texto: String): Campo<String> {
-        // Ejemplo: "Nº REC S001-7264721" o "RECIBO: S001-7264721"
-        val regex = Regex("""(?:N[º°]|NUMERO)?\s*REC(?:IBO)?\s*[:.]?\s*([A-Z0-9]+-[A-Z0-9]+)""")
-        val match = regex.find(texto)
-        if (match != null) {
-            return Campo(valor = match.groupValues[1], confianza = 0.95f)
-        }
-        return Campo(valor = null, confianza = 0f)
-    }
+    private fun buscarFecha(regex: Regex, texto: String): Campo<LocalDate>? =
+        buscar(regex, texto, 0.95f, ::parsearFecha)
 
     private fun parsearFecha(texto: String): LocalDate? {
-        val partes = texto.split('/', '-')
-        if (partes.size != 3) return null
-        val dia = partes[0].toIntOrNull() ?: return null
-        val mes = partes[1].toIntOrNull() ?: return null
-        val anio = partes[2].toIntOrNull() ?: return null
-
+        val (dia, mes, anio) = texto.split('/', '-').mapNotNull { it.toIntOrNull() }.takeIf { it.size == 3 } ?: return null
         return try {
             LocalDate(anio, mes, dia)
-        } catch (_: Exception) {
+        } catch (_: IllegalArgumentException) {
             null
         }
     }

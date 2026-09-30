@@ -5,17 +5,9 @@ import kotlinx.coroutines.flow.map
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.EstadoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.domain.service.EvaluadorConsumo
-
-// Datos de una barra del gráfico de historial.
-data class BarraHistorial(
-    val periodo: PeriodoConsumo,
-    val consumoM3: Int,
-    val estado: EstadoConsumo,
-    val importeTotal: Dinero,
-    val promedioPrevio: Int = 0
-)
 
 // Slot en la ventana de 6 meses del gráfico (puede quedar vacío si no hay recibo ese mes).
 data class BarraHistorialSlot(
@@ -24,120 +16,59 @@ data class BarraHistorialSlot(
     val consumoM3: Int?,
     val estado: EstadoConsumo?,
     val importeTotal: Dinero?,
-    val promedioPrevio: Int,
+    val promedioPrevio: Int?,
     val esAtipico: Boolean
 )
 
 // Estado completo para la pantalla de Historial.
 data class HistorialCompleto(
-    val barras: List<BarraHistorial>,
     val ventana6Meses: List<BarraHistorialSlot>,
-    val promedioHistorico: Int,
-    val umbralAtipicoM3: Double,
-    val mesSeleccionado: PeriodoConsumo?,
-    val estadoMesSeleccionado: EstadoConsumo?
+    val promedioHistorico: Int?,
+    val mesSeleccionado: PeriodoConsumo
 )
 
-// Calcula la ventana de los últimos 6 meses de consumo, con umbral fijo en 100 m³.
+// Arma los 6 meses que terminan en el recibo más reciente; cada mes se evalúa con EvaluadorConsumo.
 class ObservarHistorialUseCase(
     private val repository: ReciboRepository
 ) {
     operator fun invoke(): Flow<HistorialCompleto?> =
         repository.observarRecibos().map { recibos ->
-            if (recibos.isEmpty()) return@map null
-
             val ordenados = recibos.sortedBy { it.periodoConsumo }
-            val masReciente = ordenados.last()
-            val masAntiguo = ordenados.first().periodoConsumo
-
-            // Calcular inicio de la ventana de 6 meses de izquierda a derecha
-            var span = 1
-            var temp = masAntiguo
-            while (temp < masReciente.periodoConsumo && span <= 6) {
-                temp = temp.siguiente()
-                span++
-            }
-
-            val inicio = if (span <= 6) {
-                masAntiguo
-            } else {
-                var p = masReciente.periodoConsumo
-                repeat(5) { p = p.anterior() }
-                p
-            }
-
-            val periodosVentana = mutableListOf<PeriodoConsumo>()
-            var p = inicio
-            repeat(6) {
-                periodosVentana.add(p)
-                p = p.siguiente()
-            }
-
-            // Meses previos al más reciente para calcular el promedio histórico y umbral
-            val mesesPreviosAlMasReciente = ordenados
-                .filter { it.periodoConsumo < masReciente.periodoConsumo }
-                .map { it.consumoM3 }
+            val masReciente = ordenados.lastOrNull()?.periodoConsumo ?: return@map null
+            val periodos = generateSequence(masReciente) { it.anterior() }
+                .take(MESES_GRAFICO)
+                .toList()
                 .reversed()
 
-            val metricas = EvaluadorConsumo.calcularMetricas(masReciente.consumoM3, mesesPreviosAlMasReciente)
-            val promedioGeneral = if (mesesPreviosAlMasReciente.isNotEmpty()) metricas.promedioHistorico.toInt() else masReciente.consumoM3
-            val umbral = metricas.umbralAtipicoM3
-
-            val ventana6Meses = periodosVentana.map { per ->
-                val recibo = ordenados.find { it.periodoConsumo == per }
-                val consumo = recibo?.consumoM3
-                val mesesPrevios = ordenados
-                    .filter { it.periodoConsumo < per }
-                    .map { it.consumoM3 }
-                    .reversed()
-
-                val estado = if (consumo != null) {
-                    if (consumo > 100) {
-                        EstadoConsumo.Atipico(
-                            excesoPorcentaje = if (promedioGeneral > 0) ((consumo - promedioGeneral) * 100) / promedioGeneral else 100,
-                            promedioHistorico = promedioGeneral,
-                            mes = per.mesLargo
-                        )
-                    } else {
-                        EvaluadorConsumo.evaluar(
-                            consumoM3 = consumo,
-                            mesesPreviosM3 = mesesPrevios,
-                            tipoConsumo = recibo.tipoConsumo,
-                            mesDisplay = per.mesLargo
-                        )
-                    }
-                } else null
-
-                val esAtipico = estado is EstadoConsumo.Atipico || (consumo != null && consumo > 100)
-
-                BarraHistorialSlot(
-                    periodo = per,
-                    mesCorto = per.mesCorto,
-                    consumoM3 = consumo,
-                    estado = estado,
-                    importeTotal = recibo?.importeTotal,
-                    promedioPrevio = if (mesesPrevios.isNotEmpty()) mesesPrevios.average().toInt() else promedioGeneral,
-                    esAtipico = esAtipico
-                )
-            }
-
-            val barrasValidas = ventana6Meses.filter { it.consumoM3 != null }.map {
-                BarraHistorial(
-                    periodo = it.periodo,
-                    consumoM3 = it.consumoM3!!,
-                    estado = it.estado!!,
-                    importeTotal = it.importeTotal!!,
-                    promedioPrevio = it.promedioPrevio
-                )
-            }
-
             HistorialCompleto(
-                barras = barrasValidas,
-                ventana6Meses = ventana6Meses,
-                promedioHistorico = promedioGeneral,
-                umbralAtipicoM3 = umbral,
-                mesSeleccionado = masReciente.periodoConsumo,
-                estadoMesSeleccionado = ventana6Meses.find { it.periodo == masReciente.periodoConsumo }?.estado
+                ventana6Meses = periodos.map { slot(it, ordenados) },
+                promedioHistorico = EvaluadorConsumo.promedio(consumosPrevios(masReciente, ordenados)),
+                mesSeleccionado = masReciente
             )
         }
+
+    private fun slot(periodo: PeriodoConsumo, ordenados: List<Recibo>): BarraHistorialSlot {
+        val recibo = ordenados.find { it.periodoConsumo == periodo }
+        val previos = consumosPrevios(periodo, ordenados)
+        val estado = recibo?.let {
+            EvaluadorConsumo.evaluar(it.consumoM3, previos, it.tipoConsumo, periodo.mesLargo)
+        }
+        return BarraHistorialSlot(
+            periodo = periodo,
+            mesCorto = periodo.mesCorto,
+            consumoM3 = recibo?.consumoM3,
+            estado = estado,
+            importeTotal = recibo?.importeTotal,
+            promedioPrevio = EvaluadorConsumo.promedio(previos),
+            esAtipico = estado is EstadoConsumo.Atipico
+        )
+    }
+
+    // Consumos anteriores a [periodo], del más reciente al más antiguo.
+    private fun consumosPrevios(periodo: PeriodoConsumo, ordenados: List<Recibo>): List<Int> =
+        ordenados.filter { it.periodoConsumo < periodo }.map { it.consumoM3 }.reversed()
+
+    private companion object {
+        const val MESES_GRAFICO = 6
+    }
 }

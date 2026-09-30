@@ -12,19 +12,16 @@ import org.koin.mp.KoinPlatform
 import pe.edu.upt.aguatacna.data.IdentidadLocal
 import pe.edu.upt.aguatacna.feature.reserva.data.sync.SincronizadorReserva
 
-import pe.edu.upt.aguatacna.feature.recibo.domain.port.ReconocedorTexto
-import pe.edu.upt.aguatacna.feature.recibo.infrastructure.ocr.ReconocedorTextoAndroid
-
 /** Lo que solo Android sabe aportar: la base de datos y el usuario local. */
 fun moduloPlataforma(base: AguaTacnaDatabase, usuarioId: String) = module {
     single { base }
     single { base.usuarioDao() }
     single { base.reservaDao() }
     single { base.reciboDao() }
+    single { base.reciboBorradorDao() }
     single { base.avisoReservaDao() }
     single { base.sectorDao() }
     single(QUALIFICADOR_USUARIO) { usuarioId }
-    single<ReconocedorTexto> { ReconocedorTextoAndroid() }
     single<InicioConGoogle> { InicioConGoogleAndroid(get()) }
 }
 
