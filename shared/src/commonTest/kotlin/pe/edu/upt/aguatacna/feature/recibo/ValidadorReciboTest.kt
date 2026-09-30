@@ -1,10 +1,13 @@
 package pe.edu.upt.aguatacna.feature.recibo
 
 import kotlinx.datetime.LocalDate
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.TipoConsumo
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.aBorrador
 import pe.edu.upt.aguatacna.feature.recibo.domain.service.ValidadorRecibo
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -27,7 +30,7 @@ class ValidadorReciboTest {
     @Test
     fun reciboCoherenteNoProduceAdvertencias() {
         val recibo = crearReciboValido()
-        val advertencias = ValidadorRecibo.validar(recibo)
+        val advertencias = ValidadorRecibo.validar(recibo.aBorrador())
         assertTrue(advertencias.isEmpty(), "Un recibo coherente no debe tener advertencias")
     }
 
@@ -36,10 +39,10 @@ class ValidadorReciboTest {
         val negativo = crearReciboValido().copy(consumoM3 = -5)
         val excesivo = crearReciboValido().copy(consumoM3 = 1500)
 
-        val advNegativo = ValidadorRecibo.validar(negativo)
+        val advNegativo = ValidadorRecibo.validar(negativo.aBorrador())
         assertTrue(advNegativo.any { it.campo == "consumoM3" })
 
-        val advExcesivo = ValidadorRecibo.validar(excesivo)
+        val advExcesivo = ValidadorRecibo.validar(excesivo.aBorrador())
         assertTrue(advExcesivo.any { it.campo == "consumoM3" })
     }
 
@@ -49,7 +52,7 @@ class ValidadorReciboTest {
             fechaEmision = LocalDate(2026, 8, 28),
             fechaVencimiento = LocalDate(2026, 8, 1)
         )
-        val adv = ValidadorRecibo.validar(recibo)
+        val adv = ValidadorRecibo.validar(recibo.aBorrador())
         assertTrue(adv.any { it.campo == "fechaVencimiento" })
     }
 
@@ -57,8 +60,19 @@ class ValidadorReciboTest {
     fun advierteLecturasIncoherentesConConsumo() {
         // actual - anterior = 133 - 100 = 33, pero el consumo facturado dice 50
         val recibo = crearReciboValido().copy(consumoM3 = 50)
-        val adv = ValidadorRecibo.validar(recibo)
+        val adv = ValidadorRecibo.validar(recibo.aBorrador())
         assertTrue(adv.any { it.campo == "consumoM3" })
+    }
+
+    @Test
+    fun validaUnBorradorAunqueLeFaltenCampos() {
+        val borrador = ReciboBorrador(
+            consumoM3 = Campo(1500, 0.9f),
+            lecturaAnteriorM3 = Campo(100, 0.9f)
+        )
+        val adv = ValidadorRecibo.validar(borrador)
+        assertEquals(listOf("consumoM3"), adv.map { it.campo })
+        assertTrue(ValidadorRecibo.validar(ReciboBorrador()).isEmpty())
     }
 
     @Test
@@ -68,7 +82,7 @@ class ValidadorReciboTest {
             lecturaActualM3 = 100,
             consumoM3 = -50
         )
-        val adv = ValidadorRecibo.validar(recibo)
+        val adv = ValidadorRecibo.validar(recibo.aBorrador())
         assertTrue(adv.any { it.campo == "lecturaActualM3" })
     }
 }

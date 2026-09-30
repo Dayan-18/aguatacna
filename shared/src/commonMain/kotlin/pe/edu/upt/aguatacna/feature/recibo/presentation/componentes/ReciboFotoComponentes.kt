@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Keyboard
@@ -56,6 +57,62 @@ private val DashedBorde = Color(0xFFCFE0E2)
 private val DocFondo = Color(0xFFF5FBFB)
 private val DocBorde = Color(0xFFD6EDEC)
 private val DocBarraTeal = Color(0xFF0A7B83)
+private val AvisoFondo = Color(0xFFFEF2E4)
+private val AvisoBorde = Color(0xFFF9DFC5)
+private val AvisoTexto = Color(0xFF7C4D29)
+
+// ── ChipRevision / AvisoRevision ─────────────────────────────────────────────
+
+// Chip del encabezado de la revisión ("Leído", "Manual", "Revisa los datos").
+@Composable
+fun ChipRevision(
+    texto: String,
+    colorTexto: Color,
+    fondo: Color,
+    borde: Color?,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(50))
+            .background(fondo)
+            .then(if (borde != null) Modifier.border(1.dp, borde, RoundedCornerShape(50)) else Modifier)
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(colorTexto))
+        Text(texto, fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colorTexto)
+    }
+}
+
+// Aviso naranja de la revisión: recibo duplicado o advertencias de coherencia (no bloquean la confirmación).
+@Composable
+fun AvisoRevision(
+    texto: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(AvisoFondo)
+            .border(1.dp, AvisoBorde, RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(Icons.Outlined.Warning, contentDescription = null, tint = Ocre, modifier = Modifier.size(18.dp))
+        Text(
+            text = texto,
+            fontFamily = FuenteTexto,
+            fontSize = 12.sp,
+            color = AvisoTexto,
+            lineHeight = 17.sp,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
 
 // ── TipInformativo / ZonaRetomarFoto ─────────────────────────────────────────
 
@@ -148,7 +205,7 @@ fun TarjetaDocumentoRecibo(
     val mesTexto = borrador?.periodoConsumo?.valor?.displayCompleto ?: "Seleccionar período"
     val suministroTexto = borrador?.numeroMedidor?.valor?.let { "Medidor $it" }
         ?: borrador?.numeroRecibo?.valor?.let { "Recibo N° $it" }
-        ?: "Suministro 0412887"
+        ?: "Sin número de medidor"
 
     Row(
         modifier = modifier

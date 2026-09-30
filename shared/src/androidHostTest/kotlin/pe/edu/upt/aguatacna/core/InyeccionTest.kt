@@ -28,6 +28,7 @@ class InyeccionTest {
                 override suspend fun guardar(usuario: UsuarioEntity) = Unit
                 override fun observarModoDeAcceso(): kotlinx.coroutines.flow.Flow<String?> = kotlinx.coroutines.flow.flowOf(null)
                 override suspend fun guardarModoDeAcceso(modo: String) = Unit
+                override suspend fun guardarSector(sectorId: String) = Unit
             }
         }
         single(QUALIFICADOR_USUARIO) { "u-1" }

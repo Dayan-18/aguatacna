@@ -6,100 +6,72 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.service.EvaluadorConsumo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 
 class EvaluadorConsumoTest {
 
-    // Casos obligatorios de la tabla del plan T-1.3
+    private val previos = listOf(16, 16, 15, 17, 16, 16)
 
     @Test
-    fun consumo33ConPromedio16EsAtipicoConExceso106() {
-        val mesesPrevios = listOf(16, 16, 15, 17, 16, 16)
-        val estado = EvaluadorConsumo.evaluar(
-            consumoM3 = 33,
-            mesesPreviosM3 = mesesPrevios,
-            tipoConsumo = TipoConsumo.LECTURA,
-            mesDisplay = "Agosto"
-        )
+    fun consumo33EsNormalAunqueDupliqueElPromedio() {
+        val estado = EvaluadorConsumo.evaluar(33, previos, TipoConsumo.LECTURA, "Agosto")
 
-        assertIs<EstadoConsumo.Atipico>(estado)
+        assertIs<EstadoConsumo.Normal>(estado)
         assertEquals(106, estado.excesoPorcentaje)
         assertEquals(16, estado.promedioHistorico)
         assertEquals("+106 %", estado.variacionTexto)
     }
 
     @Test
-    fun consumo32ConPromedio16EsNormalConExceso100() {
-        // Exceso 100 %, no es mayor a 100 -> Normal
-        val mesesPrevios = listOf(16, 16, 15, 17, 16, 16)
-        val estado = EvaluadorConsumo.evaluar(
-            consumoM3 = 32,
-            mesesPreviosM3 = mesesPrevios,
-            tipoConsumo = TipoConsumo.LECTURA,
-            mesDisplay = "Agosto"
-        )
+    fun consumo120EsAltoConsumoConMensajeCorto() {
+        val estado = EvaluadorConsumo.evaluar(120, previos, TipoConsumo.LECTURA, "Agosto")
 
-        assertIs<EstadoConsumo.Normal>(estado)
-        assertEquals(100, estado.excesoPorcentaje)
-        assertEquals(16, estado.promedioHistorico)
-        assertEquals("+100 %", estado.variacionTexto)
+        assertIs<EstadoConsumo.Atipico>(estado)
+        assertEquals("Alto consumo", estado.chipTexto)
+        assertEquals("Agosto superó los 100 m³. Revisa si hay alguna fuga en casa.", estado.mensaje)
     }
 
     @Test
-    fun consumo20ConPromedio16EsNormalConExceso25() {
-        val mesesPrevios = listOf(16, 16, 15, 17, 16, 16)
-        val estado = EvaluadorConsumo.evaluar(
-            consumoM3 = 20,
-            mesesPreviosM3 = mesesPrevios,
-            tipoConsumo = TipoConsumo.LECTURA,
-            mesDisplay = "Agosto"
-        )
-
-        assertIs<EstadoConsumo.Normal>(estado)
-        assertEquals(25, estado.excesoPorcentaje)
-        assertEquals(16, estado.promedioHistorico)
-        assertEquals("+25 %", estado.variacionTexto)
+    fun exactamente100NoEsAltoConsumo() {
+        assertIs<EstadoConsumo.Normal>(EvaluadorConsumo.evaluar(100, previos, TipoConsumo.LECTURA))
     }
 
     @Test
-    fun conSoloDosMesesEsSinHistorial() {
-        val mesesPrevios = listOf(16, 16)
-        val estado = EvaluadorConsumo.evaluar(
-            consumoM3 = 40,
-            mesesPreviosM3 = mesesPrevios,
-            tipoConsumo = TipoConsumo.LECTURA,
-            mesDisplay = "Agosto"
-        )
-
-        assertIs<EstadoConsumo.SinHistorial>(estado)
-        assertEquals(2, estado.mesesDisponibles)
-        assertEquals("—", estado.variacionTexto)
+    fun reciboPorPromedioDe120TambienEsAltoConsumo() {
+        assertIs<EstadoConsumo.Atipico>(EvaluadorConsumo.evaluar(120, previos, TipoConsumo.PROMEDIO, "Agosto"))
     }
 
     @Test
-    fun conHistorialVacioEsSinHistorial() {
-        val estado = EvaluadorConsumo.evaluar(
-            consumoM3 = 10,
-            mesesPreviosM3 = emptyList(),
-            tipoConsumo = TipoConsumo.LECTURA,
-            mesDisplay = "Agosto"
-        )
-
-        assertIs<EstadoConsumo.SinHistorial>(estado)
-        assertEquals(0, estado.mesesDisponibles)
-        assertEquals("—", estado.variacionTexto)
-    }
-
-    @Test
-    fun tipoConsumoPromedioSiempreEsFacturadoPorPromedio() {
-        val mesesPrevios = listOf(16, 16, 15, 17, 16, 16)
-        val estado = EvaluadorConsumo.evaluar(
-            consumoM3 = 33,
-            mesesPreviosM3 = mesesPrevios,
-            tipoConsumo = TipoConsumo.PROMEDIO,
-            mesDisplay = "Agosto"
-        )
-
+    fun reciboPorPromedioBajoElLimiteEsFacturadoPorPromedio() {
+        val estado = EvaluadorConsumo.evaluar(33, previos, TipoConsumo.PROMEDIO, "Agosto")
         assertEquals(EstadoConsumo.FacturadoPorPromedio, estado)
         assertEquals("—", estado.variacionTexto)
+    }
+
+    @Test
+    fun sinMesesPreviosEsSinHistorial() {
+        assertEquals(EstadoConsumo.SinHistorial, EvaluadorConsumo.evaluar(10, emptyList(), TipoConsumo.LECTURA))
+    }
+
+    @Test
+    fun altoConsumoSinHistorialMuestraVariacionVacia() {
+        val estado = EvaluadorConsumo.evaluar(150, emptyList(), TipoConsumo.LECTURA, "Agosto")
+        assertIs<EstadoConsumo.Atipico>(estado)
+        assertNull(estado.excesoPorcentaje)
+        assertEquals("—", estado.variacionTexto)
+    }
+
+    @Test
+    fun promedioUsaHastaSeisMeses() {
+        assertEquals(16, EvaluadorConsumo.promedio(listOf(16, 16, 16, 16, 16, 16, 100)))
+        assertNull(EvaluadorConsumo.promedio(emptyList()))
+    }
+
+    @Test
+    fun variacionNecesitaUnPromedioPositivo() {
+        assertEquals(25, EvaluadorConsumo.variacionPorcentaje(20, 16))
+        assertEquals(-50, EvaluadorConsumo.variacionPorcentaje(8, 16))
+        assertNull(EvaluadorConsumo.variacionPorcentaje(20, null))
+        assertNull(EvaluadorConsumo.variacionPorcentaje(20, 0))
     }
 }

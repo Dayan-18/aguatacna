@@ -36,10 +36,7 @@ class N8nApiClient(
         sessionId: String,
         timestamp: Long
     ): String {
-        // Si aún no se ha configurado la URL real de n8n, provee una respuesta interactiva de muestra
-        if (!ConfiguracionN8n.estaConfigurado) {
-            return generarRespuestaDemostracion(pregunta)
-        }
+        check(ConfiguracionN8n.WEBHOOK_URL.isNotBlank()) { "Falta configurar WEBHOOK_URL de n8n." }
 
         val requestPayload = N8nChatRequest(
             chatInput = pregunta,
@@ -79,7 +76,7 @@ class N8nApiClient(
      */
     fun extraerTextoDeRespuesta(cuerpo: String): String {
         val limpio = cuerpo.trim()
-        if (limpio.isBlank()) return "El asistente no devolvió texto de respuesta."
+        check(limpio.isNotBlank()) { "n8n respondió sin texto." }
 
         return try {
             val elemento = json.parseToJsonElement(limpio)
@@ -108,29 +105,6 @@ class N8nApiClient(
                 // Si n8n devolvió la estructura clásica {"json": { "output": "..." }}
                 elemento["json"]?.let { extraerDesdeElemento(it) }
             }
-        }
-    }
-
-    private fun generarRespuestaDemostracion(pregunta: String): String {
-        val q = pregunta.lowercase()
-        return when {
-            q.contains("recibo") || q.contains("doble") || q.contains("caro") || q.contains("subió") ->
-                "Tu consumo puede deberse a una fuga interna o un cobro atípico de EPS Tacna. Puedes comparar tu consumo con meses anteriores en la pestaña de Recibos y verificar si supera el 100% de tu promedio para iniciar un reclamo formal ante Sunass."
-
-            q.contains("fuga") ->
-                "Para detectar fugas invisibles: cierra todos los caños y la llave de paso de tus tanques o cisternas. Luego observa el medidor de agua; si la aguja roja o el reloj siguen girando, tienes una fuga interna que debes reparar de inmediato."
-
-            q.contains("horario") || q.contains("sector") || q.contains("cuándo") || q.contains("cuando") ->
-                "En Tacna los horarios de servicio por red varían por distrito y sector (ej. Ciudad Nueva, Alto de la Alianza, Gregorio Albarracín). Puedes revisar los turnos actualizados y cisternas en la pestaña 'Sectores' de la app."
-
-            q.contains("tanque") || q.contains("litro") || q.contains("dura") ->
-                "Con un tanque estándar de 1100 L para 4 personas con un consumo moderado de 100 L/habitante al día, la reserva estimada es de aproximadamente 2 a 3 días con uso responsable."
-
-            q.contains("reclamo") || q.contains("dónde") || q.contains("donde") ->
-                "Puedes presentar tu reclamo en la sede de EPS Tacna (Av. Dos de Mayo) o a través de su plataforma virtual, adjuntando la foto de tu medidor y recibo dentro de los primeros 60 días desde la emisión."
-
-            else ->
-                "He recibido tu pregunta: \"$pregunta\".\n\nEl módulo de asistente está completamente operativo y conectado a la arquitectura de la app. Para recibir respuestas directamente de tu IA en n8n, actualiza `WEBHOOK_URL` en `ConfiguracionN8n.kt` con la URL de tu flujo."
         }
     }
 }

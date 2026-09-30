@@ -3,6 +3,7 @@ package pe.edu.upt.aguatacna.feature.recibo.domain.model
 import kotlinx.datetime.LocalDate
 
 // Datos del recibo aún sin confirmar; cada campo lleva valor + confianza (Campo). Se confirma como Recibo.
+// idRecibo es el id del recibo que se está editando, o null si es uno nuevo.
 data class ReciboBorrador(
     val periodoConsumo: Campo<PeriodoConsumo> = Campo(),
     val consumoM3: Campo<Int> = Campo(),
@@ -14,40 +15,44 @@ data class ReciboBorrador(
     val lecturaActualM3: Campo<Int> = Campo(),
     val numeroMedidor: Campo<String> = Campo(),
     val numeroRecibo: Campo<String> = Campo(),
-    val origen: OrigenDatos = OrigenDatos.ESCANEADO
+    val origen: OrigenDatos = OrigenDatos.ESCANEADO,
+    val idRecibo: String? = null
 ) {
-    /** true si tiene los campos mínimos para poder confirmar (consumo + importe). */
+    /** true si tiene los campos mínimos para poder confirmar (período + consumo + importe). */
     val esConfirmable: Boolean
-        get() = consumoM3.valor != null && importeTotal.valor != null
+        get() = periodoConsumo.valor != null && consumoM3.valor != null && importeTotal.valor != null
 
     /** true si algún campo crítico (consumo, importe o período) tiene baja confianza. */
     val tieneCamposDudosos: Boolean
         get() = consumoM3.esDudoso || importeTotal.esDudoso || periodoConsumo.esDudoso
 
-    /** Convierte el borrador a un [Recibo] confirmado. Requiere [esConfirmable]. */
+    /** Convierte el borrador a un [Recibo] confirmado. Requiere [esConfirmable]; lo que falte queda en null. */
     fun confirmar(id: String): Recibo {
-        require(esConfirmable) { "El borrador no tiene los campos mínimos (consumo + importe)." }
-        val periodo = periodoConsumo.valor ?: PeriodoConsumo(2026, 8)
-        val vencimiento = fechaVencimiento.valor ?: if (periodo.mes < 12) {
-            LocalDate(periodo.anio, periodo.mes + 1, 11)
-        } else {
-            LocalDate(periodo.anio + 1, 1, 11)
+        val periodo = periodoConsumo.valor
+        val consumo = consumoM3.valor
+        val importe = importeTotal.valor
+        require(periodo != null && consumo != null && importe != null) {
+            "El borrador no tiene los campos mínimos (período + consumo + importe)."
         }
-        val emision = fechaEmision.valor ?: LocalDate(periodo.anio, periodo.mes, 28)
-
         return Recibo(
             id = id,
             periodoConsumo = periodo,
-            consumoM3 = consumoM3.valor!!,
-            importeTotal = importeTotal.valor!!,
-            fechaEmision = emision,
-            fechaVencimiento = vencimiento,
+            consumoM3 = consumo,
+            importeTotal = importe,
+            fechaEmision = fechaEmision.valor,
+            fechaVencimiento = fechaVencimiento.valor,
             tipoConsumo = tipoConsumo.valor ?: TipoConsumo.DESCONOCIDO,
             lecturaAnteriorM3 = lecturaAnteriorM3.valor,
             lecturaActualM3 = lecturaActualM3.valor,
-            numeroMedidor = numeroMedidor.valor ?: "0412887",
+            numeroMedidor = numeroMedidor.valor,
             numeroRecibo = numeroRecibo.valor,
             origen = origen
         )
+    }
+
+    companion object {
+        /** Borrador en blanco para ingresar un recibo a mano, con el período ya elegido. */
+        fun vacio(periodo: PeriodoConsumo): ReciboBorrador =
+            ReciboBorrador(periodoConsumo = Campo.confirmado(periodo), origen = OrigenDatos.MANUAL)
     }
 }

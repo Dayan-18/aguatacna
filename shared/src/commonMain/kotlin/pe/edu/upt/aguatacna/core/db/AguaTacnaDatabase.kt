@@ -7,6 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import pe.edu.upt.aguatacna.data.local.UsuarioDao
 import pe.edu.upt.aguatacna.data.local.UsuarioEntity
+import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboBorradorDao
+import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboBorradorEntity
 import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboDao
 import pe.edu.upt.aguatacna.feature.recibo.data.local.ReciboEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.EventoLlenadoEntity
@@ -36,14 +38,16 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
         PuntoCisternaEntity::class,
         ConfirmacionHorarioEntity::class,
         ReciboEntity::class,
+        ReciboBorradorEntity::class,
         RetoEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 3, to = 4)
+        AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5)
     ]
 )
 @ConstructedBy(AguaTacnaDatabaseConstructor::class)
@@ -51,6 +55,7 @@ abstract class AguaTacnaDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
     abstract fun reservaDao(): ReservaDao
     abstract fun reciboDao(): ReciboDao
+    abstract fun reciboBorradorDao(): ReciboBorradorDao
     abstract fun avisoReservaDao(): AvisoReservaDao
     abstract fun sectorDao(): SectorDao
 }

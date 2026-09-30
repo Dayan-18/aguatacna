@@ -16,6 +16,6 @@ interface AsistenteRepository {
     /** Envía un mensaje a n8n y devuelve la respuesta del asistente. */
     suspend fun enviarMensaje(texto: String): Result<MensajeAsistente>
 
-    /** Reinicia la conversación al estado inicial de bienvenida. */
+    /** Vacía la conversación. */
     suspend fun limpiarConversacion()
 }

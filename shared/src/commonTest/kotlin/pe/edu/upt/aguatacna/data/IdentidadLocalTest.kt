@@ -19,6 +19,7 @@ class IdentidadLocalTest {
         override suspend fun guardarModoDeAcceso(modo: String) {
             guardado = guardado?.copy(modoAcceso = modo)
         }
+        override suspend fun guardarSector(sectorId: String) = Unit
     }
 
     @Test

@@ -8,7 +8,8 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.repository.ReciboRepository
 
-// Repositorio en memoria usado en pruebas y vistas previas (sin Koin); upsert por período de consumo.
+// Repositorio en memoria usado en pruebas y vistas previas (sin Koin). Imita a ReciboRepositoryRoom:
+// reutiliza el id del recibo que ya ocupa el período y nunca deja dos recibos con el mismo id.
 class FakeReciboRepository : ReciboRepository {
 
     private val _recibos = MutableStateFlow<List<Recibo>>(emptyList())
@@ -17,7 +18,10 @@ class FakeReciboRepository : ReciboRepository {
         _recibos.map { lista -> lista.sortedByDescending { it.periodoConsumo } }
 
     override suspend fun guardar(recibo: Recibo) {
-        _recibos.update { lista -> lista.filter { it.periodoConsumo != recibo.periodoConsumo } + recibo }
+        _recibos.update { lista ->
+            val id = lista.find { it.periodoConsumo == recibo.periodoConsumo }?.id ?: recibo.id
+            lista.filter { it.id != id } + recibo.copy(id = id)
+        }
     }
 
     override suspend fun obtenerPorPeriodo(periodo: PeriodoConsumo): Recibo? =
@@ -28,7 +32,7 @@ class FakeReciboRepository : ReciboRepository {
     }
 
     // Carga en bloque, usada por la semilla de datos de ejemplo en pruebas.
-    suspend fun cargarTodos(recibos: List<Recibo>) {
+    fun cargarTodos(recibos: List<Recibo>) {
         _recibos.value = recibos
     }
 }

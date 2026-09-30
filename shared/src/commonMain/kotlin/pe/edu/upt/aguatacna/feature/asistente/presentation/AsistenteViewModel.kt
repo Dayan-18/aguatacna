@@ -50,8 +50,8 @@ class AsistenteViewModel(
         _textoEntrada.value = nuevoTexto
     }
 
-    fun enviarMensaje(textoPersonalizado: String? = null) {
-        val textoAEnviar = (textoPersonalizado ?: _textoEntrada.value).trim()
+    fun enviarMensaje() {
+        val textoAEnviar = _textoEntrada.value.trim()
         if (textoAEnviar.isBlank() || _estaEscribiendo.value) return
 
         _textoEntrada.value = ""

@@ -1,8 +1,5 @@
 package pe.edu.upt.aguatacna.feature.asistente.presentation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -50,7 +47,6 @@ import pe.edu.upt.aguatacna.feature.asistente.presentation.componentes.BarraEntr
 import pe.edu.upt.aguatacna.feature.asistente.presentation.componentes.BurbujaAsistente
 import pe.edu.upt.aguatacna.feature.asistente.presentation.componentes.BurbujaUsuario
 import pe.edu.upt.aguatacna.feature.asistente.presentation.componentes.IndicadorEscribiendo
-import pe.edu.upt.aguatacna.feature.asistente.presentation.componentes.SugerenciasRapidas
 
 private val ColorCabeceraFondo = Color(0xFF03444C)
 private val ColorCabeceraCirculo = Color(0xFF0A6774)
@@ -116,20 +112,6 @@ fun AsistenteScreen(
                     IndicadorEscribiendo()
                 }
             }
-        }
-
-        // ── Sugerencias de preguntas rápidas ──
-        AnimatedVisibility(
-            visible = uiState.mensajes.size <= 2 && !uiState.estaEscribiendo,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            SugerenciasRapidas(
-                sugerencias = uiState.sugerenciasRapidas,
-                onSugerenciaSeleccionada = { pregunta ->
-                    viewModel.enviarMensaje(pregunta)
-                }
-            )
         }
 
         // ── Barra inferior para escribir pregunta ──

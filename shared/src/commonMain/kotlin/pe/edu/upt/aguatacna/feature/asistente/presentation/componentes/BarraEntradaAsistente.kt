@@ -79,7 +79,7 @@ fun BarraEntradaAsistente(
             ) {
                 if (texto.isEmpty()) {
                     Text(
-                        text = "Escribe tu pregunta...",
+                        text = "Escribe un mensaje",
                         fontFamily = FuenteTexto,
                         fontSize = 14.sp,
                         color = ColorPlaceholder
@@ -131,7 +131,7 @@ fun BarraEntradaAsistente(
                 } else {
                     Icon(
                         Icons.Filled.ArrowUpward,
-                        contentDescription = "Enviar pregunta",
+                        contentDescription = "Enviar mensaje",
                         tint = Blanco,
                         modifier = Modifier.size(20.dp)
                     )

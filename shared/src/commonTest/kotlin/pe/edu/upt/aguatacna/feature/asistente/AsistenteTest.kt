@@ -7,7 +7,7 @@ import pe.edu.upt.aguatacna.feature.asistente.domain.usecase.EnviarMensajeUseCas
 import pe.edu.upt.aguatacna.feature.asistente.domain.usecase.LimpiarConversacionUseCase
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class AsistenteTest {
@@ -16,78 +16,62 @@ class AsistenteTest {
 
     @Test
     fun extraerTextoDeRespuesta_soportaFormatoOutput() {
-        val jsonOutput = """{"output": "Hola, soy tu asistente de agua"}"""
-        val resultado = apiClient.extraerTextoDeRespuesta(jsonOutput)
-        assertEquals("Hola, soy tu asistente de agua", resultado)
+        assertEquals("Hola", apiClient.extraerTextoDeRespuesta("""{"output": "Hola"}"""))
     }
 
     @Test
     fun extraerTextoDeRespuesta_soportaFormatoResponse() {
-        val jsonResponse = """{"response": "Revisé tu consumo de agua"}"""
-        val resultado = apiClient.extraerTextoDeRespuesta(jsonResponse)
-        assertEquals("Revisé tu consumo de agua", resultado)
+        assertEquals("Revisé tu consumo", apiClient.extraerTextoDeRespuesta("""{"response": "Revisé tu consumo"}"""))
     }
 
     @Test
     fun extraerTextoDeRespuesta_soportaArrayEstandarN8n() {
-        val jsonArray = """[{"output": "Respuesta dentro de un array de n8n"}]"""
-        val resultado = apiClient.extraerTextoDeRespuesta(jsonArray)
-        assertEquals("Respuesta dentro de un array de n8n", resultado)
+        assertEquals("En un array", apiClient.extraerTextoDeRespuesta("""[{"output": "En un array"}]"""))
     }
 
     @Test
     fun extraerTextoDeRespuesta_soportaTextoPlano() {
-        val textoPlano = "Texto plano directo desde n8n"
-        val resultado = apiClient.extraerTextoDeRespuesta(textoPlano)
-        assertEquals("Texto plano directo desde n8n", resultado)
+        assertEquals("Texto plano", apiClient.extraerTextoDeRespuesta("Texto plano"))
     }
 
     @Test
-    fun enviarMensajeUseCase_rechazaMensajesEnBlanco() {
-        runBlocking {
-            val repo = AsistenteRepositoryImpl(apiClient)
-            val useCase = EnviarMensajeUseCase(repo)
-
-            val resultado = useCase("   ")
-            assertTrue(resultado.isFailure)
-        }
+    fun extraerTextoDeRespuesta_vacioEsError() {
+        assertFailsWith<IllegalStateException> { apiClient.extraerTextoDeRespuesta("  ") }
     }
 
     @Test
-    fun flujoMensajes_agregaMensajeUsuarioYRespuesta() {
-        runBlocking {
-            val repo = AsistenteRepositoryImpl(apiClient)
-            val useCase = EnviarMensajeUseCase(repo)
-
-            val iniciales = repo.obtenerHistorial()
-            assertEquals(1, iniciales.size)
-            assertFalse(iniciales[0].esUsuario)
-
-            val resultado = useCase("¿Cómo detectar una fuga?")
-            assertTrue(resultado.isSuccess)
-
-            val despues = repo.obtenerHistorial()
-            assertEquals(3, despues.size) // Bienvenida + Usuario + Asistente
-            assertEquals("¿Cómo detectar una fuga?", despues[1].texto)
-            assertTrue(despues[1].esUsuario)
-            assertFalse(despues[2].esUsuario)
-        }
+    fun laConversacionEmpiezaVacia() = runBlocking {
+        assertTrue(AsistenteRepositoryImpl(apiClient).obtenerHistorial().isEmpty())
     }
 
     @Test
-    fun limpiarConversacion_restauraMensajeInicial() {
-        runBlocking {
-            val repo = AsistenteRepositoryImpl(apiClient)
-            val enviarUseCase = EnviarMensajeUseCase(repo)
-            val limpiarUseCase = LimpiarConversacionUseCase(repo)
+    fun enviarMensajeUseCase_rechazaMensajesEnBlanco() = runBlocking {
+        val repo = AsistenteRepositoryImpl(apiClient)
+        assertTrue(EnviarMensajeUseCase(repo)("   ").isFailure)
+        assertTrue(repo.obtenerHistorial().isEmpty())
+    }
 
-            enviarUseCase("Hola")
-            assertEquals(3, repo.obtenerHistorial().size)
+    @Test
+    fun sinWebhookNoHayRespuestaInventada() = runBlocking {
+        val repo = AsistenteRepositoryImpl(apiClient)
 
-            limpiarUseCase()
-            val despuesDeLimpiar = repo.obtenerHistorial()
-            assertEquals(1, despuesDeLimpiar.size)
-            assertFalse(despuesDeLimpiar[0].esUsuario)
-        }
+        val resultado = EnviarMensajeUseCase(repo)("Hola")
+
+        assertTrue(resultado.isFailure)
+        val historial = repo.obtenerHistorial()
+        assertEquals(2, historial.size)
+        assertEquals("Hola", historial[0].texto)
+        assertTrue(historial[0].esUsuario)
+        assertTrue(historial[1].esError)
+    }
+
+    @Test
+    fun limpiarConversacion_dejaElChatVacio() = runBlocking {
+        val repo = AsistenteRepositoryImpl(apiClient)
+        EnviarMensajeUseCase(repo)("Hola")
+
+        LimpiarConversacionUseCase(repo)()
+
+        assertTrue(repo.obtenerHistorial().isEmpty())
     }
 }
