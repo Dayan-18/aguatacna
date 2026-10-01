@@ -25,7 +25,9 @@ private class FakeUsuarioDao : UsuarioDao {
     override suspend fun guardar(usuario: UsuarioEntity) = Unit
     override fun observarModoDeAcceso(): Flow<String?> = modo
     override suspend fun guardarModoDeAcceso(modo: String) { this.modo.value = modo }
-    override suspend fun guardarSector(sectorId: String) = Unit
+    val sector = MutableStateFlow<String?>(null)
+    override fun observarSector(): Flow<String?> = sector
+    override suspend fun guardarSector(sectorId: String) { sector.value = sectorId }
 }
 
 class AccesoTest {
@@ -55,6 +57,20 @@ class AccesoTest {
     fun unValorDesconocidoEnLaBaseSeTrataComoSinElegir() = runBlocking {
         val dao = FakeUsuarioDao().apply { modo.value = "OTRO" }
         assertNull(RegistroDeAccesoEnRoom(dao).observar().first())
+    }
+
+    @Test
+    fun sinSectorGuardadoAunNoTieneDomicilio() = runBlocking {
+        val dao = FakeUsuarioDao()
+        val registro = RegistroDeAccesoEnRoom(dao)
+        assertFalse(registro.tieneDomicilio().first())
+        dao.guardarSector("CN-04")
+        assertTrue(registro.tieneDomicilio().first())
+    }
+
+    @Test
+    fun sinBaseDeDatosElDomicilioNoBloqueaLaEntrada() = runBlocking {
+        assertTrue(RegistroDeAccesoEnMemoria().tieneDomicilio().first())
     }
 
     @Test

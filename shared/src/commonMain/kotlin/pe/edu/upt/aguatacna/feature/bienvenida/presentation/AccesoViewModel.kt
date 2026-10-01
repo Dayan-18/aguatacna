@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
@@ -15,10 +16,11 @@ import pe.edu.upt.aguatacna.core.sesion.RegistroDeAcceso
 import pe.edu.upt.aguatacna.core.sesion.RegistroDeAccesoEnMemoria
 import pe.edu.upt.aguatacna.core.sesion.ResultadoInicio
 
-/** Lo que muestra la pantalla 01: si ya se sabe el modo de acceso, el consentimiento y el aviso de error. */
+/** Lo que decide la entrada: el modo de acceso, si ya hay domicilio, el consentimiento y el aviso de error. */
 data class AccesoUiState(
     val cargando: Boolean = true,
     val modo: ModoDeAcceso? = null,
+    val tieneDomicilio: Boolean = false,
     val consentimiento: Boolean = true,
     val enCurso: Boolean = false,
     val mensaje: String? = null
@@ -35,7 +37,10 @@ class AccesoViewModel(
 
     init {
         viewModelScope.launch {
-            registro.observar().collect { modo -> _uiState.update { it.copy(cargando = false, modo = modo) } }
+            combine(registro.observar(), registro.tieneDomicilio()) { modo, domicilio -> modo to domicilio }
+                .collect { (modo, domicilio) ->
+                    _uiState.update { it.copy(cargando = false, modo = modo, tieneDomicilio = domicilio) }
+                }
         }
     }
 

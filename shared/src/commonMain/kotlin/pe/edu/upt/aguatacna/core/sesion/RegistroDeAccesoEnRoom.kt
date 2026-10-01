@@ -9,4 +9,6 @@ class RegistroDeAccesoEnRoom(private val dao: UsuarioDao) : RegistroDeAcceso {
         dao.observarModoDeAcceso().map { nombre -> ModoDeAcceso.entries.firstOrNull { it.name == nombre } }
 
     override suspend fun guardar(modo: ModoDeAcceso) = dao.guardarModoDeAcceso(modo.name)
+
+    override fun tieneDomicilio(): Flow<Boolean> = dao.observarSector().map { it != null }
 }
