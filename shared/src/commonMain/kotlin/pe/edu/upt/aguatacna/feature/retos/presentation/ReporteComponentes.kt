@@ -87,15 +87,26 @@ internal fun TiposReporte(actual: TipoReporte, onCambiar: (TipoReporte) -> Unit)
 }
 
 @Composable
-internal fun UbicacionReporte() {
+internal fun UbicacionReporte(estado: ReporteUbicacionUi) {
     Card(
         Modifier.fillMaxWidth().padding(top = 24.dp), shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Blanco), elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            DatoReporte("Ubicación", "Av. Municipal 412")
-            DatoReporte("Sector", "Ciudad Nueva 04")
-            DatoReporte("Fecha", "12 sep 2026 · 15:22")
+            DatoReporte(
+                "Ubicación",
+                estado.sector?.nombre ?: if (estado.buscando) "Cargando…" else "Sin domicilio registrado"
+            )
+            DatoReporte(
+                "Sector",
+                estado.sector?.let { "${it.id} · ${it.distrito}" } ?: "Pendiente"
+            )
+            DatoReporte("Fecha", "Ahora")
+            Text(
+                estado.mensaje,
+                color = if (estado.esError) androidx.compose.material3.MaterialTheme.colorScheme.error else TintaSuave,
+                fontSize = 9.sp
+            )
         }
     }
 }
@@ -104,7 +115,7 @@ internal fun UbicacionReporte() {
 private fun DatoReporte(etiqueta: String, valor: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(etiqueta, color = TintaSuave, fontSize = 10.sp)
-        Text(valor, color = if (etiqueta == "Ubicación") AguaMedia else Tinta, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        Text(valor, color = if (etiqueta.startsWith("Ubicación")) AguaMedia else Tinta, fontSize = 10.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -115,6 +126,6 @@ internal fun AvisoReporte() {
         verticalAlignment = Alignment.Top
     ) {
         Icon(Icons.Outlined.Info, null, tint = AguaMedia, modifier = Modifier.size(18.dp))
-        Text("Tu reporte es público. Se muestra la ubicación de la incidencia, nunca la tuya ni tu nombre.", Modifier.padding(start = 8.dp), color = AguaMedia, fontSize = 9.sp)
+        Text("Tu reporte es público. Se muestra la ubicación de la incidencia, pero nunca tu nombre.", Modifier.padding(start = 8.dp), color = AguaMedia, fontSize = 9.sp)
     }
 }
