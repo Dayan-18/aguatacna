@@ -32,7 +32,11 @@ import pe.edu.upt.aguatacna.core.ui.theme.Fondo
 import pe.edu.upt.aguatacna.feature.retos.domain.model.TipoReporte
 
 @Composable
-fun ReportesScreen(onVolver: () -> Unit, onEnviar: (TipoReporte, ByteArray?) -> Unit) {
+fun ReportesScreen(
+    onVolver: () -> Unit,
+    ubicacion: ReporteUbicacionUi,
+    onEnviar: (TipoReporte, ByteArray?) -> Unit
+) {
     var tipo by rememberSaveable { mutableStateOf(TipoReporte.FUGA) }
     var fotoAdjunta by remember { mutableStateOf<ImageBitmap?>(null) }
     var errorFoto by rememberSaveable { mutableStateOf<String?>(null) }
@@ -44,7 +48,6 @@ fun ReportesScreen(onVolver: () -> Unit, onEnviar: (TipoReporte, ByteArray?) -> 
                 .onFailure { errorFoto = "No se pudo abrir la fotografía." }
         }
     }
-
     Column(
         Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)
     ) {
@@ -53,7 +56,7 @@ fun ReportesScreen(onVolver: () -> Unit, onEnviar: (TipoReporte, ByteArray?) -> 
         errorFoto?.let { Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.error) }
         EtiquetaSeccion("TIPO DE INCIDENCIA", Modifier.padding(top = 18.dp, bottom = 8.dp))
         TiposReporte(tipo, onCambiar = { tipo = it })
-        UbicacionReporte()
+        UbicacionReporte(ubicacion)
         AvisoReporte()
         Button(
             onClick = {
@@ -62,6 +65,7 @@ fun ReportesScreen(onVolver: () -> Unit, onEnviar: (TipoReporte, ByteArray?) -> 
                     onEnviar(tipo, bytes)
                 }
             },
+            enabled = ubicacion.coordenada != null && !ubicacion.buscando,
             modifier = Modifier.fillMaxWidth().padding(top = 28.dp, bottom = 18.dp).height(50.dp),
             shape = RoundedCornerShape(13.dp), colors = ButtonDefaults.buttonColors(containerColor = Agua)
         ) { Text("Enviar reporte") }

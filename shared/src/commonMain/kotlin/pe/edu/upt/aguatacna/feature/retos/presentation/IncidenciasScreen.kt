@@ -38,9 +38,10 @@ import pe.edu.upt.aguatacna.core.ui.theme.Tenue
 import pe.edu.upt.aguatacna.core.ui.theme.Tinta
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 import pe.edu.upt.aguatacna.feature.retos.domain.model.Reporte
+import pe.edu.upt.aguatacna.feature.sector.domain.model.Sector
 
 @Composable
-fun IncidenciasScreen(reportes: List<Reporte>, onVolver: () -> Unit, onReportar: () -> Unit) {
+fun IncidenciasScreen(reportes: List<Reporte>, sectorActual: Sector?, onVolver: () -> Unit, onReportar: () -> Unit) {
     Column(
         Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)
     ) {
@@ -51,7 +52,7 @@ fun IncidenciasScreen(reportes: List<Reporte>, onVolver: () -> Unit, onReportar:
         MapaReportes()
         Column(Modifier.padding(top = 13.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
             reportes.forEach { reporte ->
-                IncidenciaCard(reporteAUi(reporte), reporte.fotoBytes?.let(::decodificarFoto))
+                IncidenciaCard(reporteAUi(reporte, sectorActual), reporte.fotoBytes?.let(::decodificarFoto))
             }
             incidencias.forEach { IncidenciaCard(it) }
         }
@@ -100,9 +101,10 @@ private val incidencias = listOf(
     IncidenciaUi("Desperdicio", "Parque Central", "hace 6 días · 2 vecinos", "Resuelto", "1,8 km", Agua)
 )
 
-private fun reporteAUi(reporte: Reporte) = IncidenciaUi(
+private fun reporteAUi(reporte: Reporte, sector: Sector?) = IncidenciaUi(
     titulo = etiquetaTipo(reporte.tipo),
-    direccion = "Av. Municipal 412",
+    direccion = sector?.let { "${it.nombre} · ${it.distrito}" }
+        ?: if (reporte.latitud != null) "Ubicación registrada" else "Ubicación no disponible",
     detalle = if (reporte.fotoUri != null) "ahora · con fotografía" else "ahora · sin fotografía",
     estado = "Pendiente",
     distancia = "0,0 km",

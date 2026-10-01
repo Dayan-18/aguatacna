@@ -20,6 +20,7 @@ fun RetosScreen(
 ) {
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
     val reportes by reportesViewModel.reportes.collectAsStateWithLifecycle()
+    val ubicacionReporte by reportesViewModel.ubicacion.collectAsStateWithLifecycle()
     var seccion by rememberSaveable { mutableStateOf(SeccionRetos.RESUMEN) }
     if (estado.cargando) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -38,12 +39,14 @@ fun RetosScreen(
             )
             SeccionRetos.REPORTAR -> ReportesScreen(
                 onVolver = { seccion = SeccionRetos.SECTOR },
+                ubicacion = ubicacionReporte,
                 onEnviar = { tipo, foto ->
                     reportesViewModel.guardar(tipo, foto) { seccion = SeccionRetos.INCIDENCIAS }
                 }
             )
             SeccionRetos.INCIDENCIAS -> IncidenciasScreen(
                 reportes = reportes,
+                sectorActual = ubicacionReporte.sector,
                 onVolver = { seccion = SeccionRetos.SECTOR },
                 onReportar = { seccion = SeccionRetos.REPORTAR }
             )
