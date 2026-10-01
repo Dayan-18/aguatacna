@@ -1,79 +1,76 @@
 package pe.edu.upt.aguatacna.feature.retos.presentation
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.MaterialTheme
-import pe.edu.upt.aguatacna.core.util.rememberCapturaFoto
-import pe.edu.upt.aguatacna.feature.retos.data.FakeReporteRepository
-import pe.edu.upt.aguatacna.feature.retos.domain.model.Reporte
-import pe.edu.upt.aguatacna.feature.retos.domain.model.TipoReporte
-import pe.edu.upt.aguatacna.feature.retos.domain.usecase.CrearReporte
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
+import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
+import io.github.vinceglb.filekit.dialogs.compose.util.encodeToByteArray
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import kotlinx.coroutines.launch
+import pe.edu.upt.aguatacna.core.ui.theme.Agua
+import pe.edu.upt.aguatacna.core.ui.theme.Fondo
+import pe.edu.upt.aguatacna.feature.retos.domain.model.TipoReporte
 
 @Composable
-fun ReportesScreen() {
-    var tipo by rememberSaveable { mutableStateOf(TipoReporte.CORTE_NO_PROGRAMADO) }
-    var descripcion by rememberSaveable { mutableStateOf("") }
-    var fotoAdjunta by rememberSaveable { mutableStateOf(false) }
-    var mensaje by rememberSaveable { mutableStateOf<String?>(null) }
-    val repositorio = remember { FakeReporteRepository() }
+fun ReportesScreen(onVolver: () -> Unit, onEnviar: (TipoReporte, ByteArray?) -> Unit) {
+    var tipo by rememberSaveable { mutableStateOf(TipoReporte.FUGA) }
+    var fotoAdjunta by remember { mutableStateOf<ImageBitmap?>(null) }
+    var errorFoto by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    val captura = rememberCapturaFoto(onFotoCapturada = { fotoAdjunta = true })
     val galeria = rememberFilePickerLauncher(type = FileKitType.Image) { archivo ->
-        if (archivo != null) fotoAdjunta = true
+        if (archivo != null) scope.launch {
+            runCatching { archivo.toImageBitmap() }
+                .onSuccess { fotoAdjunta = it; errorFoto = null }
+                .onFailure { errorFoto = "No se pudo abrir la fotografía." }
+        }
     }
 
     Column(
-        Modifier.fillMaxSize().padding(20.dp).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)
     ) {
-        Text("Reportar una incidencia", style = MaterialTheme.typography.headlineSmall)
-        Text("El reporte queda en cola y se enviará al recuperar conexión.")
-        MapaReportes()
-        TipoReporte.entries.forEach { opcion ->
-            FilterChip(opcion == tipo, { tipo = opcion }, label = { Text(opcion.name.replace('_', ' ')) })
-        }
-        OutlinedTextField(descripcion, { descripcion = it }, Modifier.fillMaxWidth(), label = { Text("¿Qué ocurrió?") }, minLines = 3)
-        Button(onClick = captura.tomarFoto, modifier = Modifier.fillMaxWidth()) {
-            Text(if (fotoAdjunta) "Foto adjuntada" else "Tomar fotografía")
-        }
-        Button(onClick = galeria::launch, modifier = Modifier.fillMaxWidth()) {
-            Text("Elegir de la galería")
-        }
+        AhorroTopBar("Reportar incidencia", "Con fotografía y ubicación", onVolver)
+        ZonaFotoReporte(fotoAdjunta, galeria::launch)
+        errorFoto?.let { Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.error) }
+        EtiquetaSeccion("TIPO DE INCIDENCIA", Modifier.padding(top = 18.dp, bottom = 8.dp))
+        TiposReporte(tipo, onCambiar = { tipo = it })
+        UbicacionReporte()
+        AvisoReporte()
         Button(
-            enabled = descripcion.isNotBlank(),
             onClick = {
                 scope.launch {
-                    CrearReporte(repositorio).ejecutar(
-                        Reporte("reporte-${descripcion.hashCode()}", tipo, descripcion, -17.9841, -70.2372, if (fotoAdjunta) "captura-local" else null)
-                    )
-                    mensaje = "Reporte guardado para sincronizar."
-                    descripcion = ""
-                    fotoAdjunta = false
+                    val bytes = fotoAdjunta?.encodeToByteArray(quality = 80)
+                    onEnviar(tipo, bytes)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Guardar reporte") }
-        mensaje?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
+            modifier = Modifier.fillMaxWidth().padding(top = 28.dp, bottom = 18.dp).height(50.dp),
+            shape = RoundedCornerShape(13.dp), colors = ButtonDefaults.buttonColors(containerColor = Agua)
+        ) { Text("Enviar reporte") }
     }
+}
+
+internal fun etiquetaTipo(tipo: TipoReporte): String = when (tipo) {
+    TipoReporte.FUGA -> "Fuga en la vía"
+    TipoReporte.BAJA_PRESION -> "Rotura de tubería"
+    TipoReporte.CORTE_NO_PROGRAMADO -> "Desperdicio"
+    TipoReporte.CISTERNA -> "Cisterna"
 }

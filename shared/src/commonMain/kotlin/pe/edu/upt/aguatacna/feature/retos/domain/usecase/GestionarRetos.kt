@@ -9,9 +9,9 @@ class ObtenerRetosSemana(private val repositorio: RetosRepository) {
     suspend fun ejecutar() = repositorio.obtenerRetosActivos()
 }
 
-class MarcarRetoCumplido(private val repositorio: RetosRepository) {
-    suspend fun ejecutar(retoId: String) {
-        repositorio.guardarCumplimiento(RetoUsuario(retoId, repositorio.fechaActual(), true))
+class ActualizarRetoDelDia(private val repositorio: RetosRepository) {
+    suspend fun ejecutar(retoId: String, cumplido: Boolean) {
+        repositorio.guardarCumplimiento(RetoUsuario(retoId, repositorio.fechaActual(), cumplido))
     }
 }
 

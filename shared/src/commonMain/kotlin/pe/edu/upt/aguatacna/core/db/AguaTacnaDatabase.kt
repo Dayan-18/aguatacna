@@ -16,6 +16,9 @@ import pe.edu.upt.aguatacna.feature.reserva.data.local.NovedadReservaEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.PerfilHogarEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.ReservaDao
 import pe.edu.upt.aguatacna.feature.retos.data.local.RetoEntity
+import pe.edu.upt.aguatacna.feature.retos.data.local.RetoUsuarioEntity
+import pe.edu.upt.aguatacna.feature.retos.data.local.ReporteEntity
+import pe.edu.upt.aguatacna.feature.retos.data.local.RetosDao
 import pe.edu.upt.aguatacna.feature.sector.data.local.ConfirmacionHorarioEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.CronogramaEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.PuntoCisternaEntity
@@ -36,14 +39,17 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
         PuntoCisternaEntity::class,
         ConfirmacionHorarioEntity::class,
         ReciboEntity::class,
-        RetoEntity::class
+        RetoEntity::class,
+        RetoUsuarioEntity::class,
+        ReporteEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 3, to = 4)
+        AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5)
     ]
 )
 @ConstructedBy(AguaTacnaDatabaseConstructor::class)
@@ -53,6 +59,7 @@ abstract class AguaTacnaDatabase : RoomDatabase() {
     abstract fun reciboDao(): ReciboDao
     abstract fun avisoReservaDao(): AvisoReservaDao
     abstract fun sectorDao(): SectorDao
+    abstract fun retosDao(): RetosDao
 }
 
 // Room genera el `actual` de cada plataforma.
