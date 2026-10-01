@@ -29,26 +29,33 @@ class RegistrarDomicilioViewModel(
 
     private val resolverSector = ResolverSector()
 
-    init {
-        detectarSector()
-    }
+    // No se detecta nada al abrir: el usuario elige primero su ubicación (GPS o pin en el mapa),
+    // y solo entonces se resuelve el sector y se habilita "Confirmar".
 
-    fun detectarSector() {
+    /** Usa la ubicación del dispositivo. Por ahora es una coordenada de prueba hasta que entre el GPS real. */
+    fun usarMiUbicacion() = elegir(ubicacion)
+
+    /** El usuario marcó un punto en el mapa. */
+    fun marcarEnMapa(coordenada: Coordenada) = elegir(coordenada)
+
+    private fun elegir(coord: Coordenada) {
         viewModelScope.launch {
-            _uiState.update { it.copy(cargando = true) }
+            _uiState.update { it.copy(cargando = true, ubicacion = coord) }
             try {
-                val sector = resolverSector.resolver(ubicacion, repositorio.obtenerSectores())
+                val sector = resolverSector.resolver(coord, repositorio.obtenerSectores())
                 if (sector == null) {
-                    _uiState.update { it.copy(cargando = false) }
+                    _uiState.update { it.copy(cargando = false, sector = null, continuidad = "", etiquetaMapa = "SECTOR") }
                     return@launch
                 }
                 val minutos = repositorio.obtenerCronogramas(sector.id).firstOrNull()?.duracionMinutos
-                _uiState.value = RegistrarDomicilioUiState(
-                    cargando = false,
-                    sector = sector,
-                    continuidad = minutos?.let { "${duracionATexto(it)}/día" } ?: "Sin horario",
-                    etiquetaMapa = "SECTOR ${sector.id.substringAfterLast('-')}"
-                )
+                _uiState.update {
+                    it.copy(
+                        cargando = false,
+                        sector = sector,
+                        continuidad = minutos?.let { m -> "${duracionATexto(m)}/día" } ?: "Sin horario",
+                        etiquetaMapa = "SECTOR ${sector.id.substringAfterLast('-')}"
+                    )
+                }
             } catch (e: Exception) {
                 // Sin conexión o error del servidor: no dejamos la pantalla colgada.
                 _uiState.update { it.copy(cargando = false) }
