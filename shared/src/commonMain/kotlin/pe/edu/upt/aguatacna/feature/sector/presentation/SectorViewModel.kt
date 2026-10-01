@@ -23,11 +23,13 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import org.koin.mp.KoinPlatform
 import pe.edu.upt.aguatacna.core.util.Reloj
+import pe.edu.upt.aguatacna.data.local.UsuarioDao
 
 class SectorViewModel(
     private val repositorio: SectorRepository,
     private val ubicacionCasa: Coordenada,
-    private val ahora: () -> LocalDateTime
+    private val ahora: () -> LocalDateTime,
+    private val obtenerSectorGuardado: suspend () -> String? = { null }
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SectorUiState())
@@ -47,7 +49,11 @@ class SectorViewModel(
             try {
                 val momento = ahora()
                 val sectores = repositorio.obtenerSectores()
-                val sector = resolverSector.resolver(ubicacionCasa, sectores)
+                // Si el usuario ya confirmó su sector (pantalla Registrar domicilio) se usa ese;
+                // si no, se resuelve por la ubicación de prueba.
+                val guardado = obtenerSectorGuardado()
+                val sector = sectores.firstOrNull { it.id == guardado }
+                    ?: resolverSector.resolver(ubicacionCasa, sectores)
                 if (sector == null) {
                     _uiState.update { it.copy(cargando = false) }
                     return@launch
@@ -113,7 +119,10 @@ class SectorViewModel(
         // La app real: el repositorio (Room + Supabase) viene de Koin; sin Koin (preview) cae al fake.
         fun desdeInyeccion(): SectorViewModel {
             val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
-            return SectorViewModel(koin.get(), CASA_DE_PRUEBA, koin.get<Reloj>()::ahora)
+            val usuarioDao = koin.get<UsuarioDao>()
+            return SectorViewModel(koin.get(), CASA_DE_PRUEBA, koin.get<Reloj>()::ahora) {
+                usuarioDao.obtener()?.sectorId
+            }
         }
     }
 }
