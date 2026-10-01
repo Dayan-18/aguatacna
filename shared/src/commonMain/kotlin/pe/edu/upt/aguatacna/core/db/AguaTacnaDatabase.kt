@@ -20,6 +20,7 @@ import pe.edu.upt.aguatacna.feature.reserva.data.local.ReservaDao
 import pe.edu.upt.aguatacna.feature.retos.data.local.RetoEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.ConfirmacionHorarioEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.CronogramaEntity
+import pe.edu.upt.aguatacna.feature.sector.data.local.DomicilioEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.PuntoCisternaEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.SectorDao
 import pe.edu.upt.aguatacna.feature.sector.data.local.SectorEntity
@@ -37,17 +38,19 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
         CronogramaEntity::class,
         PuntoCisternaEntity::class,
         ConfirmacionHorarioEntity::class,
+        DomicilioEntity::class,
         ReciboEntity::class,
         ReciboBorradorEntity::class,
         RetoEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
-        AutoMigration(from = 4, to = 5)
+        AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6)
     ]
 )
 @ConstructedBy(AguaTacnaDatabaseConstructor::class)
