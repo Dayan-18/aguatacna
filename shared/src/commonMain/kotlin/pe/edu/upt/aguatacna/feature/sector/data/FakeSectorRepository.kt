@@ -2,6 +2,7 @@ package pe.edu.upt.aguatacna.feature.sector.data
 
 import kotlinx.datetime.LocalDate
 import pe.edu.upt.aguatacna.feature.sector.domain.model.ConfirmacionHorario
+import pe.edu.upt.aguatacna.feature.sector.domain.model.Coordenada
 import pe.edu.upt.aguatacna.feature.sector.domain.model.Cronograma
 import pe.edu.upt.aguatacna.feature.sector.domain.model.PuntoCisterna
 import pe.edu.upt.aguatacna.feature.sector.domain.model.Sector
@@ -30,4 +31,12 @@ class FakeSectorRepository(private val hoy: LocalDate) : SectorRepository {
     override suspend fun registrarConfirmacion(confirmacion: ConfirmacionHorario) {
         confirmaciones.add(confirmacion)
     }
+
+    private var casa: Coordenada? = null
+
+    override suspend fun guardarUbicacionCasa(ubicacion: Coordenada) {
+        casa = ubicacion
+    }
+
+    override suspend fun obtenerUbicacionCasa(): Coordenada? = casa
 }

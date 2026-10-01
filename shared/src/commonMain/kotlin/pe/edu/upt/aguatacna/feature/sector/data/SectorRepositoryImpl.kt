@@ -1,7 +1,9 @@
 package pe.edu.upt.aguatacna.feature.sector.data
 
 import kotlinx.datetime.LocalDate
+import pe.edu.upt.aguatacna.feature.sector.data.local.DomicilioEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.SectorDao
+import pe.edu.upt.aguatacna.feature.sector.domain.model.Coordenada
 import pe.edu.upt.aguatacna.feature.sector.data.sync.NubeSectorSupabase
 import pe.edu.upt.aguatacna.feature.sector.domain.model.ConfirmacionHorario
 import pe.edu.upt.aguatacna.feature.sector.domain.model.Cronograma
@@ -44,4 +46,12 @@ class SectorRepositoryImpl(
         dao.guardarConfirmacion(entidad)
         nube.subirConfirmacion(entidad)
     }
+
+    // Solo Room: la coordenada de la casa no se envía a Supabase (art. IX).
+    override suspend fun guardarUbicacionCasa(ubicacion: Coordenada) {
+        dao.guardarDomicilio(DomicilioEntity(latitud = ubicacion.latitud, longitud = ubicacion.longitud))
+    }
+
+    override suspend fun obtenerUbicacionCasa(): Coordenada? =
+        dao.domicilio()?.let { Coordenada(it.latitud, it.longitud) }
 }
