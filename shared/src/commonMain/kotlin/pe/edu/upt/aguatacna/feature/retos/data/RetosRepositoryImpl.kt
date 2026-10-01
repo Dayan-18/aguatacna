@@ -35,7 +35,7 @@ class RetosRepositoryImpl(
         runCatching { nube.guardar(cumplimiento) }
     }
 
-    override suspend fun obtenerPromedioSector(sectorId: String): Double = 310.0
+    override suspend fun obtenerPromedioSector(sectorId: String): Double? = 310.0
     override suspend fun fechaActual(): LocalDate = hoy()
 }
 

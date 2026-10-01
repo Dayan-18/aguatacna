@@ -1,6 +1,6 @@
 TEAM_ID=
 
-PRODUCT_NAME=aguatacna
+PRODUCT_NAME=AguardApp
 PRODUCT_BUNDLE_IDENTIFIER=pe.edu.upt.aguatacna.aguatacna$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1
