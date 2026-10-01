@@ -90,10 +90,16 @@ class FakeReservaRepositoryTest {
         assertNull(ejecutar { repositorio(listOf(llenadoReal(0))).litrosPorHabitanteDia() })
     }
 
-    @Test // CA-05
-    fun conDosLlenadosHayLitrosPorHabitanteDia() {
-        // 1000 L en 96 h son 250 L por día; entre 4 personas, 62,5.
+    @Test // CA-36
+    fun conDosLlenadosAunNoHayLitrosPorHabitanteDia() {
         val repositorio = repositorio(listOf(llenadoReal(0), llenadoReal(96)), ahora = 100)
+        assertNull(ejecutar { repositorio.litrosPorHabitanteDia() })
+    }
+
+    @Test // CA-05, CA-36
+    fun conTresLlenadosHayLitrosPorHabitanteDia() {
+        // 1000 L en 96 h son 250 L por día; entre 4 personas, 62,5.
+        val repositorio = repositorio(listOf(llenadoReal(0), llenadoReal(96), llenadoReal(192)), ahora = 196)
         val indicador = assertNotNull(ejecutar { repositorio.litrosPorHabitanteDia() })
         assertEquals(62.5, indicador.valor, absoluteTolerance = 0.001)
     }
