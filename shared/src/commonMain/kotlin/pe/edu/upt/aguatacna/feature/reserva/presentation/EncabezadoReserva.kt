@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import aguatacna.shared.generated.resources.Res
@@ -81,9 +82,10 @@ private fun CirculoDecorativo(modifier: Modifier) {
 @Composable
 private fun FilaSuperior(vista: ReservaVista, avisosSinLeer: Int, onAvisos: () -> Unit, onAjustes: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        // Con peso, un distrito largo se parte en dos líneas en vez de empujar los botones fuera de la pantalla.
+        Column(Modifier.weight(1f).padding(end = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(vista.saludo, fontFamily = FuenteTexto, fontSize = 13.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Blanco.copy(alpha = 0.75f))
-            Text(vista.subtituloHogar, fontFamily = FuenteTexto, fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Bold, color = Blanco)
+            Text(vista.subtituloHogar, fontFamily = FuenteTexto, fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Bold, color = Blanco, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             BotonDeIcono(painterResource(Res.drawable.ic_avisos), if (avisosSinLeer > 0) "Avisos, $avisosSinLeer sin leer" else "Avisos", onAvisos, textoDeInsignia(avisosSinLeer))
