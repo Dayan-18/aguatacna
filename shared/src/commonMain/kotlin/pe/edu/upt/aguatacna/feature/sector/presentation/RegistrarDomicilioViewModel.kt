@@ -71,8 +71,11 @@ class RegistrarDomicilioViewModel(
     // Guarda el sector detectado en el usuario local (Room). No necesita internet ni sesión.
     fun confirmarSector() {
         val sector = _uiState.value.sector ?: return
+        val casa = _uiState.value.ubicacion ?: return
         viewModelScope.launch {
             try {
+                // Primero la casa: al guardar el sector la app sale de esta pantalla.
+                repositorio.guardarUbicacionCasa(casa)
                 guardarSectorEnUsuario(sector.id)
                 _uiState.update { it.copy(guardado = true) }
             } catch (e: Exception) {

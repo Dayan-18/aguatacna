@@ -31,4 +31,10 @@ interface SectorDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardarConfirmacion(confirmacion: ConfirmacionHorarioEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun guardarDomicilio(domicilio: DomicilioEntity)
+
+    @Query("SELECT * FROM domicilio LIMIT 1")
+    suspend fun domicilio(): DomicilioEntity?
 }

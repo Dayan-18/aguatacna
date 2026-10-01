@@ -16,6 +16,7 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.repository.AbastecimientosDel
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.ReservaRepository
 import pe.edu.upt.aguatacna.feature.sector.data.local.ConfirmacionHorarioEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.CronogramaEntity
+import pe.edu.upt.aguatacna.feature.sector.data.local.DomicilioEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.PuntoCisternaEntity
 import pe.edu.upt.aguatacna.feature.sector.data.local.SectorDao
 import pe.edu.upt.aguatacna.feature.sector.data.local.SectorEntity
@@ -49,6 +50,8 @@ class InyeccionTest {
                 override suspend fun guardarCronogramas(cronogramas: List<CronogramaEntity>) = Unit
                 override suspend fun guardarPuntos(puntos: List<PuntoCisternaEntity>) = Unit
                 override suspend fun guardarConfirmacion(confirmacion: ConfirmacionHorarioEntity) = Unit
+                override suspend fun guardarDomicilio(domicilio: DomicilioEntity) = Unit
+                override suspend fun domicilio(): DomicilioEntity? = null
             }
         }
         single(QUALIFICADOR_USUARIO) { "u-1" }

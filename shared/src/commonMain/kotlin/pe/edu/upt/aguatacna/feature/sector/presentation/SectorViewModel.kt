@@ -22,13 +22,15 @@ import pe.edu.upt.aguatacna.feature.sector.domain.usecase.ResolverSector
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.di.QUALIFICADOR_USUARIO
 import pe.edu.upt.aguatacna.core.util.Reloj
 import pe.edu.upt.aguatacna.data.local.UsuarioDao
 
 class SectorViewModel(
     private val repositorio: SectorRepository,
-    private val ubicacionCasa: Coordenada,
     private val ahora: () -> LocalDateTime,
+    // UUID local e inmutable del usuario (constitución, art. III).
+    private val usuarioId: String,
     private val obtenerSectorGuardado: suspend () -> String? = { null }
 ) : ViewModel() {
 
@@ -49,15 +51,17 @@ class SectorViewModel(
             try {
                 val momento = ahora()
                 val sectores = repositorio.obtenerSectores()
-                // Si el usuario ya confirmó su sector (pantalla Registrar domicilio) se usa ese;
-                // si no, se resuelve por la ubicación de prueba.
+                // La casa y el sector salen de lo que el usuario confirmó en Registrar domicilio.
+                val casaGuardada = repositorio.obtenerUbicacionCasa()
                 val guardado = obtenerSectorGuardado()
                 val sector = sectores.firstOrNull { it.id == guardado }
-                    ?: resolverSector.resolver(ubicacionCasa, sectores)
+                    ?: casaGuardada?.let { resolverSector.resolver(it, sectores) }
                 if (sector == null) {
                     _uiState.update { it.copy(cargando = false) }
                     return@launch
                 }
+                // Quien registró su sector antes de que se guardara la casa ve el centro del sector.
+                val ubicacionCasa = casaGuardada ?: sector.centro
                 val cronogramas = repositorio.obtenerCronogramas(sector.id)
                 val puntos = sectores.flatMap { repositorio.obtenerPuntosCisterna(it.id) }
                 _uiState.value = SectorUiState(
@@ -87,8 +91,7 @@ class SectorViewModel(
                     ConfirmacionHorario(
                         id = "$tipo-$momento",
                         sectorId = sector.id,
-                        // Provisional hasta que core/ genere el UUID local (constitución, artículo III).
-                        usuarioId = "invitado",
+                        usuarioId = usuarioId,
                         momento = momento,
                         tipo = tipo
                     )
@@ -106,21 +109,18 @@ class SectorViewModel(
     companion object {
         private const val RADIO_CISTERNAS_KM = 10.0
 
-        // Casa de prueba en Ciudad Nueva, hasta tener el permiso de ubicación (semana 14).
-        private val CASA_DE_PRUEBA = Coordenada(-17.9841, -70.2372)
-
-        // Temporal: se reemplaza cuando exista la inyección de dependencias (core/di).
+        // Solo para previews sin Koin.
         @OptIn(ExperimentalTime::class)
         fun conDatosDePrueba(): SectorViewModel {
             val reloj = { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
-            return SectorViewModel(FakeSectorRepository(reloj().date), CASA_DE_PRUEBA, reloj)
+            return SectorViewModel(FakeSectorRepository(reloj().date), reloj, usuarioId = "vista-previa")
         }
 
         // La app real: el repositorio (Room + Supabase) viene de Koin; sin Koin (preview) cae al fake.
         fun desdeInyeccion(): SectorViewModel {
             val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
             val usuarioDao = koin.get<UsuarioDao>()
-            return SectorViewModel(koin.get(), CASA_DE_PRUEBA, koin.get<Reloj>()::ahora) {
+            return SectorViewModel(koin.get(), koin.get<Reloj>()::ahora, koin.get(QUALIFICADOR_USUARIO)) {
                 usuarioDao.obtener()?.sectorId
             }
         }

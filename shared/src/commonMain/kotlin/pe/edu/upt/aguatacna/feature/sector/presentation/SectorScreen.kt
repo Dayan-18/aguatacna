@@ -84,7 +84,9 @@ fun SectorContenido(
             sectorNombre = sector.nombre,
             distrito = sector.distrito,
             codigoSector = sector.id.substringAfterLast('-'),
-            confirmaciones = uiState.confirmacionesDeHoy
+            confirmaciones = uiState.confirmacionesDeHoy,
+            mensaje = uiState.mensaje,
+            onLlegoAgua = { onConfirmar(TipoConfirmacion.LLEGADA) }
         )
         return
     }
