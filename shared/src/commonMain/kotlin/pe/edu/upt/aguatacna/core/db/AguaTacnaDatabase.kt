@@ -43,13 +43,10 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
         ConfirmacionHorarioEntity::class,
         DomicilioEntity::class,
         ReciboEntity::class,
+        ReciboBorradorEntity::class,
         RetoEntity::class,
         RetoUsuarioEntity::class,
         ReporteEntity::class
-    ],
-    version = 5,
-        ReciboBorradorEntity::class,
-        RetoEntity::class
     ],
     version = 6,
     exportSchema = true,
@@ -57,7 +54,6 @@ const val NOMBRE_BASE_DE_DATOS = "aguatacna.db"
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
-        AutoMigration(from = 4, to = 5)
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6)
     ]
