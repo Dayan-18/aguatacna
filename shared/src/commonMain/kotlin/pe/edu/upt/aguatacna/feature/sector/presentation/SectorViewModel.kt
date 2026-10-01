@@ -22,12 +22,15 @@ import pe.edu.upt.aguatacna.feature.sector.domain.usecase.ResolverSector
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.di.QUALIFICADOR_USUARIO
 import pe.edu.upt.aguatacna.core.util.Reloj
 import pe.edu.upt.aguatacna.data.local.UsuarioDao
 
 class SectorViewModel(
     private val repositorio: SectorRepository,
     private val ahora: () -> LocalDateTime,
+    // UUID local e inmutable del usuario (constitución, art. III).
+    private val usuarioId: String,
     private val obtenerSectorGuardado: suspend () -> String? = { null }
 ) : ViewModel() {
 
@@ -88,8 +91,7 @@ class SectorViewModel(
                     ConfirmacionHorario(
                         id = "$tipo-$momento",
                         sectorId = sector.id,
-                        // Provisional hasta que core/ genere el UUID local (constitución, artículo III).
-                        usuarioId = "invitado",
+                        usuarioId = usuarioId,
                         momento = momento,
                         tipo = tipo
                     )
@@ -111,14 +113,14 @@ class SectorViewModel(
         @OptIn(ExperimentalTime::class)
         fun conDatosDePrueba(): SectorViewModel {
             val reloj = { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) }
-            return SectorViewModel(FakeSectorRepository(reloj().date), reloj)
+            return SectorViewModel(FakeSectorRepository(reloj().date), reloj, usuarioId = "vista-previa")
         }
 
         // La app real: el repositorio (Room + Supabase) viene de Koin; sin Koin (preview) cae al fake.
         fun desdeInyeccion(): SectorViewModel {
             val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
             val usuarioDao = koin.get<UsuarioDao>()
-            return SectorViewModel(koin.get(), koin.get<Reloj>()::ahora) {
+            return SectorViewModel(koin.get(), koin.get<Reloj>()::ahora, koin.get(QUALIFICADOR_USUARIO)) {
                 usuarioDao.obtener()?.sectorId
             }
         }
