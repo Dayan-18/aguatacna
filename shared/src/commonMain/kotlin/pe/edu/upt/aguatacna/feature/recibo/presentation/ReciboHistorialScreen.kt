@@ -29,7 +29,7 @@ import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 import pe.edu.upt.aguatacna.feature.recibo.presentation.componentes.*
 
-// Pantalla de historial: gráfico de 6 meses con el límite de consumo, selección de mes y edición del recibo.
+// Pantalla de historial: gráfico de 6 meses con el límite de consumo; seleccionar un mes anterior abre su edición.
 @Composable
 fun ReciboHistorialScreen(
     onVolver: () -> Unit,
@@ -51,7 +51,7 @@ fun ReciboHistorialScreen(
             titulo = "Tu histórico",
             subtitulo = "Consumo facturado, últimos 6 meses",
             onVolver = onVolver,
-            trailingContent = (state as? HistorialUiState.ConDatos)?.seleccionado?.estado?.let { estado ->
+            trailingContent = (state as? HistorialUiState.ConDatos)?.masReciente?.estado?.let { estado ->
                 { BadgeEstado(estilo = EstiloEstado.desde(estado)) }
             }
         )
@@ -80,13 +80,12 @@ fun ReciboHistorialScreen(
             is HistorialUiState.ConDatos -> {
                 GraficoBarrasHistorial(
                     barras = state.barras,
-                    promedioM3 = state.promedioHistorico,
-                    mesSeleccionado = state.seleccionado.periodo,
-                    onSeleccionarMes = viewModel::seleccionarMes
+                    promedioM3 = state.masReciente.promedioPrevio,
+                    mesSeleccionado = state.masReciente.periodo,
+                    onSeleccionarMes = { periodo -> viewModel.prepararEdicion(periodo, onEditarRecibo) }
                 )
-                AlertaEstadoHistorial(estado = state.seleccionado.estado)
                 DetallePeriodoHistorial(
-                    slot = state.seleccionado,
+                    slot = state.masReciente,
                     onModificarRecibo = { periodo -> viewModel.prepararEdicion(periodo, onEditarRecibo) }
                 )
             }

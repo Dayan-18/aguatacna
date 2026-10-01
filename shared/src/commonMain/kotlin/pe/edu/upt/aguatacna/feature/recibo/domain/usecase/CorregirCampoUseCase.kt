@@ -27,13 +27,21 @@ class CorregirCampoUseCase {
         val corregido = when (campo) {
             is CampoEditable.ConsumoM3 -> borrador.copy(consumoM3 = borrador.consumoM3.corregir(campo.valor!!))
             is CampoEditable.LecturaAnterior ->
-                borrador.copy(lecturaAnteriorM3 = borrador.lecturaAnteriorM3.corregir(campo.valor!!))
+                borrador.copy(lecturaAnteriorM3 = borrador.lecturaAnteriorM3.corregir(campo.valor!!)).conConsumoDeLecturas()
             is CampoEditable.LecturaActual ->
-                borrador.copy(lecturaActualM3 = borrador.lecturaActualM3.corregir(campo.valor!!))
+                borrador.copy(lecturaActualM3 = borrador.lecturaActualM3.corregir(campo.valor!!)).conConsumoDeLecturas()
             is CampoEditable.Importe -> borrador.copy(importeTotal = borrador.importeTotal.corregir(campo.valor!!))
             is CampoEditable.Periodo -> borrador.copy(periodoConsumo = borrador.periodoConsumo.corregir(campo.valor))
         }
         return ResultadoCorreccion.Aplicada(corregido)
+    }
+
+    // Al corregir una lectura, el consumo pasa a ser la diferencia entre ambas para que no queden desfasados.
+    private fun ReciboBorrador.conConsumoDeLecturas(): ReciboBorrador {
+        val anterior = lecturaAnteriorM3.valor ?: return this
+        val actual = lecturaActualM3.valor ?: return this
+        val diferencia = actual - anterior
+        return if (diferencia in 0..CONSUMO_MAX) copy(consumoM3 = consumoM3.corregir(diferencia)) else this
     }
 
     private fun validar(borrador: ReciboBorrador, campo: CampoEditable): String? = when (campo) {

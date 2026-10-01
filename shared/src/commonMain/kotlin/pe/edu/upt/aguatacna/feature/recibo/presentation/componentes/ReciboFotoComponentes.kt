@@ -304,34 +304,6 @@ fun ListaCamposRevision(
             )
             HorizontalDivider(color = Divisor)
 
-            // Lectura anterior (si no es null)
-            val anterior = borrador?.lecturaAnteriorM3?.valor
-            if (anterior != null) {
-                FilaCampoRevision(
-                    etiqueta = "Lectura anterior",
-                    valor = anterior.toString(),
-                    unidad = "m³",
-                    colorValor = TintaSuave,
-                    esDudoso = borrador.lecturaAnteriorM3.esDudoso,
-                    onClick = { onFilaClick(TipoCampoEdicion.LECTURA_ANTERIOR) }
-                )
-                HorizontalDivider(color = Divisor)
-            }
-
-            // Lectura actual (si no es null)
-            val actual = borrador?.lecturaActualM3?.valor
-            if (actual != null) {
-                FilaCampoRevision(
-                    etiqueta = "Lectura actual",
-                    valor = actual.toString(),
-                    unidad = "m³",
-                    colorValor = TintaSuave,
-                    esDudoso = borrador.lecturaActualM3.esDudoso,
-                    onClick = { onFilaClick(TipoCampoEdicion.LECTURA_ACTUAL) }
-                )
-                HorizontalDivider(color = Divisor)
-            }
-
             // Consumo del período
             val consumo = borrador?.consumoM3?.valor?.let { "$it" } ?: "Sin datos"
             FilaCampoRevision(

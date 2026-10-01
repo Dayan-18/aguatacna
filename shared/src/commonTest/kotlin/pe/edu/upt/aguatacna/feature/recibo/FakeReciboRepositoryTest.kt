@@ -1,6 +1,7 @@
 package pe.edu.upt.aguatacna.feature.recibo
 
 import kotlinx.coroutines.flow.first
+import kotlinx.datetime.LocalDate
 import pe.edu.upt.aguatacna.feature.recibo.data.FakeReciboRepository
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Campo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
@@ -12,7 +13,6 @@ import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ObservarResumenUseCase
 import pe.edu.upt.aguatacna.feature.reserva.ejecutar
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -72,18 +72,24 @@ class FakeReciboRepositoryTest {
         assertEquals("Agosto 2026", resumen.recibo.periodoConsumo.displayCompleto)
         assertEquals("11 Set 2026", resumen.fechaVencimiento)
         assertEquals(16, resumen.promedioHistorico)
-        assertIs<EstadoConsumo.Atipico>(resumen.estadoConsumo)
+        assertEquals(EstadoConsumo.ALTO_CONSUMO, resumen.estadoConsumo)
     }
 
     @Test
-    fun resumenSinVencimientoMuestraGuion() {
+    fun elVencimientoEsSiempreEl11DelMesSiguiente() {
         val repo = FakeReciboRepository()
-        ejecutar { repo.guardar(Recibo("1", PeriodoConsumo(2026, 8), 33, Dinero(7420L))) }
+        // Aunque el recibo no tenga fecha de vencimiento (o tenga otra), se muestra el 11 del mes siguiente.
+        ejecutar { repo.guardar(Recibo("1", PeriodoConsumo(2026, 9), 33, Dinero(7420L))) }
 
         val resumen = assertNotNull(ejecutar { ObservarResumenUseCase(repo)().first() })
-        assertEquals("—", resumen.fechaVencimiento)
-        assertEquals(EstadoConsumo.SinHistorial, resumen.estadoConsumo)
+        assertEquals("11 Oct 2026", resumen.fechaVencimiento)
+        assertEquals(EstadoConsumo.NORMAL, resumen.estadoConsumo)
         assertNull(resumen.promedioHistorico)
+    }
+
+    @Test
+    fun elVencimientoDeDiciembreEsEnEneroDelAnioSiguiente() {
+        assertEquals(LocalDate(2027, 1, 11), PeriodoConsumo(2026, 12).vencimiento())
     }
 
     @Test

@@ -38,7 +38,12 @@ data class PeriodoConsumo(
         if (mes == 12) PeriodoConsumo(anio + 1, 1)
         else PeriodoConsumo(anio, mes + 1)
 
+    /** EPS Tacna vence el recibo el día 11 del mes siguiente al consumo (setiembre → 11 de octubre). */
+    fun vencimiento(): LocalDate = siguiente().let { LocalDate(it.anio, it.mes, DIA_VENCIMIENTO) }
+
     companion object {
+        private const val DIA_VENCIMIENTO = 11
+
         private val MESES_LARGOS = listOf(
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
             "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"

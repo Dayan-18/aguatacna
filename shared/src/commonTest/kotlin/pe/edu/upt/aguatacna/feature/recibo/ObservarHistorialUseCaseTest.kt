@@ -11,7 +11,6 @@ import pe.edu.upt.aguatacna.feature.reserva.ejecutar
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -27,21 +26,20 @@ class ObservarHistorialUseCaseTest {
         val historial = assertNotNull(ejecutar { useCase().first() })
 
         assertEquals(6, historial.ventana6Meses.size)
-        assertEquals("Mar", historial.ventana6Meses[0].mesCorto)
-        assertEquals("Ago", historial.ventana6Meses[5].mesCorto)
+        assertEquals(PeriodoConsumo(2026, 3), historial.ventana6Meses[0].periodo)
 
-        val ago = historial.ventana6Meses[5]
+        val ago = historial.masReciente
+        assertEquals(PeriodoConsumo(2026, 8), ago.periodo)
         assertEquals(120, ago.consumoM3)
-        assertTrue(ago.esAtipico)
-        assertIs<EstadoConsumo.Atipico>(ago.estado)
+        assertTrue(ago.esAltoConsumo)
+        assertEquals(EstadoConsumo.ALTO_CONSUMO, ago.estado)
+        // Promedio de marzo a julio: (16+16+15+17+16)/5 = 16; (120 - 16) / 16 = +650 %
+        assertEquals(16, ago.promedioPrevio)
+        assertEquals(650, ago.variacionPorcentaje)
 
         val jul = historial.ventana6Meses[4]
-        assertFalse(jul.esAtipico)
-        assertIs<EstadoConsumo.Normal>(jul.estado)
-
-        // Promedio de marzo a julio: (16+16+15+17+16)/5 = 16
-        assertEquals(16, historial.promedioHistorico)
-        assertEquals(PeriodoConsumo(2026, 8), historial.mesSeleccionado)
+        assertFalse(jul.esAltoConsumo)
+        assertEquals(EstadoConsumo.NORMAL, jul.estado)
     }
 
     @Test
@@ -58,7 +56,7 @@ class ObservarHistorialUseCaseTest {
         val slotJulio = assertNotNull(historial.ventana6Meses.find { it.periodo == PeriodoConsumo(2026, 7) })
         assertNull(slotJulio.consumoM3)
         assertNull(slotJulio.estado)
-        assertFalse(slotJulio.esAtipico)
+        assertFalse(slotJulio.esAltoConsumo)
     }
 
     @Test
