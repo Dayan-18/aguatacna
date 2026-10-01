@@ -20,7 +20,6 @@ import pe.edu.upt.aguatacna.data.local.UsuarioDao
 
 class RegistrarDomicilioViewModel(
     private val repositorio: SectorRepository,
-    private val ubicacion: Coordenada,
     private val guardarSectorEnUsuario: suspend (String) -> Unit = {}
 ) : ViewModel() {
 
@@ -29,26 +28,39 @@ class RegistrarDomicilioViewModel(
 
     private val resolverSector = ResolverSector()
 
-    init {
-        detectarSector()
+    // No se detecta nada al abrir: el usuario elige primero su ubicación (GPS o pin en el mapa),
+    // y solo entonces se resuelve el sector y se habilita "Confirmar".
+
+    /** Llega una ubicación real: del GPS o de un punto marcado en el mapa. */
+    fun marcarEnMapa(coordenada: Coordenada) = elegir(coordenada)
+
+    fun buscandoUbicacion() {
+        _uiState.update { it.copy(mensaje = "Buscando tu ubicación… puede tardar unos segundos.", mensajeEsError = false) }
     }
 
-    fun detectarSector() {
+    /** El GPS no dio una ubicación: se explica la causa en vez de inventar una. */
+    fun avisarError(texto: String) {
+        _uiState.update { it.copy(mensaje = texto, mensajeEsError = true) }
+    }
+
+    private fun elegir(coord: Coordenada) {
         viewModelScope.launch {
-            _uiState.update { it.copy(cargando = true) }
+            _uiState.update { it.copy(cargando = true, ubicacion = coord, mensaje = null) }
             try {
-                val sector = resolverSector.resolver(ubicacion, repositorio.obtenerSectores())
+                val sector = resolverSector.resolver(coord, repositorio.obtenerSectores())
                 if (sector == null) {
-                    _uiState.update { it.copy(cargando = false) }
+                    _uiState.update { it.copy(cargando = false, sector = null, continuidad = "", etiquetaMapa = "SECTOR") }
                     return@launch
                 }
                 val minutos = repositorio.obtenerCronogramas(sector.id).firstOrNull()?.duracionMinutos
-                _uiState.value = RegistrarDomicilioUiState(
-                    cargando = false,
-                    sector = sector,
-                    continuidad = minutos?.let { "${duracionATexto(it)}/día" } ?: "Sin horario",
-                    etiquetaMapa = "SECTOR ${sector.id.substringAfterLast('-')}"
-                )
+                _uiState.update {
+                    it.copy(
+                        cargando = false,
+                        sector = sector,
+                        continuidad = minutos?.let { m -> "${duracionATexto(m)}/día" } ?: "Sin horario",
+                        etiquetaMapa = "SECTOR ${sector.id.substringAfterLast('-')}"
+                    )
+                }
             } catch (e: Exception) {
                 // Sin conexión o error del servidor: no dejamos la pantalla colgada.
                 _uiState.update { it.copy(cargando = false) }
@@ -59,8 +71,11 @@ class RegistrarDomicilioViewModel(
     // Guarda el sector detectado en el usuario local (Room). No necesita internet ni sesión.
     fun confirmarSector() {
         val sector = _uiState.value.sector ?: return
+        val casa = _uiState.value.ubicacion ?: return
         viewModelScope.launch {
             try {
+                // Primero la casa: al guardar el sector la app sale de esta pantalla.
+                repositorio.guardarUbicacionCasa(casa)
                 guardarSectorEnUsuario(sector.id)
                 _uiState.update { it.copy(guardado = true) }
             } catch (e: Exception) {
@@ -70,19 +85,16 @@ class RegistrarDomicilioViewModel(
     }
 
     companion object {
-        // Casa de prueba en Ciudad Nueva, hasta tener el permiso de ubicación (semana 14).
-        private val CASA_DE_PRUEBA = Coordenada(-17.9841, -70.2372)
-
-        // Temporal: se reemplaza cuando exista la inyección de dependencias (core/di).
+        // Solo para previews sin Koin.
         @OptIn(ExperimentalTime::class)
         fun conDatosDePrueba(): RegistrarDomicilioViewModel {
             val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-            return RegistrarDomicilioViewModel(FakeSectorRepository(hoy), CASA_DE_PRUEBA)
+            return RegistrarDomicilioViewModel(FakeSectorRepository(hoy))
         }
 
         fun desdeInyeccion(): RegistrarDomicilioViewModel {
             val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
-            return RegistrarDomicilioViewModel(koin.get(), CASA_DE_PRUEBA, koin.get<UsuarioDao>()::guardarSector)
+            return RegistrarDomicilioViewModel(koin.get(), koin.get<UsuarioDao>()::guardarSector)
         }
     }
 }

@@ -20,6 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
@@ -34,6 +37,7 @@ import aguatacna.shared.generated.resources.ic_atras
 import org.jetbrains.compose.resources.painterResource
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
+import pe.edu.upt.aguatacna.core.ui.theme.Coral
 import pe.edu.upt.aguatacna.core.ui.theme.Fondo
 import pe.edu.upt.aguatacna.core.ui.theme.FuenteTexto
 import pe.edu.upt.aguatacna.core.ui.theme.Tinta
@@ -45,19 +49,45 @@ fun RegistrarDomicilioScreen(
     viewModel: RegistrarDomicilioViewModel = viewModel { RegistrarDomicilioViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var selectorAbierto by rememberSaveable { mutableStateOf(false) }
+    val solicitarUbicacion = rememberSolicitarUbicacion(
+        onBuscando = viewModel::buscandoUbicacion,
+        onResultado = { resultado ->
+            when (resultado) {
+                is ResultadoUbicacion.Encontrada -> viewModel.marcarEnMapa(resultado.coordenada)
+                ResultadoUbicacion.GpsApagado -> viewModel.avisarError(
+                    "La ubicación de tu teléfono está desactivada. Actívala en el panel rápido y vuelve a tocar."
+                )
+                ResultadoUbicacion.SinSenal -> viewModel.avisarError(
+                    "No llegó señal de ubicación. Acércate a una ventana e inténtalo otra vez, o marca tu casa en el mapa."
+                )
+            }
+        }
+    )
     Column(
         modifier = Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState())
     ) {
         EncabezadoRegistro(onVolver)
-        VistaPreviaSectorMapa(
-            etiquetaSector = uiState.etiquetaMapa,
+        MapaUbicacionPreview(
+            ubicacion = uiState.ubicacion,
+            onAbrir = { selectorAbierto = true },
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
         BotonesUbicacion(
-            onUsarUbicacion = viewModel::detectarSector,
-            onMarcarEnMapa = {},
+            onUsarUbicacion = solicitarUbicacion,
+            onMarcarEnMapa = { selectorAbierto = true },
             modifier = Modifier.padding(horizontal = 20.dp)
         )
+        uiState.mensaje?.let { aviso ->
+            Text(
+                aviso,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                fontFamily = FuenteTexto,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (uiState.mensajeEsError) Coral else AguaMedia
+            )
+        }
         TarjetaSectorDetectado(
             sectorDetectado = uiState.sector?.nombre ?: "—",
             distrito = uiState.sector?.distrito ?: "—",
@@ -69,7 +99,11 @@ fun RegistrarDomicilioScreen(
             modifier = Modifier.padding(horizontal = 20.dp)
         )
         Spacer(Modifier.height(28.dp))
-        BotonConfirmarSector(onClick = viewModel::confirmarSector, modifier = Modifier.padding(horizontal = 20.dp))
+        BotonConfirmarSector(
+            onClick = viewModel::confirmarSector,
+            modifier = Modifier.padding(horizontal = 20.dp),
+            habilitado = uiState.sector != null
+        )
         if (uiState.guardado) {
             Text(
                 "✓ Sector guardado",
@@ -81,6 +115,17 @@ fun RegistrarDomicilioScreen(
             )
         }
         Spacer(Modifier.height(24.dp))
+    }
+
+    if (selectorAbierto) {
+        SelectorUbicacion(
+            inicial = uiState.ubicacion,
+            onElegir = { coord ->
+                selectorAbierto = false
+                viewModel.marcarEnMapa(coord)
+            },
+            onVolver = { selectorAbierto = false }
+        )
     }
 }
 

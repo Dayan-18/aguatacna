@@ -32,6 +32,30 @@ class SeleccionarIntervalosTest {
         assertEquals(listOf(observado), seleccionar(inferidos + observado))
     }
 
+    @Test // CA-35
+    fun descartaElIntervaloEntreDosLlenadosMuySeguidos() {
+        val normales = intervalosDe(24, 24)
+        assertEquals(normales, seleccionar(normales + intervalo(48, 53)))
+    }
+
+    @Test // CA-35
+    fun conservaUnIntervaloInferidoDeSeisHoras() {
+        assertEquals(1, seleccionar(listOf(intervalo(0, 6))).size)
+    }
+
+    @Test // CA-35
+    fun unObservadoCortoSiCuenta() {
+        val observado = intervalo(0, 2, clase = ClaseIntervalo.OBSERVADO)
+        assertEquals(listOf(observado), seleccionar(listOf(observado)))
+    }
+
+    @Test // CA-36
+    fun unInferidoSoloNoAlcanzaPeroDosSi() {
+        assertEquals(false, seleccionar.alcanzanParaEstimar(intervalosDe(24)))
+        assertEquals(true, seleccionar.alcanzanParaEstimar(intervalosDe(24, 24)))
+        assertEquals(true, seleccionar.alcanzanParaEstimar(listOf(intervalo(0, 24, clase = ClaseIntervalo.OBSERVADO))))
+    }
+
     @Test
     fun sinIntervalosDevuelveVacio() {
         assertEquals(emptyList(), seleccionar(emptyList()))

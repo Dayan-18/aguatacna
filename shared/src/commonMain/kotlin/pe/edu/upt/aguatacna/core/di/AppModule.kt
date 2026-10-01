@@ -25,8 +25,8 @@ val QUALIFICADOR_USUARIO = named("usuarioId")
 val moduloCore = module {
     single<Reloj> { RelojDelSistema() }
     single<RegistroDeAcceso> { RegistroDeAccesoEnRoom(get()) }
-    // Se crea al primer uso; cada plataforma aporta su `InicioConGoogle`.
-    single<SupabaseClient> { crearClienteSupabase() }
+    // Se crea al primer uso; cada plataforma aporta su `InicioConGoogle` y el `Settings` de la sesión.
+    single<SupabaseClient> { crearClienteSupabase(get()) }
 }
 
 val modulosApp: List<Module> = listOf(moduloCore, moduloReserva, moduloSector, moduloRecibo, moduloRetos, moduloAsistente)

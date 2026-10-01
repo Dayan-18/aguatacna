@@ -1,5 +1,8 @@
 package pe.edu.upt.aguatacna.feature.recibo.domain.model
 
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
+
 // Período de consumo (año + mes de consumo, no el de facturación), ej. entrada "AGOSTO-2026".
 data class PeriodoConsumo(
     val anio: Int,
@@ -35,7 +38,12 @@ data class PeriodoConsumo(
         if (mes == 12) PeriodoConsumo(anio + 1, 1)
         else PeriodoConsumo(anio, mes + 1)
 
+    /** EPS Tacna vence el recibo el día 11 del mes siguiente al consumo (setiembre → 11 de octubre). */
+    fun vencimiento(): LocalDate = siguiente().let { LocalDate(it.anio, it.mes, DIA_VENCIMIENTO) }
+
     companion object {
+        private const val DIA_VENCIMIENTO = 11
+
         private val MESES_LARGOS = listOf(
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
             "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
@@ -66,6 +74,9 @@ data class PeriodoConsumo(
                 variantes.forEach { put(it, index + 1) }
             }
         }
+
+        /** Período del mes al que pertenece [fecha]. */
+        fun de(fecha: LocalDate): PeriodoConsumo = PeriodoConsumo(fecha.year, fecha.month.number)
 
         // Parsea "MES-AÑO" (acepta guion, espacio o slash); devuelve null si no se puede parsear
         fun parsear(texto: String): PeriodoConsumo? {

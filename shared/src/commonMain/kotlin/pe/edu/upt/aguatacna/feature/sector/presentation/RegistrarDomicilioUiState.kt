@@ -1,11 +1,15 @@
 package pe.edu.upt.aguatacna.feature.sector.presentation
 
+import pe.edu.upt.aguatacna.feature.sector.domain.model.Coordenada
 import pe.edu.upt.aguatacna.feature.sector.domain.model.Sector
 
 data class RegistrarDomicilioUiState(
     val cargando: Boolean = false,
+    val ubicacion: Coordenada? = null,
     val sector: Sector? = null,
     val continuidad: String = "",
     val etiquetaMapa: String = "SECTOR",
-    val guardado: Boolean = false
+    val guardado: Boolean = false,
+    val mensaje: String? = null,
+    val mensajeEsError: Boolean = false
 )

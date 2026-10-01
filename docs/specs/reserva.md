@@ -1,7 +1,7 @@
 # Especificación · Reserva domiciliaria
 
 **Dueño:** Cristhian Mamani · `feature/reserva/`
-**Estado:** lista para revisión cruzada (v3, 34 CA, alineada con el Figma y con el código de `feature/reserva/`)
+**Estado:** lista para revisión cruzada (v4, 36 CA, alineada con el Figma y con el código de `feature/reserva/`)
 **Fuentes:** Anteproyecto §7 · Plan de Trabajo §3 · Constitución · `specs/sector.md` ·
 [Figma AguaTacna](https://www.figma.com/design/jNSK9uzGlMub59LwBEQi5I/AguaTacna)
 
@@ -100,6 +100,11 @@ estimación como `NO_CONFIRMADA`. Reglas:
 Un intervalo entre llenados que dura más del doble de la mediana de los
 anteriores se considera un olvido y **no entra** al cálculo (CA-14).
 
+Al revés, dos llenados separados por **menos de 6 horas** son una corrección o un
+relleno, no un tanque gastado: ese intervalo tampoco entra (CA-35). Sin esta regla,
+registrar un llenado una hora después de otro daba consumos de más de 1 000 L/h.
+No se aplica a los intervalos `OBSERVADO`, donde el usuario declaró que el agua se acabó.
+
 **2. Fuente del consumo: histórico del hogar, no las últimas 48 horas.**
 Con llenados cada 2 o 3 días, 48 horas abarcan un solo intervalo y un día
 atípico distorsiona todo. Se usa la **mediana de los últimos 5 intervalos
@@ -183,7 +188,7 @@ Con 275 L seleccionados y 82 L/h: ganas 3 h 20 min. Con déficit de
 | CA-20 | Una declaración no cambia el consumo estimado más de un 30 %. |
 | CA-21 | Sin déficit no se generan recomendaciones. |
 | CA-22 | Con déficit, las recomendaciones se ordenan por impacto en litros, de mayor a menor. |
-| CA-23 | Litros por habitante y día es `null` sin ningún intervalo válido. |
+| CA-23 | Litros por habitante y día es `null` sin intervalos suficientes (ver CA-36). |
 | CA-24 | "Llenó a la mitad" deja el nivel en el 50 % de la capacidad, sin sumar al anterior. |
 | CA-25 | "No llegó" descarta el llenado asumido de esa ventana; el nivel sigue bajando. |
 | CA-26 | Un llenado asumido no entra al cálculo del consumo. |
@@ -195,6 +200,8 @@ Con 275 L seleccionados y 82 L/h: ganas 3 h 20 min. Con déficit de
 | CA-32 | Solo se ofrecen recomendaciones acordes a los hábitos declarados. |
 | CA-33 | El estado es `NO_ALCANZA` con déficit, `AJUSTADA` con margen menor al umbral y `COMODA` con margen mayor. |
 | CA-34 | Sin cronograma no se asume ningún llenado. |
+| CA-35 | Un intervalo `POR_LLENADO` de menos de 6 horas no entra al consumo ni a los litros por habitante. |
+| CA-36 | Los litros por habitante y día exigen los mismos datos que el consumo: un intervalo `OBSERVADO` o dos `POR_LLENADO`. |
 
 ## Decisiones
 
@@ -206,7 +213,7 @@ Con 275 L seleccionados y 82 L/h: ganas 3 h 20 min. Con déficit de
 | Pantallas faltantes en el Figma | **Resuelta:** el Figma trae las pantallas 19, 20 y 21 y la app las implementa (20 es de sector). |
 | Umbral de `AJUSTADA` frente a `COMODA` | **Abierta:** 2 horas de margen, valor propio a validar. |
 | "Llenó a la mitad" como 50 % fijo | **Abierta:** validar con hogares reales. |
-| 5 intervalos, doble de la mediana y tope de 30 % | **Abierta:** valores iniciales, se ajustan con el piloto (T036). |
+| 5 intervalos, doble de la mediana, mínimo de 6 horas y tope de 30 % | **Abierta:** valores iniciales, se ajustan con el piloto (T036). |
 | Coeficientes de las recomendaciones | **Abierta:** los del Figma son de partida; falta una fuente (Sunass o el docente). |
 | Coeficientes de consumo por hábitos | **Abierta:** `EstimadorPorHabitosProvisional` usa órdenes de magnitud propios. Iker debe aportar el estimador real de `feature/recibo`. |
 | Indicador "días con registro" (14 de 14) | **Abierta:** aparece en la pantalla 04 y no está definido. |

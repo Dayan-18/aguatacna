@@ -156,13 +156,15 @@ class ReservaRepositoryImplTest {
         assertNull(assertNotNull(dao.perfil.value).consumoVigenteLitrosHora)
     }
 
-    @Test // CA-05, CA-23
-    fun litrosPorHabitanteDiaSoloConIntervalos() = bloque {
-        horaActual = 100
+    @Test // CA-05, CA-23, CA-36
+    fun litrosPorHabitanteDiaSoloConDosIntervalos() = bloque {
+        horaActual = 200
         val repositorio = repositorio()
         repositorio.registrarLlenado(enHora(0), TipoLlenado.COMPLETO)
         assertNull(repositorio.litrosPorHabitanteDia())
         repositorio.registrarLlenado(enHora(96), TipoLlenado.COMPLETO)
+        assertNull(repositorio.litrosPorHabitanteDia())
+        repositorio.registrarLlenado(enHora(192), TipoLlenado.COMPLETO)
         assertEquals(62.5, assertNotNull(repositorio.litrosPorHabitanteDia()).valor, absoluteTolerance = 0.001)
     }
 }

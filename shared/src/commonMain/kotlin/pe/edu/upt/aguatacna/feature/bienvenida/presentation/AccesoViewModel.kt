@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
@@ -14,11 +15,13 @@ import pe.edu.upt.aguatacna.core.sesion.ModoDeAcceso
 import pe.edu.upt.aguatacna.core.sesion.RegistroDeAcceso
 import pe.edu.upt.aguatacna.core.sesion.RegistroDeAccesoEnMemoria
 import pe.edu.upt.aguatacna.core.sesion.ResultadoInicio
+import pe.edu.upt.aguatacna.feature.reserva.data.sync.SincronizadorReserva
 
-/** Lo que muestra la pantalla 01: si ya se sabe el modo de acceso, el consentimiento y el aviso de error. */
+/** Lo que decide la entrada: el modo de acceso, si ya hay domicilio, el consentimiento y el aviso de error. */
 data class AccesoUiState(
     val cargando: Boolean = true,
     val modo: ModoDeAcceso? = null,
+    val tieneDomicilio: Boolean = false,
     val consentimiento: Boolean = true,
     val enCurso: Boolean = false,
     val mensaje: String? = null
@@ -28,14 +31,19 @@ data class AccesoUiState(
 
 class AccesoViewModel(
     private val registro: RegistroDeAcceso,
-    private val google: InicioConGoogle
+    private val google: InicioConGoogle,
+    // Trae de la nube lo que la cuenta ya tenía (domicilio y hogar) antes de dejar pasar a la app.
+    private val alEntrarConCuenta: suspend () -> Unit = {}
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AccesoUiState())
     val uiState: StateFlow<AccesoUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            registro.observar().collect { modo -> _uiState.update { it.copy(cargando = false, modo = modo) } }
+            combine(registro.observar(), registro.tieneDomicilio()) { modo, domicilio -> modo to domicilio }
+                .collect { (modo, domicilio) ->
+                    _uiState.update { it.copy(cargando = false, modo = modo, tieneDomicilio = domicilio) }
+                }
         }
     }
 
@@ -53,7 +61,10 @@ class AccesoViewModel(
         _uiState.update { it.copy(enCurso = true, mensaje = null) }
         viewModelScope.launch {
             val resultado = google.iniciar()
-            if (resultado is ResultadoInicio.Exitoso) registro.guardar(ModoDeAcceso.GOOGLE)
+            if (resultado is ResultadoInicio.Exitoso) {
+                alEntrarConCuenta()
+                registro.guardar(ModoDeAcceso.GOOGLE)
+            }
             _uiState.update { it.copy(enCurso = false, mensaje = mensajeDe(resultado)) }
         }
     }
@@ -70,7 +81,12 @@ class AccesoViewModel(
         fun desdeInyeccion(): AccesoViewModel {
             val koin = KoinPlatform.getKoinOrNull()
                 ?: return AccesoViewModel(RegistroDeAccesoEnMemoria(), InicioConGoogleNoDisponible)
-            return AccesoViewModel(koin.get(), koin.getOrNull<InicioConGoogle>() ?: InicioConGoogleNoDisponible)
+            val sincronizador = koin.getOrNull<SincronizadorReserva>()
+            return AccesoViewModel(
+                registro = koin.get(),
+                google = koin.getOrNull<InicioConGoogle>() ?: InicioConGoogleNoDisponible,
+                alEntrarConCuenta = { sincronizador?.sincronizar() }
+            )
         }
     }
 }

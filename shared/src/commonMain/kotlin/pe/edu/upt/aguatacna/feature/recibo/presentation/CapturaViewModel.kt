@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.util.Reloj
 import pe.edu.upt.aguatacna.feature.recibo.data.BorradorReciboStore
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.EscanearReciboUseCase
 
@@ -24,7 +26,8 @@ sealed interface CapturaUiState {
 // Orquesta la captura de la foto y su procesamiento OCR.
 class CapturaViewModel(
     private val escanearRecibo: EscanearReciboUseCase,
-    private val borradorStore: BorradorReciboStore
+    private val borradorStore: BorradorReciboStore,
+    private val reloj: Reloj
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CapturaUiState>(CapturaUiState.Inactivo)
@@ -60,6 +63,11 @@ class CapturaViewModel(
         }
     }
 
+    // "Ingresar datos a mano" desde la cámara empieza un recibo nuevo, sin arrastrar un borrador anterior.
+    fun iniciarManual() {
+        borradorStore.guardar(ReciboBorrador.vacio(PeriodoConsumo.de(reloj.ahora().date)))
+    }
+
     fun reiniciar() {
         liberarFoto()
         _uiState.value = CapturaUiState.Inactivo
@@ -78,7 +86,7 @@ class CapturaViewModel(
     companion object {
         fun desdeInyeccion(): CapturaViewModel {
             val koin = KoinPlatform.getKoin()
-            return CapturaViewModel(koin.get(), koin.get())
+            return CapturaViewModel(koin.get(), koin.get(), koin.get())
         }
     }
 }

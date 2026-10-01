@@ -6,12 +6,18 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
+import pe.edu.upt.aguatacna.core.util.Reloj
+import pe.edu.upt.aguatacna.core.util.RelojDelSistema
+import pe.edu.upt.aguatacna.feature.recibo.data.BorradorReciboStore
 import pe.edu.upt.aguatacna.feature.recibo.data.FakeReciboRepository
-import pe.edu.upt.aguatacna.feature.recibo.domain.model.Dinero
+import pe.edu.upt.aguatacna.feature.recibo.data.sync.SincronizadorRecibo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.EstadoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.Recibo
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.ReciboBorrador
+import pe.edu.upt.aguatacna.feature.recibo.domain.model.aBorrador
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.ObservarResumenUseCase
 
 // Estado de la pantalla General del Recibo.
@@ -24,59 +30,62 @@ sealed interface ReciboUiState {
 
     // Con datos: tarjeta activa, métricas y estado de consumo
     data class ConDatos(
-        val mes: String,                        // "Agosto 2026"
-        val periodoConsumo: PeriodoConsumo,
-        val importeTotal: Dinero,
+        val recibo: Recibo,
         val importeDisplay: String,             // "74,20"
         val fechaVencimiento: String,           // "11 Set 2026"
-        val consumoM3: Int,
         val estadoConsumo: EstadoConsumo,
-        val variacionTexto: String,             // "+106 %" o "—"
-        val promedioHistorico: Int,
-        val esAtipico: Boolean,
-        val reciboOriginal: Recibo? = null
-    ) : ReciboUiState
+        val promedioHistorico: Int?
+    ) : ReciboUiState {
+        val mes: String get() = recibo.periodoConsumo.displayCompleto
+        val esAltoConsumo: Boolean get() = estadoConsumo == EstadoConsumo.ALTO_CONSUMO
+    }
 }
 
-// ViewModel de la pantalla General: observa el resumen del recibo más reciente.
+// ViewModel de la pantalla General: observa el resumen del recibo más reciente, prepara el borrador
+// para revisar o ingresar un recibo y, mientras vive, mantiene los recibos sincronizados con la cuenta.
 class ReciboViewModel(
-    private val observarResumen: ObservarResumenUseCase
+    observarResumen: ObservarResumenUseCase,
+    private val borradorStore: BorradorReciboStore,
+    private val reloj: Reloj,
+    sincronizador: SincronizadorRecibo?
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch { sincronizador?.mantenerSincronizado() }
+    }
 
     val uiState: StateFlow<ReciboUiState> = observarResumen()
         .map { resumen ->
             if (resumen == null) {
                 ReciboUiState.SinRecibos
             } else {
-                val esAtipico = resumen.estadoConsumo is EstadoConsumo.Atipico
-
-                val variacionTexto = resumen.estadoConsumo.variacionTexto
-
                 ReciboUiState.ConDatos(
-                    mes = resumen.mes,
-                    periodoConsumo = resumen.periodoConsumo,
-                    importeTotal = resumen.importeTotal,
-                    importeDisplay = resumen.importeTotal.formatearSoloNumero(),
+                    recibo = resumen.recibo,
+                    importeDisplay = resumen.recibo.importeTotal.formatearSoloNumero(),
                     fechaVencimiento = resumen.fechaVencimiento,
-                    consumoM3 = resumen.consumoM3,
                     estadoConsumo = resumen.estadoConsumo,
-                    variacionTexto = variacionTexto,
-                    promedioHistorico = resumen.promedioHistorico,
-                    esAtipico = esAtipico,
-                    reciboOriginal = resumen.reciboOriginal
+                    promedioHistorico = resumen.promedioHistorico
                 )
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ReciboUiState.Cargando)
 
+    fun iniciarManual() {
+        borradorStore.guardar(ReciboBorrador.vacio(PeriodoConsumo.de(reloj.ahora().date)))
+    }
+
+    fun prepararRevision(recibo: Recibo) {
+        borradorStore.guardar(recibo.aBorrador())
+    }
+
     companion object {
         // Con la inyección iniciada usa Koin; sin ella recurre a datos de prueba en memoria.
         fun desdeInyeccion(): ReciboViewModel {
             val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
-            return ReciboViewModel(koin.get())
+            return ReciboViewModel(koin.get(), koin.get(), koin.get(), koin.getOrNull())
         }
 
         private fun conDatosDePrueba(): ReciboViewModel =
-            ReciboViewModel(ObservarResumenUseCase(FakeReciboRepository()))
+            ReciboViewModel(ObservarResumenUseCase(FakeReciboRepository()), BorradorReciboStore(), RelojDelSistema(), null)
     }
 }

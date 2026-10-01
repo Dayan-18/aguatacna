@@ -20,13 +20,11 @@ import pe.edu.upt.aguatacna.feature.reserva.domain.repository.EstimadorPorHabito
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.RegistroDeAvisos
 import pe.edu.upt.aguatacna.feature.reserva.domain.repository.ReservaRepository
 
-// Hasta que el usuario registre su domicilio (feature/sector) se usa este sector de prueba.
-private const val SECTOR_DE_PRUEBA = "CN-04"
-
 val moduloReserva = module {
     single<EstimadorPorHabitos> { EstimadorPorHabitosProvisional() }
     single<AbastecimientosDelSector> {
-        AbastecimientosDeSector(get()) { get<UsuarioDao>().obtener()?.sectorId ?: SECTOR_DE_PRUEBA }
+        // El sector lo guarda el registro de domicilio del primer uso; sin él no hay horario ni proyección.
+        AbastecimientosDeSector(get()) { get<UsuarioDao>().obtener()?.sectorId }
     }
     single<RegistroDeAvisos> { RegistroDeAvisosEnRoom(get(), get(QUALIFICADOR_USUARIO), ::nuevoUuid) }
     single<ReservaRepository> {
@@ -38,7 +36,9 @@ val moduloReserva = module {
             dao = get(),
             usuarioId = get(QUALIFICADOR_USUARIO),
             nube = NubeReservaSupabase(supabase),
-            haySesion = supabase.auth.sessionStatus.map { it is SessionStatus.Authenticated }
+            haySesion = supabase.auth.sessionStatus.map { it is SessionStatus.Authenticated },
+            sectorLocal = get<UsuarioDao>().observarSector(),
+            guardarSector = get<UsuarioDao>()::guardarSector
         )
     }
 }

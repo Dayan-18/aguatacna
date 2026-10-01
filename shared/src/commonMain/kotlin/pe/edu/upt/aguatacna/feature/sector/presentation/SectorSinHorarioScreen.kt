@@ -39,8 +39,9 @@ fun SectorSinHorarioScreen(
     distrito: String,
     codigoSector: String,
     confirmaciones: Int,
-    meta: Int = 3,
-    onLlegoAgua: () -> Unit = {}
+    mensaje: String?,
+    onLlegoAgua: () -> Unit,
+    meta: Int = 3
 ) {
     IconosClarosEnBarraDeEstado(claros = true)
     Column(
@@ -55,6 +56,15 @@ fun SectorSinHorarioScreen(
             onLlegoAgua = onLlegoAgua,
             modifier = Modifier.padding(horizontal = 20.dp)
         )
+        if (mensaje != null) {
+            Text(
+                mensaje,
+                modifier = Modifier.padding(horizontal = 24.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = AguaMedia
+            )
+        }
         AvisoReservaSinProyeccion(Modifier.padding(horizontal = 20.dp))
         Spacer(Modifier.height(24.dp))
     }

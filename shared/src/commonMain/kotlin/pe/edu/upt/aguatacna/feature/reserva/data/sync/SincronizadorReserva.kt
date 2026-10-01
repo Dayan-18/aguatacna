@@ -6,14 +6,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import pe.edu.upt.aguatacna.feature.reserva.data.local.EventoLlenadoEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.NovedadReservaEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.PerfilHogarEntity
 import pe.edu.upt.aguatacna.feature.reserva.data.local.ReservaDao
 
-/** Lo que la nube guarda de un usuario: su perfil y sus registros. */
+/** Lo que la nube guarda de un usuario: su perfil, el sector de su domicilio y sus registros. */
 data class DatosDeReserva(
     val perfil: PerfilHogarEntity?,
+    val sectorId: String?,
     val llenados: List<EventoLlenadoEntity>,
     val novedades: List<NovedadReservaEntity>
 )
@@ -22,7 +24,13 @@ interface NubeReserva {
     /** Lo guardado en la nube, o `null` si no hay una sesión abierta. */
     suspend fun descargar(): DatosDeReserva?
 
-    suspend fun subir(perfil: PerfilHogarEntity?, llenados: List<EventoLlenadoEntity>, novedades: List<NovedadReservaEntity>)
+    /** El sector viaja en la fila del perfil: sin perfil todavía no hay dónde guardarlo. */
+    suspend fun subir(
+        perfil: PerfilHogarEntity?,
+        sectorId: String?,
+        llenados: List<EventoLlenadoEntity>,
+        novedades: List<NovedadReservaEntity>
+    )
 }
 
 /**
@@ -30,13 +38,16 @@ interface NubeReserva {
  * Cada usuario se guarda con su UUID local; la nube lo relaciona con su cuenta. Las reglas:
  * - Los registros se identifican por su `id`: los que faltan de un lado se copian al otro y nunca se duplican.
  * - El perfil del teléfono manda; el de la nube solo se usa en un teléfono que aún no tiene perfil.
+ * - Con el sector del domicilio pasa lo mismo: se baja solo si el teléfono aún no tiene uno.
  * - Los borrados no se propagan: esta primera versión solo suma.
  */
 class SincronizadorReserva(
     private val dao: ReservaDao,
     private val usuarioId: String,
     private val nube: NubeReserva,
-    private val haySesion: Flow<Boolean>
+    private val haySesion: Flow<Boolean>,
+    private val sectorLocal: Flow<String?> = flowOf(null),
+    private val guardarSector: suspend (String) -> Unit = {}
 ) {
     /** Devuelve `true` si sincronizó; `false` si no había sesión o la red falló (se reintenta con el próximo cambio). */
     suspend fun sincronizar(): Boolean = try {
@@ -53,6 +64,10 @@ class SincronizadorReserva(
         if (perfil == null && remoto.perfil != null) {
             perfil = remoto.perfil.copy(usuarioId = usuarioId).also { dao.guardarPerfil(it) }
         }
+        var sector = sectorLocal.first()
+        if (sector == null && remoto.sectorId != null) {
+            sector = remoto.sectorId.also { guardarSector(it) }
+        }
         val llenados = dao.observarLlenados(usuarioId).first()
         val novedades = dao.observarNovedades(usuarioId).first()
 
@@ -66,6 +81,7 @@ class SincronizadorReserva(
 
         nube.subir(
             perfil = perfil,
+            sectorId = sector,
             llenados = llenados.filter { it.id !in idsDeLlenadosEnNube },
             novedades = novedades.filter { it.id !in idsDeNovedadesEnNube }
         )
@@ -78,8 +94,9 @@ class SincronizadorReserva(
             haySesion,
             dao.observarPerfil(usuarioId),
             dao.observarLlenados(usuarioId),
-            dao.observarNovedades(usuarioId)
-        ) { conSesion, _, _, _ -> conSesion }
+            dao.observarNovedades(usuarioId),
+            sectorLocal
+        ) { conSesion, _, _, _, _ -> conSesion }
             .debounce(RETARDO_MS)
             .collect { conSesion -> if (conSesion) sincronizar() }
     }
