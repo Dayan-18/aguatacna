@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pe.edu.upt.aguatacna.core.ui.theme.Fondo
-import pe.edu.upt.aguatacna.core.ui.theme.FuenteTexto
 import pe.edu.upt.aguatacna.core.ui.theme.IconosClarosEnBarraDeEstado
 import pe.edu.upt.aguatacna.core.ui.theme.Tinta
 import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
@@ -109,82 +108,27 @@ private fun ReciboContenidoPrincipal(
     onIngresarManual: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    val subtituloEncabezado = when (val s = uiState) {
-        is ReciboUiState.ConDatos -> {
-            val medidor = s.recibo.numeroMedidor?.let { "Medidor $it · " } ?: ""
-            "${medidor}EPS Tacna · ${s.mes}"
-        }
-        else -> "EPS Tacna"
-    }
+    val subtitulo = (uiState as? ReciboUiState.ConDatos)?.let { s ->
+        "${s.recibo.numeroMedidor?.let { "Medidor $it · " }.orEmpty()}EPS Tacna · ${s.mes}"
+    } ?: "EPS Tacna"
 
     IconosClarosEnBarraDeEstado(claros = false)
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Fondo)
-            .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
-    ) {
-        EncabezadoRecibo(subtitulo = subtituloEncabezado)
-
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+    Column(Modifier.fillMaxSize().background(Fondo).statusBarsPadding().verticalScroll(rememberScrollState())) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)) {
+            Text("Recibo y Facturación", style = estilo(20.sp, FontWeight.Bold, Tinta))
+            Text(subtitulo, style = estilo(12.sp, FontWeight.Medium, TintaTenue))
+        }
+        Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             when (val state = uiState) {
-                is ReciboUiState.Cargando -> TarjetaEscanear(
-                    onEscanearRecibo = onEscanearRecibo,
-                    onIngresarManual = onIngresarManual
-                )
-
-                is ReciboUiState.SinRecibos -> TarjetaEscanearPrincipal(
-                    onEscanearRecibo = onEscanearRecibo,
-                    onIngresarManual = onIngresarManual
-                )
-
+                is ReciboUiState.Cargando -> TarjetaEscanear(onEscanearRecibo, onIngresarManual)
+                is ReciboUiState.SinRecibos -> TarjetaEscanearPrincipal(onEscanearRecibo, onIngresarManual)
                 is ReciboUiState.ConDatos -> {
-                    TarjetaReciboActivo(
-                        state = state,
-                        estilo = EstiloEstado.desde(state.estadoConsumo),
-                        onVerHistorial = onVerHistorial,
-                        onRevisarLectura = { onRevisarLectura(state.recibo) }
-                    )
-
-                    TarjetaEscanear(
-                        onEscanearRecibo = onEscanearRecibo,
-                        onIngresarManual = onIngresarManual
-                    )
-
-                    SeccionHerramientas(promedioHistorico = state.promedioHistorico)
+                    TarjetaReciboActivo(state, onVerHistorial, onRevisarLectura = { onRevisarLectura(state.recibo) })
+                    TarjetaEscanear(onEscanearRecibo, onIngresarManual)
+                    SeccionHerramientas(state.promedioHistorico)
                 }
             }
-
             Spacer(Modifier.height(24.dp))
         }
-    }
-}
-
-@Composable
-private fun EncabezadoRecibo(subtitulo: String = "EPS Tacna") {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 12.dp)
-    ) {
-        Text(
-            "Recibo y Facturación",
-            fontFamily = FuenteTexto,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Tinta
-        )
-        Text(
-            subtitulo,
-            fontFamily = FuenteTexto,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = TintaTenue
-        )
     }
 }
