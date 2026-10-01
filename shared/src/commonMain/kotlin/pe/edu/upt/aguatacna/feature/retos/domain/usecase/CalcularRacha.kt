@@ -8,7 +8,7 @@ import pe.edu.upt.aguatacna.feature.retos.domain.model.RetoUsuario
 class CalcularRacha {
     fun calcular(cumplimientos: List<RetoUsuario>, hoy: LocalDate): Racha {
         val fechas = cumplimientos.filter { it.cumplido }.map { it.fecha }.toSet()
-        var fecha = hoy
+        var fecha = if (hoy in fechas) hoy else hoy.minus(1, kotlinx.datetime.DateTimeUnit.DAY)
         var dias = 0
         while (fecha in fechas) {
             dias++

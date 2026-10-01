@@ -12,11 +12,12 @@ import pe.edu.upt.aguatacna.feature.retos.data.FakeRetosRepository
 import pe.edu.upt.aguatacna.feature.retos.domain.repository.RetosRepository
 import pe.edu.upt.aguatacna.feature.retos.domain.usecase.CalcularRacha
 import pe.edu.upt.aguatacna.feature.retos.domain.usecase.CompararConSector
-import pe.edu.upt.aguatacna.feature.retos.domain.usecase.MarcarRetoCumplido
+import pe.edu.upt.aguatacna.feature.retos.domain.usecase.ActualizarRetoDelDia
 import pe.edu.upt.aguatacna.feature.retos.domain.usecase.ObtenerRetosSemana
 import pe.edu.upt.aguatacna.feature.retos.domain.model.LitrosPorHabitanteDia
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import org.koin.mp.KoinPlatform
 
 class RetosViewModel(private val repositorio: RetosRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(RetosUiState())
@@ -24,23 +25,27 @@ class RetosViewModel(private val repositorio: RetosRepository) : ViewModel() {
 
     init { cargar() }
 
-    fun completar(retoId: String) = viewModelScope.launch {
-        MarcarRetoCumplido(repositorio).ejecutar(retoId)
-        cargar("Reto cumplido. ¡Sigue así!")
+    fun alternarReto(retoId: String) = viewModelScope.launch {
+        val marcar = retoId !in _uiState.value.cumplidos
+        ActualizarRetoDelDia(repositorio).ejecutar(retoId, marcar)
+        cargar(if (marcar) "Reto cumplido. ¡Sigue así!" else "Reto de hoy corregido.")
     }
 
     private fun cargar(mensaje: String? = null) = viewModelScope.launch {
         val retos = ObtenerRetosSemana(repositorio).ejecutar()
         val cumplimientos = repositorio.obtenerCumplimientos()
+        val hoy = repositorio.fechaActual()
         val posicion = CompararConSector(repositorio).ejecutar(
             sectorId = "CN-04",
-            consumo = LitrosPorHabitanteDia(92.0)
+            consumo = LitrosPorHabitanteDia(275.0)
         )
         _uiState.value = RetosUiState(
             cargando = false,
             retos = retos,
-            cumplidos = cumplimientos.filter { it.cumplido }.map { it.retoId }.toSet(),
-            racha = CalcularRacha().calcular(cumplimientos, repositorio.fechaActual()),
+            cumplidos = cumplimientos.filter { it.cumplido && it.fecha == hoy }.map { it.retoId }.toSet(),
+            diasCumplidos = cumplimientos.filter { it.cumplido }.map { it.fecha }.toSet(),
+            hoy = hoy,
+            racha = CalcularRacha().calcular(cumplimientos, hoy),
             posicionSector = posicion,
             mensaje = mensaje
         )
@@ -53,5 +58,10 @@ class RetosViewModel(private val repositorio: RetosRepository) : ViewModel() {
                 Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             )
         )
+
+        fun desdeInyeccion(): RetosViewModel {
+            val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
+            return RetosViewModel(koin.get())
+        }
     }
 }

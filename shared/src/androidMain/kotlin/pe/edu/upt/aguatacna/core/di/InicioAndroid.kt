@@ -25,6 +25,7 @@ fun moduloPlataforma(context: Context, base: AguaTacnaDatabase, usuarioId: Strin
     single { base.reciboBorradorDao() }
     single { base.avisoReservaDao() }
     single { base.sectorDao() }
+    single { base.retosDao() }
     single(QUALIFICADOR_USUARIO) { usuarioId }
     single<InicioConGoogle> { InicioConGoogleAndroid(get()) }
     // Guarda la sesión de Supabase en SharedPreferences, para que sobreviva a un reinicio de la app.

@@ -9,6 +9,7 @@ data class Reporte(
     val latitud: Double?,
     val longitud: Double?,
     val fotoUri: String? = null,
+    val fotoBytes: ByteArray? = null,
     val pendienteSincronizacion: Boolean = true
 ) {
     init {

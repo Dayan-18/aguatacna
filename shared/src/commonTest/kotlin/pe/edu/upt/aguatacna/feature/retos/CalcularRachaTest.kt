@@ -20,9 +20,9 @@ class CalcularRachaTest {
     }
 
     @Test
-    fun no_cuenta_racha_si_hoy_no_hay_cumplimiento() {
+    fun conserva_racha_mientras_el_dia_actual_esta_pendiente() {
         val cumplimientos = listOf(RetoUsuario("a", LocalDate(2026, 9, 19), true))
 
-        assertEquals(0, CalcularRacha().calcular(cumplimientos, LocalDate(2026, 9, 20)).dias)
+        assertEquals(1, CalcularRacha().calcular(cumplimientos, LocalDate(2026, 9, 20)).dias)
     }
 }
