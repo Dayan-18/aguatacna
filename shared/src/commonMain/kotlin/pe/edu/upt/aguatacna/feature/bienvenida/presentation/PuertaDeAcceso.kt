@@ -5,10 +5,14 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-/** Muestra la bienvenida hasta que la persona elige cómo entrar; después deja pasar a la app. */
+/**
+ * El primer uso, en orden: la bienvenida hasta que la persona elige cómo entrar, el registro del
+ * domicilio hasta que tiene un sector, y después la app.
+ */
 @Composable
 fun PuertaDeAcceso(
     viewModel: AccesoViewModel = viewModel { AccesoViewModel.desdeInyeccion() },
+    registrarDomicilio: @Composable () -> Unit,
     contenido: @Composable () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -21,6 +25,7 @@ fun PuertaDeAcceso(
             onGoogle = viewModel::entrarConGoogle,
             onDescartarMensaje = viewModel::descartarMensaje
         )
+        !uiState.tieneDomicilio -> registrarDomicilio()
         else -> contenido()
     }
 }
