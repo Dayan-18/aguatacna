@@ -20,6 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
@@ -45,17 +48,22 @@ fun RegistrarDomicilioScreen(
     viewModel: RegistrarDomicilioViewModel = viewModel { RegistrarDomicilioViewModel.desdeInyeccion() }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var selectorAbierto by rememberSaveable { mutableStateOf(false) }
+    val solicitarUbicacion = rememberSolicitarUbicacion { coord ->
+        if (coord != null) viewModel.marcarEnMapa(coord) else viewModel.usarMiUbicacion()
+    }
     Column(
         modifier = Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState())
     ) {
         EncabezadoRegistro(onVolver)
-        VistaPreviaSectorMapa(
-            etiquetaSector = uiState.etiquetaMapa,
+        MapaUbicacionPreview(
+            ubicacion = uiState.ubicacion,
+            onAbrir = { selectorAbierto = true },
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
         BotonesUbicacion(
-            onUsarUbicacion = viewModel::detectarSector,
-            onMarcarEnMapa = {},
+            onUsarUbicacion = solicitarUbicacion,
+            onMarcarEnMapa = { selectorAbierto = true },
             modifier = Modifier.padding(horizontal = 20.dp)
         )
         TarjetaSectorDetectado(
@@ -69,7 +77,11 @@ fun RegistrarDomicilioScreen(
             modifier = Modifier.padding(horizontal = 20.dp)
         )
         Spacer(Modifier.height(28.dp))
-        BotonConfirmarSector(onClick = viewModel::confirmarSector, modifier = Modifier.padding(horizontal = 20.dp))
+        BotonConfirmarSector(
+            onClick = viewModel::confirmarSector,
+            modifier = Modifier.padding(horizontal = 20.dp),
+            habilitado = uiState.sector != null
+        )
         if (uiState.guardado) {
             Text(
                 "✓ Sector guardado",
@@ -81,6 +93,17 @@ fun RegistrarDomicilioScreen(
             )
         }
         Spacer(Modifier.height(24.dp))
+    }
+
+    if (selectorAbierto) {
+        SelectorUbicacion(
+            inicial = uiState.ubicacion,
+            onElegir = { coord ->
+                selectorAbierto = false
+                viewModel.marcarEnMapa(coord)
+            },
+            onVolver = { selectorAbierto = false }
+        )
     }
 }
 

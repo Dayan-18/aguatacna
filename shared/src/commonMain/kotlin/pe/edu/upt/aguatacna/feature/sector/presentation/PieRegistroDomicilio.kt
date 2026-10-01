@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,8 +30,10 @@ import org.jetbrains.compose.resources.painterResource
 import pe.edu.upt.aguatacna.core.ui.theme.Agua
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
+import pe.edu.upt.aguatacna.core.ui.theme.Divisor
 import pe.edu.upt.aguatacna.core.ui.theme.FuenteTexto
 import pe.edu.upt.aguatacna.core.ui.theme.Tenue
+import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 
 private val FORMA_BOTON = RoundedCornerShape(16.dp)
 private val SOMBRA_BOTON = Color(0x5912A1AD)
@@ -49,14 +52,21 @@ fun NotaPrivacidad(texto: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun BotonConfirmarSector(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun BotonConfirmarSector(onClick: () -> Unit, modifier: Modifier = Modifier, habilitado: Boolean = true) {
     Box(
         modifier.fillMaxWidth().height(56.dp)
-            .shadow(8.dp, FORMA_BOTON, ambientColor = SOMBRA_BOTON, spotColor = SOMBRA_BOTON)
-            .clip(FORMA_BOTON).background(Brush.horizontalGradient(listOf(AguaMedia, Agua)))
-            .clickable(role = Role.Button, onClick = onClick),
+            .then(if (habilitado) Modifier.shadow(8.dp, FORMA_BOTON, ambientColor = SOMBRA_BOTON, spotColor = SOMBRA_BOTON) else Modifier)
+            .clip(FORMA_BOTON)
+            .background(if (habilitado) Brush.horizontalGradient(listOf(AguaMedia, Agua)) else SolidColor(Divisor))
+            .clickable(enabled = habilitado, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text("Confirmar sector", fontFamily = FuenteTexto, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Blanco)
+        Text(
+            "Confirmar sector",
+            fontFamily = FuenteTexto,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (habilitado) Blanco else TintaSuave
+        )
     }
 }
