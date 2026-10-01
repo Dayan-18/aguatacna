@@ -15,6 +15,7 @@ import pe.edu.upt.aguatacna.core.sesion.ModoDeAcceso
 import pe.edu.upt.aguatacna.core.sesion.RegistroDeAcceso
 import pe.edu.upt.aguatacna.core.sesion.RegistroDeAccesoEnMemoria
 import pe.edu.upt.aguatacna.core.sesion.ResultadoInicio
+import pe.edu.upt.aguatacna.feature.reserva.data.sync.SincronizadorReserva
 
 /** Lo que decide la entrada: el modo de acceso, si ya hay domicilio, el consentimiento y el aviso de error. */
 data class AccesoUiState(
@@ -30,7 +31,9 @@ data class AccesoUiState(
 
 class AccesoViewModel(
     private val registro: RegistroDeAcceso,
-    private val google: InicioConGoogle
+    private val google: InicioConGoogle,
+    // Trae de la nube lo que la cuenta ya tenía (domicilio y hogar) antes de dejar pasar a la app.
+    private val alEntrarConCuenta: suspend () -> Unit = {}
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AccesoUiState())
     val uiState: StateFlow<AccesoUiState> = _uiState.asStateFlow()
@@ -58,7 +61,10 @@ class AccesoViewModel(
         _uiState.update { it.copy(enCurso = true, mensaje = null) }
         viewModelScope.launch {
             val resultado = google.iniciar()
-            if (resultado is ResultadoInicio.Exitoso) registro.guardar(ModoDeAcceso.GOOGLE)
+            if (resultado is ResultadoInicio.Exitoso) {
+                alEntrarConCuenta()
+                registro.guardar(ModoDeAcceso.GOOGLE)
+            }
             _uiState.update { it.copy(enCurso = false, mensaje = mensajeDe(resultado)) }
         }
     }
@@ -75,7 +81,12 @@ class AccesoViewModel(
         fun desdeInyeccion(): AccesoViewModel {
             val koin = KoinPlatform.getKoinOrNull()
                 ?: return AccesoViewModel(RegistroDeAccesoEnMemoria(), InicioConGoogleNoDisponible)
-            return AccesoViewModel(koin.get(), koin.getOrNull<InicioConGoogle>() ?: InicioConGoogleNoDisponible)
+            val sincronizador = koin.getOrNull<SincronizadorReserva>()
+            return AccesoViewModel(
+                registro = koin.get(),
+                google = koin.getOrNull<InicioConGoogle>() ?: InicioConGoogleNoDisponible,
+                alEntrarConCuenta = { sincronizador?.sincronizar() }
+            )
         }
     }
 }

@@ -24,7 +24,8 @@ internal data class PerfilNube(
     @SerialName("usa_lavadora") val usaLavadora: Boolean,
     @SerialName("riega_jardin") val riegaJardin: Boolean,
     @SerialName("consumo_por_habitos_litros_hora") val consumoPorHabitosLitrosHora: Double? = null,
-    @SerialName("consumo_vigente_litros_hora") val consumoVigenteLitrosHora: Double? = null
+    @SerialName("consumo_vigente_litros_hora") val consumoVigenteLitrosHora: Double? = null,
+    @SerialName("sector_id") val sectorId: String? = null
 )
 
 @Serializable
@@ -58,6 +59,7 @@ class NubeReservaSupabase(private val supabase: SupabaseClient) : NubeReserva {
         val novedades = supabase.from(TABLA_NOVEDADES).select().decodeList<NovedadNube>()
         return DatosDeReserva(
             perfil = perfil?.aLocal(),
+            sectorId = perfil?.sectorId,
             llenados = llenados.map { EventoLlenadoEntity(it.id, it.usuarioId, normalizarMomento(it.momento), it.tipo) },
             novedades = novedades.map {
                 NovedadReservaEntity(
@@ -70,11 +72,12 @@ class NubeReservaSupabase(private val supabase: SupabaseClient) : NubeReserva {
 
     override suspend fun subir(
         perfil: PerfilHogarEntity?,
+        sectorId: String?,
         llenados: List<EventoLlenadoEntity>,
         novedades: List<NovedadReservaEntity>
     ) {
         val cuenta = supabase.auth.currentUserOrNull()?.id ?: return
-        perfil?.let { supabase.from(TABLA_PERFIL).upsert(it.aNube(cuenta)) }
+        perfil?.let { supabase.from(TABLA_PERFIL).upsert(it.aNube(cuenta, sectorId)) }
         if (llenados.isNotEmpty()) {
             supabase.from(TABLA_LLENADOS).upsert(llenados.map { LlenadoNube(it.id, cuenta, it.momento, it.tipo) })
         }
@@ -91,7 +94,7 @@ private fun PerfilNube.aLocal() = PerfilHogarEntity(
     usaLavadora, riegaJardin, consumoPorHabitosLitrosHora, consumoVigenteLitrosHora
 )
 
-private fun PerfilHogarEntity.aNube(cuenta: String) = PerfilNube(
+private fun PerfilHogarEntity.aNube(cuenta: String, sectorId: String?) = PerfilNube(
     cuenta, tipoReservorio, capacidadLitros, habitantes, duchasPorDia,
-    usaLavadora, riegaJardin, consumoPorHabitosLitrosHora, consumoVigenteLitrosHora
+    usaLavadora, riegaJardin, consumoPorHabitosLitrosHora, consumoVigenteLitrosHora, sectorId
 )

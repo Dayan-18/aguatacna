@@ -36,7 +36,9 @@ val moduloReserva = module {
             dao = get(),
             usuarioId = get(QUALIFICADOR_USUARIO),
             nube = NubeReservaSupabase(supabase),
-            haySesion = supabase.auth.sessionStatus.map { it is SessionStatus.Authenticated }
+            haySesion = supabase.auth.sessionStatus.map { it is SessionStatus.Authenticated },
+            sectorLocal = get<UsuarioDao>().observarSector(),
+            guardarSector = get<UsuarioDao>()::guardarSector
         )
     }
 }
