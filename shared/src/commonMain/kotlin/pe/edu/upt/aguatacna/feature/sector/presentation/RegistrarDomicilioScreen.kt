@@ -37,6 +37,7 @@ import aguatacna.shared.generated.resources.ic_atras
 import org.jetbrains.compose.resources.painterResource
 import pe.edu.upt.aguatacna.core.ui.theme.AguaMedia
 import pe.edu.upt.aguatacna.core.ui.theme.Blanco
+import pe.edu.upt.aguatacna.core.ui.theme.Coral
 import pe.edu.upt.aguatacna.core.ui.theme.Fondo
 import pe.edu.upt.aguatacna.core.ui.theme.FuenteTexto
 import pe.edu.upt.aguatacna.core.ui.theme.Tinta
@@ -49,9 +50,20 @@ fun RegistrarDomicilioScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectorAbierto by rememberSaveable { mutableStateOf(false) }
-    val solicitarUbicacion = rememberSolicitarUbicacion { coord ->
-        if (coord != null) viewModel.marcarEnMapa(coord) else viewModel.usarMiUbicacion()
-    }
+    val solicitarUbicacion = rememberSolicitarUbicacion(
+        onBuscando = viewModel::buscandoUbicacion,
+        onResultado = { resultado ->
+            when (resultado) {
+                is ResultadoUbicacion.Encontrada -> viewModel.marcarEnMapa(resultado.coordenada)
+                ResultadoUbicacion.GpsApagado -> viewModel.avisarError(
+                    "La ubicación de tu teléfono está desactivada. Actívala en el panel rápido y vuelve a tocar."
+                )
+                ResultadoUbicacion.SinSenal -> viewModel.avisarError(
+                    "No llegó señal de ubicación. Acércate a una ventana e inténtalo otra vez, o marca tu casa en el mapa."
+                )
+            }
+        }
+    )
     Column(
         modifier = Modifier.fillMaxSize().background(Fondo).verticalScroll(rememberScrollState())
     ) {
@@ -66,6 +78,16 @@ fun RegistrarDomicilioScreen(
             onMarcarEnMapa = { selectorAbierto = true },
             modifier = Modifier.padding(horizontal = 20.dp)
         )
+        uiState.mensaje?.let { aviso ->
+            Text(
+                aviso,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                fontFamily = FuenteTexto,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (uiState.mensajeEsError) Coral else AguaMedia
+            )
+        }
         TarjetaSectorDetectado(
             sectorDetectado = uiState.sector?.nombre ?: "—",
             distrito = uiState.sector?.distrito ?: "—",

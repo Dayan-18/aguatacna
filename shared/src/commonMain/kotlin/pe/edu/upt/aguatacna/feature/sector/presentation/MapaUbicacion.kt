@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +56,12 @@ private fun Coordenada.aPunto() = Feature(geometry = Point(longitud, latitud), p
 fun MapaUbicacionPreview(ubicacion: Coordenada?, onAbrir: () -> Unit, modifier: Modifier = Modifier) {
     val centro = ubicacion ?: TACNA_CENTRO
     val camara = rememberCameraState(CameraPosition(target = Position(centro.longitud, centro.latitud), zoom = 13.0))
+    // Cuando llega la ubicación (GPS o pin), la cámara vuela al punto exacto.
+    LaunchedEffect(ubicacion) {
+        if (ubicacion != null) {
+            camara.position = CameraPosition(target = Position(ubicacion.longitud, ubicacion.latitud), zoom = 15.0)
+        }
+    }
     Box(modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(18.dp))) {
         MaplibreMap(
             modifier = Modifier.fillMaxSize(),

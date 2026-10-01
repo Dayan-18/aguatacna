@@ -9,5 +9,7 @@ data class RegistrarDomicilioUiState(
     val sector: Sector? = null,
     val continuidad: String = "",
     val etiquetaMapa: String = "SECTOR",
-    val guardado: Boolean = false
+    val guardado: Boolean = false,
+    val mensaje: String? = null,
+    val mensajeEsError: Boolean = false
 )

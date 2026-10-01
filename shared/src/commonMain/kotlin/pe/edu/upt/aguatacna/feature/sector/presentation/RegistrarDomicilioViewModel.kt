@@ -20,7 +20,6 @@ import pe.edu.upt.aguatacna.data.local.UsuarioDao
 
 class RegistrarDomicilioViewModel(
     private val repositorio: SectorRepository,
-    private val ubicacion: Coordenada,
     private val guardarSectorEnUsuario: suspend (String) -> Unit = {}
 ) : ViewModel() {
 
@@ -32,15 +31,21 @@ class RegistrarDomicilioViewModel(
     // No se detecta nada al abrir: el usuario elige primero su ubicación (GPS o pin en el mapa),
     // y solo entonces se resuelve el sector y se habilita "Confirmar".
 
-    /** Usa la ubicación del dispositivo. Por ahora es una coordenada de prueba hasta que entre el GPS real. */
-    fun usarMiUbicacion() = elegir(ubicacion)
-
-    /** El usuario marcó un punto en el mapa. */
+    /** Llega una ubicación real: del GPS o de un punto marcado en el mapa. */
     fun marcarEnMapa(coordenada: Coordenada) = elegir(coordenada)
+
+    fun buscandoUbicacion() {
+        _uiState.update { it.copy(mensaje = "Buscando tu ubicación… puede tardar unos segundos.", mensajeEsError = false) }
+    }
+
+    /** El GPS no dio una ubicación: se explica la causa en vez de inventar una. */
+    fun avisarError(texto: String) {
+        _uiState.update { it.copy(mensaje = texto, mensajeEsError = true) }
+    }
 
     private fun elegir(coord: Coordenada) {
         viewModelScope.launch {
-            _uiState.update { it.copy(cargando = true, ubicacion = coord) }
+            _uiState.update { it.copy(cargando = true, ubicacion = coord, mensaje = null) }
             try {
                 val sector = resolverSector.resolver(coord, repositorio.obtenerSectores())
                 if (sector == null) {
@@ -77,19 +82,16 @@ class RegistrarDomicilioViewModel(
     }
 
     companion object {
-        // Casa de prueba en Ciudad Nueva, hasta tener el permiso de ubicación (semana 14).
-        private val CASA_DE_PRUEBA = Coordenada(-17.9841, -70.2372)
-
-        // Temporal: se reemplaza cuando exista la inyección de dependencias (core/di).
+        // Solo para previews sin Koin.
         @OptIn(ExperimentalTime::class)
         fun conDatosDePrueba(): RegistrarDomicilioViewModel {
             val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-            return RegistrarDomicilioViewModel(FakeSectorRepository(hoy), CASA_DE_PRUEBA)
+            return RegistrarDomicilioViewModel(FakeSectorRepository(hoy))
         }
 
         fun desdeInyeccion(): RegistrarDomicilioViewModel {
             val koin = KoinPlatform.getKoinOrNull() ?: return conDatosDePrueba()
-            return RegistrarDomicilioViewModel(koin.get(), CASA_DE_PRUEBA, koin.get<UsuarioDao>()::guardarSector)
+            return RegistrarDomicilioViewModel(koin.get(), koin.get<UsuarioDao>()::guardarSector)
         }
     }
 }
