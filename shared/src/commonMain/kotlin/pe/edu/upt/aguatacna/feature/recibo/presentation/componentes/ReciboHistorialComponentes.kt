@@ -1,5 +1,5 @@
 // Componentes visuales usados únicamente en la pantalla de Historial (ReciboHistorialScreen):
-// gráfico de barras de 6 meses, alerta de estado y detalle del período.
+// gráfico de barras de 6 meses y detalle del período.
 package pe.edu.upt.aguatacna.feature.recibo.presentation.componentes
 
 import androidx.compose.foundation.Canvas
@@ -19,9 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -46,14 +44,9 @@ import pe.edu.upt.aguatacna.core.ui.theme.Tinta
 import pe.edu.upt.aguatacna.core.ui.theme.TintaSuave
 import pe.edu.upt.aguatacna.core.ui.theme.TintaTenue
 import pe.edu.upt.aguatacna.core.ui.theme.sombraSuave
-import pe.edu.upt.aguatacna.feature.recibo.domain.model.EstadoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.model.PeriodoConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.service.EvaluadorConsumo
 import pe.edu.upt.aguatacna.feature.recibo.domain.usecase.BarraHistorialSlot
-
-// ── Colores privados ──────────────────────────────────────────────────────────
-
-private val OcreTextoOscuro = Color(0xFF7C4D29)
 
 // ── GraficoBarrasHistorial ───────────────────────────────────────────────────
 
@@ -167,7 +160,7 @@ fun GraficoBarrasHistorial(
                     val esSeleccionado = item.periodo == mesSeleccionado
                     val m3 = item.consumoM3
                     val barHeight = if (m3 != null) chartHeight * (m3.toFloat() / yMax).coerceAtMost(1f) else 0.dp
-                    val barColor = if (item.esAtipico) Color(0xFFE18228) else Color(0xFF10939C)
+                    val barColor = if (item.esAltoConsumo) Color(0xFFE18228) else Color(0xFF10939C)
 
                     Box(
                         modifier = Modifier
@@ -185,7 +178,7 @@ fun GraficoBarrasHistorial(
                                     .background(barColor),
                                 contentAlignment = Alignment.TopCenter
                             ) {
-                                if (item.esAtipico || esSeleccionado) {
+                                if (item.esAltoConsumo || esSeleccionado) {
                                     Text(
                                         text = "$m3",
                                         fontFamily = FuenteNumeros,
@@ -212,9 +205,9 @@ fun GraficoBarrasHistorial(
         ) {
             barras.forEach { item ->
                 val esSeleccionado = item.periodo == mesSeleccionado
-                val textoMes = if (item.consumoM3 != null) item.mesCorto else "—"
+                val textoMes = if (item.consumoM3 != null) item.periodo.mesCorto else "—"
                 val colorTexto = when {
-                    item.esAtipico -> Color(0xFFE18228)
+                    item.esAltoConsumo -> Color(0xFFE18228)
                     esSeleccionado -> Color(0xFF0F172A)
                     else -> Color(0xFF8899A6)
                 }
@@ -223,7 +216,7 @@ fun GraficoBarrasHistorial(
                     text = textoMes,
                     fontFamily = FuenteTexto,
                     fontSize = 12.sp,
-                    fontWeight = if (item.esAtipico || esSeleccionado) FontWeight.Bold else FontWeight.Medium,
+                    fontWeight = if (item.esAltoConsumo || esSeleccionado) FontWeight.Bold else FontWeight.Medium,
                     color = colorTexto,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -235,59 +228,10 @@ fun GraficoBarrasHistorial(
     }
 }
 
-// ── AlertaEstadoHistorial ────────────────────────────────────────────────────
-
-// Alerta del mes seleccionado: solo el mensaje corto de su estado.
-@Composable
-fun AlertaEstadoHistorial(
-    estado: EstadoConsumo?,
-    modifier: Modifier = Modifier
-) {
-    val estilo = EstiloEstado.desde(estado ?: EstadoConsumo.SinHistorial)
-    val esAtipico = estado is EstadoConsumo.Atipico
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(top = 16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(estilo.colorFondo)
-            .border(1.dp, estilo.colorBorde, RoundedCornerShape(16.dp))
-            .padding(16.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                if (esAtipico) Icons.Default.Warning else Icons.Outlined.Shield,
-                contentDescription = null,
-                tint = estilo.colorPrincipal,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                estilo.chipTexto,
-                fontFamily = FuenteTexto,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = estilo.colorPrincipal
-            )
-        }
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = estado?.mensaje ?: "No registraste un recibo para este mes.",
-            fontFamily = FuenteTexto,
-            fontSize = 12.sp,
-            color = if (esAtipico) OcreTextoOscuro else TintaSuave,
-            lineHeight = 18.sp
-        )
-    }
-}
-
 // ── DetallePeriodoHistorial / FilaDetalle ─────────────────────────────────────
 
-// Desglose del mes seleccionado: consumo, promedio de los meses previos, variación, importe y opción de editar.
+// Desglose del último mes: consumo, promedio de los meses previos, variación frente a ese promedio,
+// importe y opción de editar.
 @Composable
 fun DetallePeriodoHistorial(
     slot: BarraHistorialSlot,
@@ -321,20 +265,20 @@ fun DetallePeriodoHistorial(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            val colorDestacado = if (slot.esAtipico) Ocre else Tinta
+            val colorDestacado = if (slot.esAltoConsumo) Ocre else Tinta
             FilaDetalle(
                 "Consumo de ${mes.mesLargo.lowercase()}",
                 slot.consumoM3?.toString() ?: "—",
                 if (slot.consumoM3 != null) "m³" else null,
                 colorDestacado
             )
-            FilaDetalle("Promedio histórico", slot.promedioPrevio?.toString() ?: "—", slot.promedioPrevio?.let { "m³" }, Tinta)
             FilaDetalle(
-                "Variación",
-                slot.estado?.variacionTexto ?: "—",
-                null,
-                if (slot.esAtipico) Ocre else TintaSuave
+                "Promedio histórico",
+                slot.promedioPrevio?.toString() ?: "—",
+                slot.promedioPrevio?.let { "m³" },
+                Tinta
             )
+            FilaDetalle("Variación", textoVariacion(slot.variacionPorcentaje), null, colorDestacado)
 
             HorizontalDivider(color = Divisor.copy(alpha = 0.5f))
             FilaDetalle("Importe facturado", slot.importeTotal?.formatear() ?: "—", null, Tinta)
@@ -376,8 +320,7 @@ fun FilaDetalle(
     valor: String,
     unidad: String?,
     colorValor: Color,
-    modifier: Modifier = Modifier,
-    colorUnidad: Color = colorValor
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -389,9 +332,15 @@ fun FilaDetalle(
             Text(valor, fontFamily = FuenteNumeros, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorValor)
             if (unidad != null) {
                 Spacer(Modifier.width(3.dp))
-                Text(unidad, fontFamily = FuenteTexto, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = colorUnidad)
+                Text(unidad, fontFamily = FuenteTexto, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = colorValor)
             }
         }
     }
+}
+
+private fun textoVariacion(porcentaje: Int?): String = when {
+    porcentaje == null -> "—"
+    porcentaje >= 0 -> "+$porcentaje %"
+    else -> "$porcentaje %"
 }
 

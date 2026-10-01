@@ -37,7 +37,7 @@ sealed interface ReciboUiState {
         val promedioHistorico: Int?
     ) : ReciboUiState {
         val mes: String get() = recibo.periodoConsumo.displayCompleto
-        val esAtipico: Boolean get() = estadoConsumo is EstadoConsumo.Atipico
+        val esAltoConsumo: Boolean get() = estadoConsumo == EstadoConsumo.ALTO_CONSUMO
     }
 }
 

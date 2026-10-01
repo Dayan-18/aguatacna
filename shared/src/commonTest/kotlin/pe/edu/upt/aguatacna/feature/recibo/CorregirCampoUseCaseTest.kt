@@ -57,6 +57,21 @@ class CorregirCampoUseCaseTest {
     }
 
     @Test
+    fun corregirUnaLecturaRecalculaElConsumo() {
+        val corregido = aplicada(CampoEditable.LecturaActual(145))
+        assertEquals(45, corregido.consumoM3.valor)
+        assertTrue(corregido.consumoM3.corregidoPorUsuario)
+        assertEquals(23, aplicada(CampoEditable.LecturaAnterior(110)).consumoM3.valor)
+    }
+
+    @Test
+    fun sinLaOtraLecturaElConsumoNoCambia() {
+        val sinActual = borrador.copy(lecturaActualM3 = Campo())
+        val resultado = assertIs<ResultadoCorreccion.Aplicada>(corregir(sinActual, CampoEditable.LecturaAnterior(50)))
+        assertEquals(10, resultado.borrador.consumoM3.valor)
+    }
+
+    @Test
     fun laLecturaActualNoPuedeSerMenorQueLaAnterior() {
         assertEquals(100, aplicada(CampoEditable.LecturaActual(100)).lecturaActualM3.valor)
         assertEquals(

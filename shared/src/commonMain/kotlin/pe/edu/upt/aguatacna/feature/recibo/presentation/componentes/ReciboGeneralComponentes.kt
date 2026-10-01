@@ -64,70 +64,19 @@ private val Rojo = Color(0xFFDC2626)
 
 // ── EstiloEstado ──────────────────────────────────────────────────────────────
 
-// Estilo visual por estado de consumo, con los colores del tema: Ocre (atípico), AguaMedia (normal),
-// TintaSuave (sin historial / por promedio).
+// Estilo visual del estado de consumo: Ocre si es alto consumo (> 100 m³), AguaMedia en cualquier otro caso.
 data class EstiloEstado(
-    val colorPrincipal: Color,
-    val colorFondo: Color,
-    val colorBorde: Color,
     val chipTexto: String,
     val chipColorTexto: Color,
     val chipColorFondo: Color,
-    val chipColorBorde: Color,
-    val variacionColor: Color,
-    val botonHistorialTexto: String,
-    val botonHistorialColor: Color
+    val chipColorBorde: Color
 ) {
     companion object {
-        private val OcreFondo = Color(0xFFFDF2E7)
-        private val OcreBorde = Color(0x33E18228)
-        private val TealFondo = Color(0xFFE4F3F4)
-        private val TealBorde = Color(0x33087E8B)
-        private val NeutroFondo = Color(0xFFF0F4F5)
-        private val NeutroBorde = Color(0x33667788)
+        private val ALTO_CONSUMO = EstiloEstado("Alto consumo", Ocre, Color(0xFFFEF2E6), Color(0xFFFDE0B5))
+        private val NORMAL = EstiloEstado("Normal", AguaMedia, Color(0xFFE4F3F4), Color(0xFFCAEBED))
 
-        fun desde(estado: EstadoConsumo): EstiloEstado = when (estado) {
-            is EstadoConsumo.Atipico -> EstiloEstado(
-                colorPrincipal = Ocre,
-                colorFondo = OcreFondo,
-                colorBorde = OcreBorde,
-                chipTexto = "Alto consumo",
-                chipColorTexto = Ocre,
-                chipColorFondo = Color(0xFFFEF2E6),
-                chipColorBorde = Color(0xFFFDE0B5),
-                variacionColor = Ocre,
-                botonHistorialTexto = BOTON_HISTORIAL,
-                botonHistorialColor = Ocre
-            )
-            is EstadoConsumo.Normal, is EstadoConsumo.SinHistorial -> estiloTeal(estado.chipTexto)
-            is EstadoConsumo.FacturadoPorPromedio -> EstiloEstado(
-                colorPrincipal = TintaSuave,
-                colorFondo = NeutroFondo,
-                colorBorde = NeutroBorde,
-                chipTexto = "Por promedio",
-                chipColorTexto = TintaSuave,
-                chipColorFondo = Color(0xFFE8EEF0),
-                chipColorBorde = Color(0xFFD0DCE0),
-                variacionColor = TintaSuave,
-                botonHistorialTexto = BOTON_HISTORIAL,
-                botonHistorialColor = AguaMedia
-            )
-        }
-
-        private fun estiloTeal(chip: String) = EstiloEstado(
-            colorPrincipal = AguaMedia,
-            colorFondo = TealFondo,
-            colorBorde = TealBorde,
-            chipTexto = chip,
-            chipColorTexto = AguaMedia,
-            chipColorFondo = Color(0xFFE4F3F4),
-            chipColorBorde = Color(0xFFCAEBED),
-            variacionColor = AguaMedia,
-            botonHistorialTexto = BOTON_HISTORIAL,
-            botonHistorialColor = AguaMedia
-        )
-
-        private const val BOTON_HISTORIAL = "Ver histórico de consumo"
+        fun desde(estado: EstadoConsumo): EstiloEstado =
+            if (estado == EstadoConsumo.ALTO_CONSUMO) ALTO_CONSUMO else NORMAL
     }
 }
 
@@ -159,7 +108,9 @@ fun BadgeEstado(
             fontFamily = FuenteTexto,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
-            color = estilo.chipColorTexto
+            color = estilo.chipColorTexto,
+            maxLines = 1,
+            softWrap = false
         )
     }
 }
@@ -251,6 +202,7 @@ fun TarjetaReciboActivo(
             verticalAlignment = Alignment.Top
         ) {
             Row(
+                modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -344,78 +296,45 @@ fun TarjetaReciboActivo(
 
         Spacer(Modifier.height(10.dp))
 
-        // Métricas: Consumo facturado y variación frente al promedio
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        // Métrica: Consumo facturado
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Fondo)
+                .border(1.dp, Divisor, RoundedCornerShape(12.dp))
+                .padding(10.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Fondo)
-                    .border(1.dp, Divisor, RoundedCornerShape(12.dp))
-                    .padding(10.dp)
-            ) {
-                Text("Consumo facturado", fontFamily = FuenteTexto, fontSize = 11.sp, color = TintaSuave)
-                Spacer(Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        state.recibo.consumoM3.toString(),
-                        fontFamily = FuenteNumeros,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Tinta
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text("m³", fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(estilo.colorFondo)
-                    .border(1.dp, estilo.colorBorde, RoundedCornerShape(12.dp))
-                    .padding(10.dp)
-            ) {
-                Text("Variación", fontFamily = FuenteTexto, fontSize = 11.sp, color = estilo.variacionColor)
-                Spacer(Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        state.estadoConsumo.variacionTexto,
-                        fontFamily = FuenteNumeros,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = estilo.variacionColor
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        "vs prom.",
-                        fontFamily = FuenteTexto,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = estilo.variacionColor.copy(alpha = 0.7f)
-                    )
-                }
+            Text("Consumo facturado", fontFamily = FuenteTexto, fontSize = 11.sp, color = TintaSuave)
+            Spacer(Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    state.recibo.consumoM3.toString(),
+                    fontFamily = FuenteNumeros,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Tinta
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("m³", fontFamily = FuenteTexto, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = TintaSuave)
             }
         }
 
         Spacer(Modifier.height(12.dp))
 
-        // Botón principal dinámico (naranja si atípico, teal si normal)
+        // Botón principal: naranja si hay alto consumo, teal si no
         Button(
             onClick = onVerHistorial,
             modifier = Modifier.fillMaxWidth().height(48.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = estilo.botonHistorialColor)
+            colors = ButtonDefaults.buttonColors(containerColor = estilo.chipColorTexto)
         ) {
-            if (state.esAtipico) {
+            if (state.esAltoConsumo) {
                 Icon(Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(18.dp), tint = Blanco)
                 Spacer(Modifier.width(8.dp))
             }
             Text(
-                estilo.botonHistorialTexto,
+                "Ver histórico de consumo",
                 fontFamily = FuenteTexto,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
@@ -685,7 +604,6 @@ fun TarjetaHerramienta(
     titulo: String,
     subtitulo: String,
     modifier: Modifier = Modifier,
-    badgeTexto: String? = null,
     trailingContent: @Composable () -> Unit = {}
 ) {
     Row(
@@ -718,31 +636,13 @@ fun TarjetaHerramienta(
                 )
             }
             Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        titulo,
-                        fontFamily = FuenteTexto,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Tinta
-                    )
-                    if (badgeTexto != null) {
-                        Text(
-                            badgeTexto,
-                            fontFamily = FuenteTexto,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Ocre,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(Ocre.copy(alpha = 0.15f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                }
+                Text(
+                    titulo,
+                    fontFamily = FuenteTexto,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Tinta
+                )
                 Text(subtitulo, fontFamily = FuenteTexto, fontSize = 11.sp, color = TintaSuave)
             }
         }

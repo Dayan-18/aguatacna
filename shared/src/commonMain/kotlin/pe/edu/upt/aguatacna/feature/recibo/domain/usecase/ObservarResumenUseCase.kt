@@ -24,20 +24,12 @@ class ObservarResumenUseCase(
         repository.observarRecibos().map { recibos ->
             val ordenados = recibos.sortedByDescending { it.periodoConsumo }
             val actual = ordenados.firstOrNull() ?: return@map null
-            val previos = ordenados.drop(1).map { it.consumoM3 }
-
+            val vencimiento = actual.periodoConsumo.vencimiento()
             ResumenRecibo(
                 recibo = actual,
-                fechaVencimiento = actual.fechaVencimiento?.let { fecha ->
-                    "${fecha.day} ${PeriodoConsumo.de(fecha).mesCorto} ${fecha.year}"
-                } ?: "—",
-                estadoConsumo = EvaluadorConsumo.evaluar(
-                    consumoM3 = actual.consumoM3,
-                    mesesPreviosM3 = previos,
-                    tipoConsumo = actual.tipoConsumo,
-                    mesDisplay = actual.periodoConsumo.mesLargo
-                ),
-                promedioHistorico = EvaluadorConsumo.promedio(previos)
+                fechaVencimiento = "${vencimiento.day} ${PeriodoConsumo.de(vencimiento).mesCorto} ${vencimiento.year}",
+                estadoConsumo = EvaluadorConsumo.evaluar(actual.consumoM3),
+                promedioHistorico = EvaluadorConsumo.promedio(ordenados.drop(1).map { it.consumoM3 })
             )
         }
 }

@@ -2,10 +2,9 @@ package pe.edu.upt.aguatacna.feature.recibo.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
@@ -24,30 +23,23 @@ sealed interface HistorialUiState {
 
     data class ConDatos(
         val barras: List<BarraHistorialSlot>,
-        val promedioHistorico: Int?,
-        val seleccionado: BarraHistorialSlot
+        val masReciente: BarraHistorialSlot
     ) : HistorialUiState
 }
 
-// Pantalla de Historial: elige el mes seleccionado y prepara el borrador para modificar un recibo.
+// Pantalla de Historial: muestra los 6 meses y prepara el borrador del mes que se quiera modificar.
 class HistorialViewModel(
     observarHistorial: ObservarHistorialUseCase,
     private val repository: ReciboRepository,
     private val borradorStore: BorradorReciboStore
 ) : ViewModel() {
 
-    private val mesElegido = MutableStateFlow<PeriodoConsumo?>(null)
-
-    val uiState: StateFlow<HistorialUiState> = combine(observarHistorial(), mesElegido) { historial, elegido ->
-        if (historial == null) return@combine HistorialUiState.SinHistorial
-        val seleccionado = historial.ventana6Meses.find { it.periodo == elegido }
-            ?: historial.ventana6Meses.first { it.periodo == historial.mesSeleccionado }
-        HistorialUiState.ConDatos(historial.ventana6Meses, historial.promedioHistorico, seleccionado)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HistorialUiState.Cargando)
-
-    fun seleccionarMes(periodo: PeriodoConsumo) {
-        mesElegido.value = periodo
-    }
+    val uiState: StateFlow<HistorialUiState> = observarHistorial()
+        .map { historial ->
+            if (historial == null) HistorialUiState.SinHistorial
+            else HistorialUiState.ConDatos(historial.ventana6Meses, historial.masReciente)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HistorialUiState.Cargando)
 
     fun prepararEdicion(periodo: PeriodoConsumo, onListo: () -> Unit) {
         viewModelScope.launch {

@@ -41,6 +41,8 @@ fun ReciboManualMedidorScreen(
     val borrador by viewModel.borrador.collectAsStateWithLifecycle()
     val valorDetectado = remember(campo, borrador) { viewModel.valorInicial(campo) }
     var entrada by remember(valorDetectado) { mutableStateOf(valorDetectado) }
+    // La primera tecla reemplaza el valor detectado; si no, "72,00" no admite más dígitos y "23" se vuelve "234".
+    var reemplazarDetectado by remember(valorDetectado) { mutableStateOf(true) }
     var periodoSeleccionado by remember(borrador) { mutableStateOf(viewModel.periodoInicial()) }
     var errorMensaje by remember { mutableStateOf<String?>(null) }
     val esPeriodo = campo == TipoCampoEdicion.PERIODO
@@ -87,7 +89,9 @@ fun ReciboManualMedidorScreen(
                     permiteComa = campo.permiteComa,
                     onDigitoPulsado = { tecla ->
                         errorMensaje = null
-                        entrada = aplicarTecla(entrada, tecla, campo.permiteComa, campo.maxDigitos)
+                        val base = if (reemplazarDetectado && tecla != TECLA_BORRAR) "" else entrada
+                        entrada = aplicarTecla(base, tecla, campo.permiteComa, campo.maxDigitos)
+                        reemplazarDetectado = false
                     }
                 )
                 Spacer(Modifier.height(20.dp))
