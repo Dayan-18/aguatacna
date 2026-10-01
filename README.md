@@ -1,4 +1,4 @@
-# AguaTacna
+# AguardApp
 
 Aplicación móvil multiplataforma (Android / iOS) para la gestión de la reserva
 domiciliaria de agua potable y la anticipación de cortes durante el racionamiento
