@@ -78,6 +78,7 @@ kotlin {
             implementation(libs.supabase.auth)
             implementation(libs.supabase.postgrest)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.multiplatform.settings)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.moko.permissions)
             implementation(libs.moko.permissions.compose)
@@ -86,6 +87,9 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+        getByName("androidHostTest").dependencies {
+            implementation(libs.multiplatform.settings.test)
         }
     }
 }
