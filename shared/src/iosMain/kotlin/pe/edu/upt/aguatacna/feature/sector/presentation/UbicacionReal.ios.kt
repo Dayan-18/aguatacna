@@ -1,10 +1,10 @@
 package pe.edu.upt.aguatacna.feature.sector.presentation
 
 import androidx.compose.runtime.Composable
-import pe.edu.upt.aguatacna.feature.sector.domain.model.Coordenada
 
-// iOS: la ubicación real con CoreLocation queda para después; por ahora entrega null
-// y la pantalla usa la coordenada de prueba.
+// iOS: la ubicación real con CoreLocation queda para después; por ahora pide marcar en el mapa.
 @Composable
-actual fun rememberSolicitarUbicacion(onResultado: (Coordenada?) -> Unit): () -> Unit =
-    { onResultado(null) }
+actual fun rememberSolicitarUbicacion(
+    onBuscando: () -> Unit,
+    onResultado: (ResultadoUbicacion) -> Unit
+): () -> Unit = { onResultado(ResultadoUbicacion.SinSenal) }
