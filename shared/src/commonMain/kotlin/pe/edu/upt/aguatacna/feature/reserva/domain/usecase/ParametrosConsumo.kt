@@ -6,6 +6,12 @@ internal object ParametrosConsumo {
     const val FACTOR_INTERVALO_LARGO = 2.0
     const val HORAS_ESTIMACION_INICIAL = 48.0
     const val TOPE_CAMBIO_POR_DECLARACION = 0.30
+
+    // Dos llenados más cercanos que esto son una corrección o un relleno, no un tanque gastado.
+    const val HORAS_MINIMAS_ENTRE_LLENADOS = 6.0
+
+    // Un intervalo inferido es solo una cota: hacen falta dos para fiarse de ellos.
+    const val MINIMO_INFERIDOS = 2
 }
 
 internal fun List<Double>.mediana(): Double {
